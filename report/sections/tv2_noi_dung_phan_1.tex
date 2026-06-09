@@ -1,0 +1,518 @@
+\graphicspath{{../images/}{images/}}
+
+% TV2 phụ trách -- Nội dung chính Phần I
+% =====================================================================
+\section{Phần I: Sử dụng Generative Models trong RL}
+% =====================================================================
+
+\subsection{Generative Models như World Model}
+
+Phần này trình bày các nội dung từ Section 2.3 đến Section 2.6 của tutorial \textit{Generative AI Meets Reinforcement Learning}.
+Trọng tâm không phải là nhắc lại định nghĩa MDP hay diffusion model cơ bản, mà là phân tích cách các đối tượng quen thuộc của RL, gồm trajectory distribution, score function, policy gradient và reward, có thể được dùng để diễn giải quá trình huấn luyện mô hình sinh.
+Cách nhìn này tạo ra hai kết nối song song.
+Một mặt, generative models có thể được dùng để biểu diễn policy phức tạp hơn trong RL.
+Mặt khác, các estimator và objective của RL có thể được dùng để fine-tune generative models theo các mục tiêu downstream khó biểu diễn bằng likelihood.
+Các nội dung được thảo luận gồm phân phối trajectory trong RL, vai trò của score function, diffusion policy trong offline RL, phương pháp Diffusion-DICE, và DDPO như một trường hợp sử dụng RL để fine-tune diffusion model~\cite{eysenbach2025generativerl}.
+
+\subsubsection{Phân phối dữ liệu trong RL và reward-weighted learning}
+
+Trong supervised learning, tập dữ liệu huấn luyện thường được xem như một đại lượng cố định.
+Mô hình nhận dataset $\mathcal{D}$ làm đầu vào và tối ưu tham số để khớp nhãn hoặc tăng likelihood trên các mẫu quan sát được.
+Ngược lại, trong RL, dữ liệu huấn luyện được sinh ra bởi chính policy đang được tối ưu.
+Khi policy thay đổi, tập trajectory quan sát được và phân phối dữ liệu tương ứng cũng thay đổi.
+Do đó, bài toán RL không chỉ bao gồm việc tối ưu ánh xạ từ trạng thái sang hành động, mà còn bao gồm việc điều chỉnh phân phối kinh nghiệm do policy tạo ra trong quá trình tương tác.
+
+Gọi $\tau=(s_0,a_0,s_1,a_1,\ldots)$ là một trajectory và $\pi_\theta(\tau)$ là xác suất policy $\pi_\theta$ sinh ra trajectory đó.
+Return của trajectory được ký hiệu là $R(\tau)$.
+Mục tiêu tối ưu của policy có thể viết dưới dạng:
+\begin{equation}
+    J(\theta)
+    =
+    \mathbb{E}_{\tau\sim\pi_\theta}
+    \left[
+        R(\tau)
+    \right].
+\end{equation}
+Biểu thức này cho thấy chất lượng policy được đánh giá qua kỳ vọng return trên chính các trajectory do policy sinh ra.
+Điểm khác biệt quan trọng so với supervised learning nằm ở chỗ phân phối lấy kỳ vọng phụ thuộc vào $\theta$.
+Khi policy được cập nhật, phân phối dữ liệu cũng thay đổi theo.
+
+Để phân tích mối quan hệ giữa policy và dữ liệu, có thể đưa vào một phân phối phụ $q(\tau)$ trên trajectory.
+Giống như trong lecture notes, ta giả sử return đã được chọn hoặc dịch chuyển sao cho $R(\tau)>0$, để biểu thức $\log R(\tau)$ có nghĩa.
+Sử dụng cùng dạng biến đổi với evidence lower bound (ELBO), thu được:
+\begin{equation}
+    \log \mathbb{E}_{\pi_\theta(\tau)}[R(\tau)]
+    =
+    \log
+    \int
+    q(\tau)
+    \frac{\pi_\theta(\tau)R(\tau)}{q(\tau)}
+    d\tau
+    \geq
+    \mathbb{E}_{q(\tau)}
+    \left[
+        \log \pi_\theta(\tau)
+        +
+        \log R(\tau)
+        -
+        \log q(\tau)
+    \right].
+\end{equation}
+Lower bound này phụ thuộc đồng thời vào hai đối tượng: policy $\pi_\theta$ và phân phối trajectory $q(\tau)$.
+Do đó, cách viết này diễn giải RL như một bài toán tối ưu đồng thời trên policy và phân phối dữ liệu.
+Policy cần gán xác suất cao cho các trajectory có chất lượng tốt, trong khi phân phối dữ liệu phụ trợ cần tập trung vào các trajectory có return cao.
+
+Khi tối ưu lower bound theo $q(\tau)$, nghiệm tối ưu có dạng:
+\begin{equation}
+    q^*(\tau)
+    =
+    \frac{R(\tau)\pi_\theta(\tau)}
+    {\int R(\tau')\pi_\theta(\tau')d\tau'}.
+\end{equation}
+Phân phối $q^*(\tau)$ là phiên bản được tái trọng số của phân phối trajectory hiện tại.
+Các trajectory có return lớn được gán xác suất cao hơn, nhưng vẫn bị ràng buộc bởi hỗ trợ của phân phối trajectory do policy hiện tại sinh ra.
+Kết quả này cung cấp một diễn giải xác suất cho reward-weighted regression: dữ liệu huấn luyện có chất lượng cao không được xác định độc lập với policy, mà được hình thành bằng cách tái trọng số dữ liệu do policy sinh ra theo reward~\cite{peters2007rwr}.
+Về mặt khái niệm, trajectory đóng vai trò tương tự biến ẩn trong mô hình sinh: ta quan sát được reward mong muốn nhưng không biết trước chuỗi trạng thái--hành động nào sẽ tạo ra reward đó.
+Do đó, bài toán tối ưu policy có thể được nhìn như bài toán suy luận trên phân phối trajectory có reward cao.
+Đây là điểm làm cho phần 2.3 của tutorial liên hệ trực tiếp với generative modeling: thay vì xem dataset là một đối tượng cố định, RL xem phân phối dữ liệu là một biến cần được cập nhật cùng với policy.
+
+Thay dạng tái trọng số trên vào objective và lấy gradient theo tham số policy dẫn tới dạng policy gradient:
+\begin{equation}
+    \nabla_\theta J(\theta)
+    =
+    \mathbb{E}_{\tau\sim\pi_{\mathrm{old}}}
+    \left[
+        R(\tau)
+        \sum_t
+        \nabla_\theta
+        \log \pi_\theta(a_t\mid s_t)
+    \right].
+\end{equation}
+Công thức này là nền tảng của REINFORCE và các phương pháp policy gradient~\cite{williams1992reinforce}.
+Ký hiệu $\pi_{\mathrm{old}}$ nhấn mạnh rằng trong bước cập nhật, trajectory được lấy từ policy ở vòng lặp trước hoặc policy dùng để thu thập batch dữ liệu hiện tại; tham số $\theta$ trong log-likelihood là tham số đang được tối ưu.
+Biểu thức này cho thấy sau khi lấy mẫu trajectory, các hành động thuộc những trajectory có return cao sẽ được tăng log-likelihood dưới policy mới.
+Theo cách nhìn này, policy improvement có thể được diễn giải như một dạng maximum likelihood có trọng số, trong đó trọng số được xác định bởi reward.
+Đây là mối liên hệ trực tiếp giữa tối ưu policy trong RL và huấn luyện mô hình sinh dựa trên likelihood.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        font=\scriptsize,
+        >=Latex,
+        box/.style={draw, rounded corners=2pt, align=center, minimum height=0.9cm, minimum width=2.4cm},
+        data/.style={box, fill=gray!10},
+        process/.style={box, fill=blue!8},
+        reward/.style={box, fill=green!10},
+        arrow/.style={->, thick}
+    ]
+        \node[font=\bfseries, anchor=west] at (0,0) {Supervised learning};
+        \node[data] (dataset) at (1.7,-0.85) {Dataset cố định\\$\mathcal{D}$};
+        \node[process, right=0.9cm of dataset] (sllearn) {Tối ưu\\loss/likelihood};
+        \node[data, right=0.9cm of sllearn] (model) {Model\\$p_\theta(x)$};
+        \draw[arrow] (dataset) -- (sllearn);
+        \draw[arrow] (sllearn) -- (model);
+
+        \node[font=\bfseries, anchor=west] at (0,-2.65) {Reinforcement learning};
+        \node[data] (policy) at (1.7,-3.55) {Policy\\$\pi_\theta$};
+        \node[data, right=0.75cm of policy] (traj) {Trajectory\\$\tau\sim\pi_\theta$};
+        \node[reward, right=0.75cm of traj] (return) {Return\\$R(\tau)$};
+        \node[data, below=0.8cm of traj] (qstar) {Dữ liệu tái trọng số\\$q^*(\tau)\propto R(\tau)\pi_\theta(\tau)$};
+        \node[process, left=0.75cm of qstar] (rlearn) {Policy\\improvement};
+
+        \draw[arrow] (policy) -- (traj);
+        \draw[arrow] (traj) -- (return);
+        \draw[arrow] (return) |- (qstar);
+        \draw[arrow] (qstar) -- (rlearn);
+        \draw[arrow] (rlearn) -- (policy);
+    \end{tikzpicture}
+    \caption{Sơ đồ tóm tắt quan điểm tối ưu đồng thời policy và phân phối experience trong RL. Trajectory có reward cao được tái trọng số và trở thành dữ liệu huấn luyện cho bước policy improvement. Dựa trên Eysenbach \& Zhang, ICML tutorial notes~\cite{eysenbach2025generativerl}.}
+    \label{fig:tv2-notes-fig5-6}
+\end{figure}
+
+\subsection{Generative Models như Policy}
+
+Trong biểu thức policy gradient, số hạng cốt lõi là:
+\begin{equation}
+    \nabla_\theta \log \pi_\theta(a_t\mid s_t).
+\end{equation}
+Đây là score function của policy theo tham số $\theta$.
+Trong RL, score function xác định hướng thay đổi tham số nhằm tăng xác suất của các hành động gắn với return cao.
+Trong generative modeling, log-probability và score function cũng là các đại lượng trung tâm, đặc biệt trong score-based diffusion models.
+Sự tương ứng này cho phép diễn giải policy như một mô hình sinh hành động có điều kiện theo trạng thái~\cite{eysenbach2025generativerl}.
+
+Nếu policy được mô hình hóa bằng Gaussian đơn mode, không gian hành động được biểu diễn tương đối hạn chế.
+Tuy nhiên, công thức policy gradient không bắt buộc policy phải thuộc một họ phân phối đơn giản.
+Các kiến trúc như transformer, diffusion model hoặc flow-based model đều có thể đóng vai trò policy nếu chúng cung cấp được log-probability hoặc score cần thiết cho quá trình tối ưu.
+Nói cách khác, Gaussian policy trong các ví dụ RL cổ điển chỉ là một lựa chọn tham số hóa thuận tiện, không phải điều kiện bắt buộc của lập luận toán học.
+Với transformer policy, score có thể được tính từ log-probability của action token hoặc action sequence; với diffusion policy, score có thể đến từ denoising score hoặc likelihood của transition trong quá trình sampling.
+Điểm then chốt của Section 2.4 là khả năng thay policy đơn giản bằng một mô hình sinh giàu khả năng biểu diễn, miễn là thuật toán vẫn truy cập được đại lượng score phù hợp để đưa vào policy-gradient update~\cite{eysenbach2025generativerl}.
+Do đó, generative modeling không chỉ đóng vai trò công cụ phụ trợ cho RL, mà còn có thể trực tiếp mở rộng lớp policy được sử dụng trong các thuật toán RL.
+
+Một trường hợp đại diện là reward-conditioned sequence modeling.
+Thay vì học policy không điều kiện $\pi(a\mid s)$, mô hình học phân phối:
+\begin{equation}
+    \pi(a\mid s, R_{\text{target}}),
+\end{equation}
+trong đó $R_{\text{target}}$ là return mong muốn.
+Decision Transformer biểu diễn trajectory thành chuỗi return-to-go, state và action, sau đó dùng transformer tự hồi quy để dự đoán action kế tiếp~\cite{chen2021decision}.
+Cách tiếp cận này chuyển bài toán điều khiển thành bài toán sinh chuỗi có điều kiện.
+Khi được điều kiện hóa bởi return-to-go cao, mô hình được kỳ vọng sinh ra các hành động tương tự những đoạn trajectory đạt return cao trong dữ liệu.
+Điểm khác biệt với behavioral cloning thông thường là biến điều kiện $R_{\text{target}}$ đóng vai trò chỉ định mức chất lượng mong muốn của hành vi.
+Nếu behavioral cloning chỉ học trung bình hành vi trong dataset, reward-conditioned modeling cố gắng tách các hành vi theo mức return và truy vấn mô hình ở vùng return cao.
+Theo ngôn ngữ của mô hình sinh, đây là một dạng conditional generation trên trajectory: prompt của mô hình không phải chỉ là state hiện tại, mà còn là mức return mà ta muốn trajectory đạt được.
+Tuy nhiên, vì mô hình vẫn được huấn luyện trên offline dataset, hiệu quả của phương pháp phụ thuộc đáng kể vào coverage của dữ liệu.
+Nếu dataset không chứa đủ hành vi chất lượng cao hoặc môi trường có mức ngẫu nhiên lớn, việc điều kiện hóa trên return mong muốn chưa bảo đảm tạo ra năng lực exploration mới~\cite{paster2022luck}.
+
+Trong các bài toán hành động liên tục hoặc đa mode, diffusion policy là một lớp policy linh hoạt hơn.
+Một diffusion behavior policy $\pi^D(a\mid s)$ có thể biểu diễn nhiều mode hành động hợp lệ tại cùng một trạng thái.
+Để đưa tín hiệu reward hoặc critic vào quá trình lựa chọn hành động, các phương pháp diffusion policy thường được phân thành hai nhóm.
+
+Nhóm \textbf{guide-based} thay đổi quá trình denoising bằng một guidance term.
+Sau khi huấn luyện behavior diffusion policy, score của policy được tăng cường theo dạng:
+\begin{equation}
+    \nabla_{a_t}\log \pi_t(a_t\mid s)
+    =
+    \nabla_{a_t}\log \pi_t^D(a_t\mid s)
+    +
+    \nabla_{a_t}J_t(a_t).
+\end{equation}
+Trong đó, $\pi_t^D$ là behavior policy tại diffusion timestep $t$, còn $J_t$ là guidance term được học từ reward hoặc critic.
+Các phương pháp như Diffuser và QGPO thuộc hướng này~\cite{janner2022diffuser,lu2023qgpo}.
+
+Nhóm \textbf{select-based} giữ nguyên cơ chế sinh ứng viên của diffusion policy, sau đó chọn action dựa trên critic.
+Giả sử diffusion policy sinh ra tập ứng viên $\{a_0^i\}_{i=1}^{N}$, xác suất chọn ứng viên thứ $j$ có thể viết:
+\begin{equation}
+    \Pr[a=a_0^j\mid s]
+    =
+    \frac{w(s,a_0^j)}
+    {\sum_{i=1}^{N} w(s,a_0^i)}.
+\end{equation}
+Ở đây $w(s,a_0^j)$ là trọng số được tính từ critic hoặc hàm giá trị.
+IDQL là một ví dụ của hướng select-based sử dụng diffusion policy trong actor-critic offline RL~\cite{hansenestruch2023idql}.
+
+\subsection{Case Study: Diffusion-DICE}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        font=\small,
+        >=Latex,
+        box/.style={draw, rounded corners=2pt, align=center, minimum height=0.8cm, text width=2.25cm},
+        behavior/.style={box, fill=gray!10},
+        guide/.style={box, fill=blue!8},
+        select/.style={box, fill=green!10},
+        risk/.style={box, fill=red!8},
+        arrow/.style={->, thick}
+    ]
+        \node[behavior] (data) {Offline dataset\\$\mathcal{D}$};
+        \node[behavior, right=0.55cm of data] (diff) {Diffusion behavior\\$\pi^D(a\mid s)$};
+
+        \node[guide, right=0.75cm of diff, yshift=1.65cm] (guideonly) {Guide-based\\augmented score};
+        \node[risk, right=0.55cm of guideonly] (ood1) {Có thể drift\\sang OOD actions};
+
+        \node[select, right=0.75cm of diff] (selectonly) {Select-based\\candidate ranking};
+        \node[risk, right=0.55cm of selectonly] (ood2) {Critic có thể\\overestimate OOD};
+
+        \node[guide, right=0.75cm of diff, yshift=-1.65cm] (diceguide) {Diffusion-DICE\\Guide};
+        \node[select, right=0.55cm of diceguide] (diceselect) {Then Select\\in-sample candidates};
+        \node[behavior, right=0.55cm of diceselect] (action) {Action chọn\\ít error exploitation};
+
+        \draw[arrow] (data) -- (diff);
+        \draw[arrow] (diff) -- (guideonly);
+        \draw[arrow] (guideonly) -- (ood1);
+        \draw[arrow] (diff) -- (selectonly);
+        \draw[arrow] (selectonly) -- (ood2);
+        \draw[arrow] (diff) -- (diceguide);
+        \draw[arrow] (diceguide) -- (diceselect);
+        \draw[arrow] (diceselect) -- (action);
+    \end{tikzpicture}
+    \caption{Sơ đồ tự vẽ tóm tắt quan hệ giữa guide-based, select-based và Guide-Then-Select trong Diffusion-DICE. Sơ đồ dựa trên mô tả ở Section 2.5 của tutorial và abstract Diffusion-DICE~\cite{eysenbach2025generativerl,mao2024diffusiondice}.}
+    \label{fig:tv2-guide-select-tikz}
+\end{figure}
+
+Một hạn chế chung của guide-based và select-based là sự phụ thuộc vào critic.
+Trong offline RL, critic chỉ được huấn luyện trên dataset cố định.
+Khi diffusion policy sinh ra action nằm ngoài phân phối dữ liệu, critic có thể đánh giá sai và overestimate giá trị của action đó.
+Nếu policy tối ưu hóa theo các dự đoán sai này, nó có thể khuếch đại lỗi ngoại suy thay vì tìm được hành động có reward thực sự cao.
+Hiện tượng này được gọi là value error exploitation.
+Hình~\ref{fig:tv2-notes-fig7} minh họa hiện tượng này trong toycase của Diffusion-DICE.
+
+Diffusion-DICE được đề xuất cho bối cảnh offline RL, nơi agent chỉ có một dataset cố định và không thể tương tác thêm với môi trường trong quá trình học~\cite{mao2024diffusiondice}.
+Trong thiết lập này, diffusion policy có lợi thế vì nó có khả năng khớp phân phối hành động phức tạp của behavior policy.
+Tuy nhiên, khả năng sinh mẫu đa dạng cũng làm tăng nguy cơ xuất hiện action nằm ngoài vùng dữ liệu đáng tin cậy.
+Nếu critic đánh giá cao các action ngoài phân phối do lỗi ngoại suy, policy có thể dịch chuyển về các vùng có giá trị ước lượng cao nhưng reward thực thấp.
+
+Ý tưởng trung tâm của Diffusion-DICE là kết hợp hai giai đoạn guide và select trong một paradigm thống nhất.
+Về mặt lý thuyết, score của policy tối ưu có thể được phân rã thành score của behavior policy và một thành phần guidance liên quan đến tỷ số phân phối tối ưu.
+Gọi $d^*(s,a_0)$ là optimal state-action distribution và $d^D(s,a_0)$ là distribution của behavior policy trong dataset offline.
+Về mặt toán học, thành phần guidance tại diffusion timestep $t$ liên quan đến log-density-ratio giữa optimal distribution $d^*$ và behavior distribution $d^D$.
+Trong bài báo Diffusion-DICE, second term này có dạng gradient của một log-expectation theo $a_0$, nhưng không được tính trực tiếp vì kỳ vọng điều kiện này thường intractable.
+Do đó, Diffusion-DICE đề xuất một biến đổi toán học để chuyển việc học guidance thành một convex optimization problem có thể ước lượng hoàn toàn bằng các mẫu in-sample, tránh việc đánh giá các action nằm ngoài phân phối dữ liệu~\cite{mao2024diffusiondice}.
+Trong phần dưới, ký hiệu $G_t(a_t,s)$ được dùng để chỉ learned guidance potential tại diffusion timestep $t$, không phải một closed-form term có thể tính trực tiếp.
+Khi đó, score của policy tối ưu được diễn giải dưới dạng:
+\begin{equation}
+    \nabla_{a_t}\log \pi_t^*(a_t\mid s)
+    =
+    \underbrace{\nabla_{a_t}\log \pi_t^D(a_t\mid s)}_{\text{behavior score}}
+    +
+    \underbrace{\nabla_{a_t}G_t(a_t,s)}_{\text{in-sample guidance}}.
+\end{equation}
+Thành phần behavior score duy trì quá trình sinh mẫu gần với phân phối dữ liệu offline.
+Thành phần guidance định hướng mẫu về phía các vùng tương ứng với optimal distribution.
+Điểm then chốt là guidance được học theo hướng in-sample, qua đó giảm sự phụ thuộc vào khả năng ngoại suy của critic tại các vùng chưa được quan sát.
+
+Quy trình Guide-Then-Select gồm hai bước.
+Trong bước Guide, mô hình sử dụng behavior score kết hợp với learned in-sample guidance để sinh một tập ứng viên hành động.
+Bước này cho phép bao phủ nhiều mode khác nhau của policy tối ưu, thay vì hội tụ sớm vào một mode cục bộ.
+Trong bước Select, Q-function được sử dụng để chọn action tốt nhất trong số các ứng viên đã sinh.
+Do bước select chỉ so sánh trong tập ứng viên được tạo ra bởi guided diffusion, critic ít phải đánh giá các action ở quá xa phân phối dữ liệu.
+Sự kết hợp này giúp giảm value error exploitation so với các phương pháp chỉ dùng guide hoặc chỉ dùng select.
+
+Thí nghiệm toycase 2D bandit trong tutorial minh họa trực quan hiện tượng trên.
+Offline action dataset nằm trong một annular region.
+Ground-truth reward có các đỉnh hướng ra outer circle, trong khi reward model học từ dữ liệu có thể overestimate ở vùng inner circle do thiếu coverage.
+Các phương pháp guide-only hoặc select-only có xu hướng dịch chuyển vào vùng inner circle có giá trị ước lượng sai.
+Diffusion-DICE, nhờ kết hợp guide-then-select và cơ chế in-sample, sinh action hướng tới vùng outer circle có reward thực cao hơn.
+Kết quả này cho thấy vai trò của việc kiểm soát distribution shift trong diffusion-based offline RL.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.98\textwidth]{notes_fig7_plot.png}
+    \caption{Toycase 2D bandit minh họa value error exploitation: offline action distribution nằm trong annular region, reward thật đạt giá trị cao ở outer circle, trong khi một số phương pháp bị hút vào vùng inner circle do critic overestimate. Nguồn: Eysenbach \& Zhang, ICML tutorial notes~\cite{eysenbach2025generativerl}.}
+    \label{fig:tv2-notes-fig7}
+\end{figure}
+
+\subsection{DDPO: Huấn luyện Diffusion Models bằng RL}
+
+\subsection*{Bài báo liên quan: Training Diffusion Models with Reinforcement Learning}
+
+Bài báo này của Black, Janner, Du, Kostrikov và Levine đề xuất DDPO (\textit{Denoising Diffusion Policy Optimization}), một khung fine-tuning diffusion model bằng reinforcement learning~\cite{black2024ddpo}.
+Trong mạch nội dung của tutorial, công trình này là ví dụ trực tiếp cho chiều ``RL cải thiện Generative AI'': thay vì chỉ dùng mô hình sinh làm policy trong RL, ta dùng chính công cụ tối ưu của RL để điều chỉnh mô hình sinh theo các mục tiêu downstream.
+Điểm quan trọng của bài báo không nằm ở việc gắn thêm một reward vào output cuối, mà ở cách tác giả nhận ra cấu trúc tuần tự vốn có của quá trình denoising.
+Một ảnh $x_0$ không được tạo ra bởi một quyết định đơn lẻ; nó là kết quả của một chuỗi chuyển tiếp $x_T \rightarrow x_{T-1}\rightarrow \cdots \rightarrow x_0$.
+Vì vậy, nếu mỗi chuyển tiếp denoising được xem như một quyết định của policy, toàn bộ sampling process có thể được mô hình hóa như một MDP hữu hạn thời gian.
+Cách nhìn này làm cho diffusion fine-tuning trở thành một bài toán policy optimization có reward ở cuối trajectory.
+
+\subsubsection{Bối cảnh và vấn đề}
+
+Diffusion models thường được huấn luyện bằng denoising score matching hoặc các objective có liên hệ với maximum likelihood~\cite{ho2020ddpm}.
+Mục tiêu huấn luyện này có ý nghĩa thống kê rõ ràng: mô hình học cách đảo ngược quá trình thêm nhiễu để sinh mẫu có phân phối gần với dữ liệu huấn luyện.
+Tuy nhiên, trong nhiều ứng dụng text-to-image, tiêu chí người dùng quan tâm không trùng hoàn toàn với likelihood.
+Một ảnh có xác suất cao dưới phân phối dữ liệu có thể vẫn không đạt điểm thẩm mỹ cao, không khớp prompt, hoặc không tối ưu một metric downstream cụ thể.
+Ngược lại, nhiều tiêu chí thực dụng như JPEG compressibility, incompressibility, aesthetic quality hoặc prompt-image alignment lại có thể được biểu diễn bằng một hàm reward, dù reward này không nhất thiết khả vi theo tham số mô hình.
+
+Một phương án tự nhiên để dùng reward là reward-weighted regression (RWR).
+RWR sinh các mẫu từ mô hình hiện tại, chấm reward cho từng mẫu, rồi tăng trọng số của những mẫu có reward cao trong objective huấn luyện.
+Về trực giác, đây là cách biến bài toán tối ưu reward thành một bài toán supervised fine-tuning có trọng số.
+Tuy nhiên, bài báo DDPO chỉ ra rằng cách làm này không khai thác đúng cấu trúc của diffusion sampling.
+RWR xử lý mẫu cuối $x_0$ như đối tượng chính, trong khi reward của $x_0$ phụ thuộc vào toàn bộ chuỗi denoising đã tạo ra nó.
+Hơn nữa, objective huấn luyện DDPM thường là một variational bound hoặc denoising surrogate, không phải exact log-likelihood trực tiếp của mẫu cuối.
+Do đó, RWR tối ưu downstream reward theo cách gián tiếp và xấp xỉ: reward được gắn vào output cuối, còn quá trình credit assignment cho các bước denoising trung gian không được mô hình hóa tường minh~\cite{black2024ddpo}.
+
+\subsubsection{Denoising như một MDP}
+
+Đóng góp khái niệm quan trọng nhất của DDPO là mô hình hóa reverse diffusion process như một finite-horizon MDP.
+Với một prompt hoặc context $c$, trạng thái tại timestep $t$ là noisy sample $x_t$ cùng điều kiện $c$.
+Policy chính là phân phối chuyển tiếp của diffusion model:
+\begin{equation}
+    p_\theta(x_{t-1}\mid x_t,c).
+\end{equation}
+Action không nên được hiểu cứng là một tham số hóa cụ thể như dự đoán nhiễu; trong khung RL của DDPO, action tương ứng với quyết định lấy mẫu bước denoising tiếp theo $x_{t-1}$ từ policy trên.
+Nếu mô hình được hiện thực bằng dự đoán nhiễu, dự đoán ảnh sạch hoặc một tham số hóa khác, đó là chi tiết kiến trúc để biểu diễn cùng một phân phối chuyển tiếp.
+Cách diễn giải này giữ cho MDP bám sát quá trình sinh mẫu thực sự.
+
+Trajectory của một lần sinh ảnh được viết:
+\begin{equation}
+    \tau=(x_T,x_{T-1},\ldots,x_0),
+    \qquad
+    p_\theta(\tau\mid c)
+    =
+    p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}\mid x_t,c).
+\end{equation}
+Reward được tính tại cuối trajectory:
+\begin{equation}
+    J(\theta)
+    =
+    \mathbb{E}_{c,\tau\sim p_\theta(\cdot\mid c)}
+    \left[
+        r(x_0,c)
+    \right].
+\end{equation}
+Ở đây $r(x_0,c)$ có thể là reward thủ công, reward từ một mô hình đánh giá ảnh, hoặc feedback từ một vision-language model.
+Công thức trên cho thấy DDPO không thay đổi bản chất autoregressive theo thời gian của diffusion sampling; nó chỉ đặt chuỗi denoising vào ngôn ngữ của sequential decision-making.
+Từ đó, reward cuối có thể được gán credit cho từng transition thông qua log-probability của transition đó.
+
+Áp dụng score-function estimator cho trajectory denoising thu được dạng policy gradient:
+\begin{equation}
+    \nabla_\theta J(\theta)
+    =
+    \mathbb{E}
+    \left[
+        r(x_0,c)
+        \sum_{t=1}^{T}
+        \nabla_\theta
+        \log p_\theta(x_{t-1}\mid x_t,c)
+    \right].
+\end{equation}
+So với RWR, biểu thức này có ý nghĩa khác biệt.
+RWR tăng likelihood của mẫu cuối có reward cao; DDPO tăng xác suất của các transition denoising cụ thể đã dẫn đến mẫu cuối đó.
+Nói cách khác, DDPO giữ lại cấu trúc nhân quả của quá trình sinh mẫu: reward chỉ được quan sát ở cuối, nhưng gradient được phân bổ về toàn bộ chuỗi quyết định.
+Đây chính là lý do bài báo xem diffusion fine-tuning như một bài toán RL thay vì chỉ là một bài toán reweighting dữ liệu.
+
+\subsubsection{DDPO-SF và DDPO-IS}
+
+Bài báo đề xuất hai biến thể chính.
+Biến thể thứ nhất, DDPO-SF, sử dụng score-function estimator tương tự REINFORCE.
+Quy trình gồm ba bước: lấy mẫu một batch prompt và trajectory denoising từ policy hiện tại, tính reward trên ảnh cuối $x_0$, sau đó cập nhật tham số theo tổng gradient log-probability của các transition.
+Ưu điểm của DDPO-SF là trực tiếp và nhất quán với MDP formulation.
+Nó không cần một mô hình reward khả vi qua toàn bộ sampling chain, cũng không cần backpropagate qua mọi thao tác sinh ảnh.
+Tuy nhiên, vì dữ liệu được sinh theo policy hiện tại, thuật toán có thể kém hiệu quả mẫu: mỗi batch trajectory thường chỉ hỗ trợ một số cập nhật hạn chế trước khi policy thay đổi.
+
+Biến thể thứ hai, DDPO-IS, dùng importance sampling để cải thiện hiệu quả sử dụng dữ liệu.
+Thay vì bỏ batch sau một lần cập nhật, DDPO-IS cho phép thực hiện nhiều optimization steps trên các trajectory được sinh từ policy cũ.
+Để tránh policy mới lệch quá xa policy đã sinh dữ liệu, bài báo dùng cơ chế clipping theo tinh thần của PPO.
+Ý tưởng này không biến DDPO thành PPO nguyên bản, nhưng kế thừa cùng một nguyên tắc: giới hạn mức thay đổi của policy ratio để giảm rủi ro cập nhật quá mạnh trên dữ liệu off-policy nhẹ.
+Vì vậy, DDPO-IS thường thực dụng hơn DDPO-SF trong text-to-image fine-tuning, nơi mỗi lần sinh batch ảnh có chi phí cao.
+
+Sự khác biệt giữa DDPO và RWR có thể được tóm tắt theo cấp độ tối ưu.
+RWR xem dữ liệu huấn luyện mới là các mẫu cuối đã được chấm điểm, từ đó tối ưu một surrogate giống likelihood có trọng số.
+DDPO xem quá trình sinh mẫu là một trajectory và tối ưu reward kỳ vọng của trajectory đó.
+Vì vậy, khi reward thay đổi theo các thuộc tính khó biểu diễn bằng likelihood, DDPO có cơ chế trực tiếp hơn để điều chỉnh các quyết định trung gian của mô hình.
+Bài báo không cần khẳng định rằng mọi gradient của DDPO đều tốt hơn trong mọi nghĩa thống kê; lập luận chính là RWR gặp vấn đề optimization và approximation trong diffusion setting, còn DDPO khai thác đúng cấu trúc nhiều bước của denoising process~\cite{black2024ddpo}.
+
+\subsubsection{Thiết lập thực nghiệm}
+
+Trong phần thực nghiệm, tác giả fine-tune một text-to-image diffusion model dựa trên Stable Diffusion v1.4 và đánh giá trên nhiều reward functions khác nhau~\cite{black2024ddpo,black2024ddpoproject}.
+Nhóm objective đầu tiên gồm compressibility và incompressibility.
+Với compressibility, mô hình được khuyến khích sinh ảnh dễ nén; với incompressibility, mô hình được khuyến khích sinh ảnh khó nén.
+Hai reward này tương đối cơ học, có thể tính tự động, và giúp kiểm tra xem thuật toán có thật sự tối ưu được metric được chỉ định hay không.
+Chúng cũng cho thấy một điểm quan trọng: downstream objective có thể rất khác phân phối ảnh tự nhiên mà likelihood training ban đầu hướng tới.
+
+Objective thứ hai là aesthetic quality.
+Theo project page của DDPO, reward này được tính bằng LAION aesthetic predictor~\cite{black2024ddpoproject,schuhmann2022laionaesthetics}.
+Đây là ví dụ gần hơn với tiêu chí người dùng: chất lượng thẩm mỹ không phải một nhãn cố định trong dataset gốc, nhưng có thể được xấp xỉ bằng một reward model.
+Objective thứ ba là prompt-image alignment.
+Bài báo và project page mô tả việc dùng feedback từ một vision-language model để cải thiện mức độ khớp giữa ảnh và prompt mà không cần thu thập thêm human annotation trong vòng lặp huấn luyện.
+Cụ thể, LLaVA sinh một mô tả ngắn cho ảnh, sau đó reward được tính bằng BERTScore recall giữa mô tả này và prompt gốc~\cite{black2024ddpo,black2024ddpoproject,liu2023llava,zhang2020bertscore}.
+Nhóm prompt gồm các tình huống mà base Stable Diffusion thường gặp khó khăn, chẳng hạn động vật thực hiện hoạt động giống con người.
+
+Kết quả thực nghiệm cho thấy DDPO cải thiện reward tốt hơn các reward-weighted likelihood baselines trong các thiết lập được khảo sát, đặc biệt DDPO-IS thường nhỉnh hơn DDPO-SF nhờ tái sử dụng batch trajectory hiệu quả hơn.
+Điểm đáng chú ý là các cải thiện này không chỉ xuất hiện ở reward đơn giản như compressibility, mà còn ở reward học được như aesthetic quality và feedback từ vision-language model.
+Điều này ủng hộ luận điểm chính của bài báo: nếu mục tiêu cuối là tối ưu một utility function nằm ngoài likelihood, diffusion model nên được fine-tune bằng một objective phản ánh trực tiếp utility đó.
+
+\subsubsection{Generalization và overoptimization}
+
+Bài báo và project page cũng xem xét khả năng generalization sau fine-tuning.
+Với aesthetic quality, mô hình được fine-tune trên một tập prompt động vật thông dụng nhưng vẫn cho thấy cải thiện trên các động vật chưa xuất hiện và một số object ngoài nhóm động vật.
+Với prompt-image alignment, mô hình được fine-tune trên một tập hoạt động hữu hạn, sau đó được kiểm tra trên động vật mới, hoạt động mới và tổ hợp mới giữa đối tượng và hoạt động~\cite{black2024ddpoproject}.
+Kết quả này không nên được diễn giải quá mức thành bảo đảm tổng quát hóa toàn diện.
+Diễn giải thận trọng hơn là: RL fine-tuning không chỉ ghi nhớ từng prompt huấn luyện trong các thí nghiệm này; một phần hành vi tối ưu reward có thể chuyển sang các prompt liên quan.
+Mức độ chuyển giao vẫn phụ thuộc vào reward model, prompt distribution và năng lực nền của diffusion model.
+
+Mặt khác, DDPO cũng bộc lộ rủi ro quen thuộc của reinforcement learning: overoptimization và reward hacking.
+Project page ghi nhận rằng khi tối ưu reward quá lâu, mô hình có thể phá vỡ nội dung ảnh có ý nghĩa để đạt điểm cao theo reward~\cite{black2024ddpoproject}.
+Với incompressibility, mô hình có thể bị đẩy về các mẫu nhiễu hoặc giàu chi tiết không tự nhiên vì những mẫu này khó nén.
+Với prompt-image alignment dựa trên LLaVA, project page còn ghi nhận hiện tượng typographic attack: mô hình sinh chữ hoặc ký hiệu giống câu trả lời đúng để đánh lừa reward model, thay vì thật sự sinh đúng số lượng đối tượng trong ảnh.
+Những ví dụ này cho thấy DDPO là một công cụ tối ưu mạnh, nhưng sức mạnh đó phụ thuộc trực tiếp vào chất lượng reward.
+Nếu reward chỉ đo một proxy hẹp, mô hình có thể tối ưu proxy thay vì tối ưu khái niệm chất lượng mà người dùng mong muốn.
+
+\subsubsection{Ý nghĩa đối với tutorial}
+
+DDPO có ý nghĩa đặc biệt với chủ đề \textit{Generative AI Meets Reinforcement Learning} vì nó làm rõ quan hệ hai chiều giữa hai lĩnh vực.
+Ở chiều thứ nhất, generative models có thể mở rộng lớp policy trong RL: transformer hoặc diffusion model có thể biểu diễn các phân phối hành động phức tạp, đa mode.
+Ở chiều thứ hai, RL cung cấp ngôn ngữ objective và estimator để huấn luyện generative models theo reward downstream.
+DDPO nằm ở chiều thứ hai này.
+Nó cho thấy quá trình sampling của diffusion model không chỉ là một thủ tục sinh mẫu, mà còn có thể được xem như một chuỗi quyết định có thể tối ưu bằng policy gradient.
+
+Từ góc nhìn báo cáo, bài báo DDPO cũng giúp phân biệt hai cách đưa reward vào mô hình sinh.
+Cách thứ nhất là guidance ở inference time: reward hoặc classifier chỉ can thiệp vào quá trình lấy mẫu mà không thay đổi tham số mô hình chính.
+Cách thứ hai là reinforcement learning fine-tuning: reward được dùng để cập nhật tham số policy, tức tham số diffusion model.
+DDPO thuộc cách thứ hai.
+Sự phân biệt này quan trọng vì nó ảnh hưởng đến chi phí, độ ổn định và nguy cơ overoptimization.
+Fine-tuning bằng RL có thể tạo ra cải thiện bền hơn theo objective, nhưng cũng có thể làm mô hình lệch khỏi phân phối gốc nếu reward bị thiết kế sai hoặc quá hẹp.
+
+\subsubsection{Hạn chế và câu hỏi mở}
+
+Hạn chế đầu tiên là chi phí tính toán.
+Mỗi trajectory của DDPO là một quá trình denoising nhiều bước; mỗi lần cập nhật cần sinh ảnh, chấm reward, rồi tính gradient qua log-probability của các transition.
+So với supervised fine-tuning thông thường, vòng lặp này tốn kém hơn và phụ thuộc nhiều vào tốc độ sampling của diffusion model.
+DDPO-IS giảm một phần vấn đề bằng cách tái sử dụng batch, nhưng không loại bỏ bản chất đắt đỏ của việc thu thập trajectory từ một generative model lớn.
+
+Hạn chế thứ hai là phụ thuộc vào reward model.
+Các reward như aesthetic predictor hoặc feedback từ vision-language model chỉ là proxy cho đánh giá của con người.
+Nếu proxy sai, mô hình có thể học cách khai thác proxy.
+Do đó, việc dùng DDPO trong hệ thống thực tế cần đi kèm đánh giá định tính, kiểm tra phân phối prompt rộng hơn, và cơ chế phát hiện reward hacking.
+Một câu hỏi mở là làm thế nào thiết kế reward vừa đủ giàu để phản ánh mục tiêu người dùng, vừa đủ ổn định để không bị mô hình khai thác.
+
+Hạn chế thứ ba là vấn đề cân bằng giữa tối ưu reward và giữ năng lực nền của mô hình.
+Fine-tuning mạnh theo một reward hẹp có thể làm thay đổi style, giảm đa dạng hoặc làm suy yếu các khả năng khác của base model.
+Vì vậy, các hướng mở hợp lý bao gồm regularization giữ gần policy gốc, đánh giá đa tiêu chí sau fine-tuning, kết hợp human feedback chất lượng cao hơn, và nghiên cứu các estimator có hiệu quả mẫu tốt hơn.
+Nhìn chung, DDPO không chỉ đóng góp một thuật toán cụ thể; nó đặt ra một chương trình nghiên cứu rộng hơn về cách huấn luyện generative models bằng objective của RL mà không đánh đổi quá nhiều tính ổn định, tính đa dạng và độ tin cậy của mô hình sinh.
+
+Các nội dung trước cho thấy generative models có thể được sử dụng như policy trong RL.
+Chiều ngược lại là sử dụng RL để tối ưu chính generative model theo mục tiêu downstream.
+DDPO (\textit{Denoising Diffusion Policy Optimization}) là một trường hợp tiêu biểu cho hướng tiếp cận này.
+Thay vì chỉ huấn luyện diffusion model bằng denoising score matching hoặc objective xấp xỉ likelihood, DDPO tối ưu model theo reward được định nghĩa trên mẫu cuối, chẳng hạn aesthetic quality, compressibility hoặc prompt-image alignment~\cite{black2024ddpo}.
+
+Ý tưởng cơ bản của DDPO là mô hình hóa quá trình denoising như một multi-step MDP.
+Tại diffusion timestep $t$, state gồm noisy sample $x_t$ và context/prompt $c$.
+Policy là phân phối chuyển tiếp của diffusion model:
+\begin{equation}
+    p_\theta(x_{t-1}\mid x_t,c).
+\end{equation}
+Một action trong MDP tương ứng với việc lấy mẫu bước denoising kế tiếp $x_{t-1}$ từ phân phối này.
+Do đó, đối tượng tối ưu không chỉ là output cuối cùng $x_0$, mà là toàn bộ chuỗi quyết định denoising tạo ra $x_0$.
+
+Trajectory của quá trình sinh mẫu được viết:
+\begin{equation}
+    x_T \rightarrow x_{T-1} \rightarrow \cdots \rightarrow x_0.
+\end{equation}
+Reward được tính ở mẫu cuối $x_0$:
+\begin{equation}
+    \max_\theta
+    \mathbb{E}_{c\sim p(c),\,\tau\sim p_\theta(\tau\mid c)}
+    \left[
+        r(x_0,c)
+    \right].
+\end{equation}
+Vì xác suất trajectory phân rã qua nhiều transition denoising, policy gradient có dạng:
+\begin{equation}
+    \nabla_\theta J(\theta)
+    =
+    \mathbb{E}_{c\sim p(c),\,\tau\sim p_\theta(\tau\mid c)}
+    \left[
+        r(x_0,c)
+        \sum_{t=1}^{T}
+        \nabla_\theta
+        \log p_\theta(x_{t-1}\mid x_t,c)
+    \right].
+\end{equation}
+Công thức này cho phép lan truyền tín hiệu reward cuối tới từng bước denoising thông qua log-probability của transition.
+Do đó, diffusion sampling được chuyển thành một bài toán sequential decision-making có thể tối ưu bằng policy gradient.
+Trong bài báo DDPO, hai estimator chính được xét là DDPO-SF và DDPO-IS.
+DDPO-SF dùng score-function estimator trực tiếp trên trajectory denoising, tương tự REINFORCE.
+DDPO-IS bổ sung importance sampling và cơ chế clipping theo tinh thần PPO để có thể dùng lại batch trajectory được sinh bởi policy cũ trong nhiều bước cập nhật.
+Sự khác biệt này có ý nghĩa thực nghiệm vì sinh ảnh bằng diffusion model tốn chi phí cao; nếu mỗi batch chỉ được dùng một lần, hiệu quả sử dụng mẫu sẽ thấp.
+Do đó, DDPO-IS thường là biến thể thực dụng hơn trong các thí nghiệm text-to-image fine-tuning của bài báo~\cite{black2024ddpo}.
+
+DDPO cũng làm rõ hạn chế của reward-weighted regression khi áp dụng trực tiếp cho diffusion model.
+RWR xem toàn bộ quá trình sinh ảnh như một quyết định một bước: model sinh mẫu cuối, reward được tính, và các mẫu có reward cao được tăng trọng số trong objective huấn luyện.
+Tuy nhiên, objective DDPM thường là một variational bound hoặc xấp xỉ likelihood, không phải exact log-likelihood của $p_\theta(x_0\mid c)$~\cite{black2024ddpo}.
+Vì vậy, việc reweight mẫu cuối chỉ tối ưu downstream objective một cách gián tiếp và xấp xỉ.
+Một hạn chế thứ hai là credit assignment: RWR chỉ quan sát reward của $x_0$ và tăng trọng số cho toàn bộ mẫu cuối, nên không mô hình hóa rõ transition denoising nào trong chuỗi $x_T\rightarrow\cdots\rightarrow x_0$ đã đóng góp vào reward đó.
+Trong khung MDP của DDPO, mỗi bước $x_t\rightarrow x_{t-1}$ là một decision có log-probability riêng; vì vậy cùng một reward cuối $r(x_0,c)$ được phân bổ vào gradient của từng transition xuất hiện trên trajectory.
+DDPO giữ lại cấu trúc nhiều bước của denoising process và dùng likelihood của từng transition $p_\theta(x_{t-1}\mid x_t,c)$, nhờ đó tạo được các Monte Carlo policy-gradient estimates trực tiếp hơn trên trajectory denoising~\cite{black2024ddpo}.
+
+Ý nghĩa của DDPO nằm ở việc đưa reward-based optimization vào diffusion model theo một cấu trúc ra quyết định tuần tự.
+Phương pháp này cho phép fine-tune model theo các tiêu chí khó biểu diễn bằng likelihood, nhưng có thể được đánh giá bằng reward model hoặc hàm đánh giá black-box.
+Đồng thời, phương pháp cũng đặt ra các giới hạn cần xem xét: nếu reward model không phản ánh đúng chất lượng mong muốn, diffusion model có thể khai thác reward thay vì cải thiện chất lượng thực.
+Do đó, trong giao thoa giữa generative AI và RL, thiết kế reward và kiểm soát distribution shift là các vấn đề quan trọng không kém việc xây dựng lớp policy biểu diễn mạnh.
+
+Các phân tích trên cho thấy mối quan hệ giữa generative AI và RL không chỉ nằm ở việc sử dụng một mô hình sinh mạnh hơn để thay thế policy truyền thống.
+Ở mức toán học, score function và log-probability tạo ra một ngôn ngữ chung cho hai lĩnh vực.
+Ở mức thuật toán, reward-weighted learning, diffusion policy, Diffusion-DICE và DDPO đều khai thác quan hệ giữa phân phối dữ liệu, likelihood và reward.
+Tuy nhiên, các phương pháp này cũng chia sẻ một rủi ro chung: khi critic hoặc reward model sai lệch, quá trình tối ưu có thể khuếch đại sai số.
+Điểm này xuất hiện ở cả hai phía của mối liên hệ.
+Trong offline RL, diffusion policy có thể sinh action ngoài phân phối dữ liệu và làm critic overestimate.
+Trong RL fine-tuning diffusion model, reward model có thể trở thành một proxy bị khai thác quá mức.
+Vì vậy, các hướng nghiên cứu tiếp theo cần kết hợp mô hình sinh giàu khả năng biểu diễn với cơ chế đánh giá reward đáng tin cậy, kiểm soát ngoại suy, và phân tích rõ hơn tác động của distribution shift trong quá trình học.
