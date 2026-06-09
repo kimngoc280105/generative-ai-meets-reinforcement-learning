@@ -606,7 +606,38 @@ Một objective regularized có dạng:
 \end{equation}
 trong đó $d^O$ là phân phối tham chiếu và $D_f$ là $f$-divergence.
 Occupancy distribution không thể tùy ý; nó phải thỏa các Bellman-flow constraints do dynamics quy định.
+Một dạng ràng buộc Bellman-flow tương ứng với primal-Q trong notes là:
+\begin{equation}
+    d(s,a)
+    =
+    (1-\gamma)d_0(s)\pi(a\mid s)
+    +
+    \gamma
+    \sum_{s',a'}
+    d(s',a')p(s\mid s',a')\pi(a\mid s),
+    \quad \forall s,a.
+    \label{eq:tv2-bellman-flow}
+\end{equation}
+Ràng buộc này đảm bảo $d(s,a)$ là một occupancy measure hợp lệ, tức nó có thể được sinh ra bởi một policy trong MDP thay vì là một phân phối tùy ý trên state-action pairs.
 Bằng Lagrangian duality và convex conjugate, các ràng buộc flow có thể được chuyển thành objective theo các biến dual như $Q(s,a)$ hoặc $V(s)$.
+Ví dụ, một dạng dual-V được notes trình bày là:
+\begin{equation}
+\begin{aligned}
+    \min_V\quad
+    &(1-\gamma)\mathbb{E}_{s\sim d_0}[V(s)]
+    +
+    \alpha
+    \mathbb{E}_{(s,a)\sim d^O}
+    \left[
+        f_p^*
+        \left(
+            \frac{\mathcal{T}V(s,a)-V(s)}{\alpha}
+        \right)
+    \right],
+\end{aligned}
+    \label{eq:tv2-dual-v}
+\end{equation}
+trong đó $\mathcal{T}V(s,a)$ là Bellman target của $V$ và $f_p^*$ là biến thể convex conjugate dùng để xử lý ràng buộc không âm của occupancy.
 Ý nghĩa kỹ thuật là bài toán distribution matching có thể được học bằng loss trên dữ liệu logged, thay vì yêu cầu tương tác on-policy liên tục.
 
 DICE methods là họ phương pháp tiêu biểu cho ý tưởng này.
@@ -708,6 +739,17 @@ Diễn giải này là nội dung được nhấn mạnh trong phần f-Policy G
 \subsubsection{Offline Goal-Conditioned RL and Technical Synthesis}
 
 Trong offline goal-conditioned RL, goal-transition distribution $q(s,a,g)$ được dùng để mô tả những transition dẫn tới goal.
+Với một stochastic MDP, notes định nghĩa phân phối này theo dạng:
+\begin{equation}
+    q(s,a,g)
+    \propto
+    q_{\mathrm{train}}(g)
+    \mathbb{E}_{s'\sim p(\cdot\mid s,a)}
+    \left[
+        \mathbf{1}\{\phi(s')=g\}
+    \right].
+    \label{eq:tv2-goal-transition}
+\end{equation}
 Bài toán được viết dưới dạng occupancy matching:
 \begin{equation}
     D_f
@@ -720,6 +762,32 @@ Bài toán được viết dưới dạng occupancy matching:
 \end{equation}
 Vì $q$ có thể không đạt được chính xác bởi bất kỳ policy nào và offline data có support hữu hạn, tutorial dùng dual formulation với divergence phù hợp để thu được objective ổn định hơn.
 Kết quả là một objective dạng contrastive có Bellman regularization: tăng score cho các transition phù hợp với goal-transition distribution, giảm score cho các transition dưới policy hiện tại, và ràng buộc score theo Bellman structure.
+Viết gọn theo notation của notes, objective này có dạng:
+\begin{equation}
+\begin{aligned}
+    \max_{\pi_g}\min_S\quad
+    &
+    \beta(1-\gamma)\mathbb{E}_{d_0,\pi_g}
+    [S(s,a,g)]
+    +
+    \beta\gamma
+    \mathbb{E}_{q,p,\pi_g}
+    [S(s',a',g)]\\
+    &-
+    \beta
+    \mathbb{E}_{q}
+    [S(s,a,g)]
+    +
+    \frac{1}{4}
+    \mathbb{E}_{\mathrm{Mix}_\beta(q,\rho)}
+    \left[
+        \gamma S(s',\pi_g(s'),g)-S(s,a,g)
+    \right]^2 .
+\end{aligned}
+    \label{eq:tv2-offline-gcrl-score}
+\end{equation}
+Ở đây $\mathbb{E}_{d_0,\pi_g}$ rút gọn cho kỳ vọng trên $(s,g)\sim d_0$ và $a\sim\pi_g(\cdot\mid s,g)$; $\mathbb{E}_{q,p,\pi_g}$ rút gọn cho $(s,a,g)\sim q$, $s'\sim p(\cdot\mid s,a)$ và $a'\sim\pi_g(\cdot\mid s',g)$.
+Ba nhóm hạng tử đầu tương ứng với giảm score dưới policy hiện tại và tăng score ở proposed goal-transition distribution, còn hạng tử cuối là Bellman regularization.
 
 Cần phân biệt rõ $S$-function trong formulation này với reward thật hoặc likelihood thật.
 $S$ là một score được học bằng Bellman-regularized contrastive learning.
