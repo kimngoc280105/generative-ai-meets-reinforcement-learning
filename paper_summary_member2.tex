@@ -1,0 +1,164 @@
+\subsection*{Bài báo liên quan: Training Diffusion Models with Reinforcement Learning}
+
+Bài báo này của Black, Janner, Du, Kostrikov và Levine đề xuất DDPO (\textit{Denoising Diffusion Policy Optimization}), một khung fine-tuning diffusion model bằng reinforcement learning~\citep{black2024ddpo}.
+Trong mạch nội dung của tutorial, công trình này là ví dụ trực tiếp cho chiều ``RL cải thiện Generative AI'': thay vì chỉ dùng mô hình sinh làm policy trong RL, ta dùng chính công cụ tối ưu của RL để điều chỉnh mô hình sinh theo các mục tiêu downstream.
+Điểm quan trọng của bài báo không nằm ở việc gắn thêm một reward vào output cuối, mà ở cách tác giả nhận ra cấu trúc tuần tự vốn có của quá trình denoising.
+Một ảnh $x_0$ không được tạo ra bởi một quyết định đơn lẻ; nó là kết quả của một chuỗi chuyển tiếp $x_T \rightarrow x_{T-1}\rightarrow \cdots \rightarrow x_0$.
+Vì vậy, nếu mỗi chuyển tiếp denoising được xem như một quyết định của policy, toàn bộ sampling process có thể được mô hình hóa như một MDP hữu hạn thời gian.
+Cách nhìn này làm cho diffusion fine-tuning trở thành một bài toán policy optimization có reward ở cuối trajectory.
+
+\subsubsection*{Bối cảnh và vấn đề}
+
+Diffusion models thường được huấn luyện bằng denoising score matching hoặc các objective có liên hệ với maximum likelihood~\citep{ho2020ddpm}.
+Mục tiêu huấn luyện này có ý nghĩa thống kê rõ ràng: mô hình học cách đảo ngược quá trình thêm nhiễu để sinh mẫu có phân phối gần với dữ liệu huấn luyện.
+Tuy nhiên, trong nhiều ứng dụng text-to-image, tiêu chí người dùng quan tâm không trùng hoàn toàn với likelihood.
+Một ảnh có xác suất cao dưới phân phối dữ liệu có thể vẫn không đạt điểm thẩm mỹ cao, không khớp prompt, hoặc không tối ưu một metric downstream cụ thể.
+Ngược lại, nhiều tiêu chí thực dụng như JPEG compressibility, incompressibility, aesthetic quality hoặc prompt-image alignment lại có thể được biểu diễn bằng một hàm reward, dù reward này không nhất thiết khả vi theo tham số mô hình.
+
+Một phương án tự nhiên để dùng reward là reward-weighted regression (RWR).
+RWR sinh các mẫu từ mô hình hiện tại, chấm reward cho từng mẫu, rồi tăng trọng số của những mẫu có reward cao trong objective huấn luyện.
+Về trực giác, đây là cách biến bài toán tối ưu reward thành một bài toán supervised fine-tuning có trọng số.
+Tuy nhiên, bài báo DDPO chỉ ra rằng cách làm này không khai thác đúng cấu trúc của diffusion sampling.
+RWR xử lý mẫu cuối $x_0$ như đối tượng chính, trong khi reward của $x_0$ phụ thuộc vào toàn bộ chuỗi denoising đã tạo ra nó.
+Hơn nữa, objective huấn luyện DDPM thường là một variational bound hoặc denoising surrogate, không phải exact log-likelihood trực tiếp của mẫu cuối.
+Do đó, RWR tối ưu downstream reward theo cách gián tiếp và xấp xỉ: reward được gắn vào output cuối, còn quá trình credit assignment cho các bước denoising trung gian không được mô hình hóa tường minh~\citep{black2024ddpo}.
+
+\subsubsection*{Denoising như một MDP}
+
+Đóng góp khái niệm quan trọng nhất của DDPO là mô hình hóa reverse diffusion process như một finite-horizon MDP.
+Với một prompt hoặc context $c$, trạng thái tại timestep $t$ là noisy sample $x_t$ cùng điều kiện $c$.
+Policy chính là phân phối chuyển tiếp của diffusion model:
+\begin{equation}
+    p_\theta(x_{t-1}\mid x_t,c).
+\end{equation}
+Action không nên được hiểu cứng là một tham số hóa cụ thể như dự đoán nhiễu; trong khung RL của DDPO, action tương ứng với quyết định lấy mẫu bước denoising tiếp theo $x_{t-1}$ từ policy trên.
+Nếu mô hình được hiện thực bằng dự đoán nhiễu, dự đoán ảnh sạch hoặc một tham số hóa khác, đó là chi tiết kiến trúc để biểu diễn cùng một phân phối chuyển tiếp.
+Cách diễn giải này giữ cho MDP bám sát quá trình sinh mẫu thực sự.
+
+Trajectory của một lần sinh ảnh được viết:
+\begin{equation}
+    \tau=(x_T,x_{T-1},\ldots,x_0),
+    \qquad
+    p_\theta(\tau\mid c)
+    =
+    p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}\mid x_t,c).
+\end{equation}
+Reward được tính tại cuối trajectory:
+\begin{equation}
+    J(\theta)
+    =
+    \mathbb{E}_{c,\tau\sim p_\theta(\cdot\mid c)}
+    \left[
+        r(x_0,c)
+    \right].
+\end{equation}
+Ở đây $r(x_0,c)$ có thể là reward thủ công, reward từ một mô hình đánh giá ảnh, hoặc feedback từ một vision-language model.
+Công thức trên cho thấy DDPO không thay đổi bản chất autoregressive theo thời gian của diffusion sampling; nó chỉ đặt chuỗi denoising vào ngôn ngữ của sequential decision-making.
+Từ đó, reward cuối có thể được gán credit cho từng transition thông qua log-probability của transition đó.
+
+Áp dụng score-function estimator cho trajectory denoising thu được dạng policy gradient:
+\begin{equation}
+    \nabla_\theta J(\theta)
+    =
+    \mathbb{E}
+    \left[
+        r(x_0,c)
+        \sum_{t=1}^{T}
+        \nabla_\theta
+        \log p_\theta(x_{t-1}\mid x_t,c)
+    \right].
+\end{equation}
+So với RWR, biểu thức này có ý nghĩa khác biệt.
+RWR tăng likelihood của mẫu cuối có reward cao; DDPO tăng xác suất của các transition denoising cụ thể đã dẫn đến mẫu cuối đó.
+Nói cách khác, DDPO giữ lại cấu trúc nhân quả của quá trình sinh mẫu: reward chỉ được quan sát ở cuối, nhưng gradient được phân bổ về toàn bộ chuỗi quyết định.
+Đây chính là lý do bài báo xem diffusion fine-tuning như một bài toán RL thay vì chỉ là một bài toán reweighting dữ liệu.
+
+\subsubsection*{DDPO-SF và DDPO-IS}
+
+Bài báo đề xuất hai biến thể chính.
+Biến thể thứ nhất, DDPO-SF, sử dụng score-function estimator tương tự REINFORCE.
+Quy trình gồm ba bước: lấy mẫu một batch prompt và trajectory denoising từ policy hiện tại, tính reward trên ảnh cuối $x_0$, sau đó cập nhật tham số theo tổng gradient log-probability của các transition.
+Ưu điểm của DDPO-SF là trực tiếp và nhất quán với MDP formulation.
+Nó không cần một mô hình reward khả vi qua toàn bộ sampling chain, cũng không cần backpropagate qua mọi thao tác sinh ảnh.
+Tuy nhiên, vì dữ liệu được sinh theo policy hiện tại, thuật toán có thể kém hiệu quả mẫu: mỗi batch trajectory thường chỉ hỗ trợ một số cập nhật hạn chế trước khi policy thay đổi.
+
+Biến thể thứ hai, DDPO-IS, dùng importance sampling để cải thiện hiệu quả sử dụng dữ liệu.
+Thay vì bỏ batch sau một lần cập nhật, DDPO-IS cho phép thực hiện nhiều optimization steps trên các trajectory được sinh từ policy cũ.
+Để tránh policy mới lệch quá xa policy đã sinh dữ liệu, bài báo dùng cơ chế clipping theo tinh thần của PPO.
+Ý tưởng này không biến DDPO thành PPO nguyên bản, nhưng kế thừa cùng một nguyên tắc: giới hạn mức thay đổi của policy ratio để giảm rủi ro cập nhật quá mạnh trên dữ liệu off-policy nhẹ.
+Vì vậy, DDPO-IS thường thực dụng hơn DDPO-SF trong text-to-image fine-tuning, nơi mỗi lần sinh batch ảnh có chi phí cao.
+
+Sự khác biệt giữa DDPO và RWR có thể được tóm tắt theo cấp độ tối ưu.
+RWR xem dữ liệu huấn luyện mới là các mẫu cuối đã được chấm điểm, từ đó tối ưu một surrogate giống likelihood có trọng số.
+DDPO xem quá trình sinh mẫu là một trajectory và tối ưu reward kỳ vọng của trajectory đó.
+Vì vậy, khi reward thay đổi theo các thuộc tính khó biểu diễn bằng likelihood, DDPO có cơ chế trực tiếp hơn để điều chỉnh các quyết định trung gian của mô hình.
+Bài báo không cần khẳng định rằng mọi gradient của DDPO đều tốt hơn trong mọi nghĩa thống kê; lập luận chính là RWR gặp vấn đề optimization và approximation trong diffusion setting, còn DDPO khai thác đúng cấu trúc nhiều bước của denoising process~\citep{black2024ddpo}.
+
+\subsubsection*{Thiết lập thực nghiệm}
+
+Trong phần thực nghiệm, tác giả fine-tune một text-to-image diffusion model dựa trên Stable Diffusion v1.4 và đánh giá trên nhiều reward functions khác nhau~\citep{black2024ddpo,black2024ddpoproject}.
+Nhóm objective đầu tiên gồm compressibility và incompressibility.
+Với compressibility, mô hình được khuyến khích sinh ảnh dễ nén; với incompressibility, mô hình được khuyến khích sinh ảnh khó nén.
+Hai reward này tương đối cơ học, có thể tính tự động, và giúp kiểm tra xem thuật toán có thật sự tối ưu được metric được chỉ định hay không.
+Chúng cũng cho thấy một điểm quan trọng: downstream objective có thể rất khác phân phối ảnh tự nhiên mà likelihood training ban đầu hướng tới.
+
+Objective thứ hai là aesthetic quality.
+Theo project page của DDPO, reward này được tính bằng LAION aesthetic predictor~\citep{black2024ddpoproject,schuhmann2022laionaesthetics}.
+Đây là ví dụ gần hơn với tiêu chí người dùng: chất lượng thẩm mỹ không phải một nhãn cố định trong dataset gốc, nhưng có thể được xấp xỉ bằng một reward model.
+Objective thứ ba là prompt-image alignment.
+Bài báo và project page mô tả việc dùng feedback từ một vision-language model để cải thiện mức độ khớp giữa ảnh và prompt mà không cần thu thập thêm human annotation trong vòng lặp huấn luyện.
+Cụ thể, LLaVA sinh một mô tả ngắn cho ảnh, sau đó reward được tính bằng BERTScore recall giữa mô tả này và prompt gốc~\citep{black2024ddpo,black2024ddpoproject,liu2023llava,zhang2020bertscore}.
+Nhóm prompt gồm các tình huống mà base Stable Diffusion thường gặp khó khăn, chẳng hạn động vật thực hiện hoạt động giống con người.
+
+Kết quả thực nghiệm cho thấy DDPO cải thiện reward tốt hơn các reward-weighted likelihood baselines trong các thiết lập được khảo sát, đặc biệt DDPO-IS thường nhỉnh hơn DDPO-SF nhờ tái sử dụng batch trajectory hiệu quả hơn.
+Điểm đáng chú ý là các cải thiện này không chỉ xuất hiện ở reward đơn giản như compressibility, mà còn ở reward học được như aesthetic quality và feedback từ vision-language model.
+Điều này ủng hộ luận điểm chính của bài báo: nếu mục tiêu cuối là tối ưu một utility function nằm ngoài likelihood, diffusion model nên được fine-tune bằng một objective phản ánh trực tiếp utility đó.
+
+\subsubsection*{Generalization và overoptimization}
+
+Bài báo và project page cũng xem xét khả năng generalization sau fine-tuning.
+Với aesthetic quality, mô hình được fine-tune trên một tập prompt động vật thông dụng nhưng vẫn cho thấy cải thiện trên các động vật chưa xuất hiện và một số object ngoài nhóm động vật.
+Với prompt-image alignment, mô hình được fine-tune trên một tập hoạt động hữu hạn, sau đó được kiểm tra trên động vật mới, hoạt động mới và tổ hợp mới giữa đối tượng và hoạt động~\citep{black2024ddpoproject}.
+Kết quả này không nên được diễn giải quá mức thành bảo đảm tổng quát hóa toàn diện.
+Diễn giải thận trọng hơn là: RL fine-tuning không chỉ ghi nhớ từng prompt huấn luyện trong các thí nghiệm này; một phần hành vi tối ưu reward có thể chuyển sang các prompt liên quan.
+Mức độ chuyển giao vẫn phụ thuộc vào reward model, prompt distribution và năng lực nền của diffusion model.
+
+Mặt khác, DDPO cũng bộc lộ rủi ro quen thuộc của reinforcement learning: overoptimization và reward hacking.
+Project page ghi nhận rằng khi tối ưu reward quá lâu, mô hình có thể phá vỡ nội dung ảnh có ý nghĩa để đạt điểm cao theo reward~\citep{black2024ddpoproject}.
+Với incompressibility, mô hình có thể bị đẩy về các mẫu nhiễu hoặc giàu chi tiết không tự nhiên vì những mẫu này khó nén.
+Với prompt-image alignment dựa trên LLaVA, project page còn ghi nhận hiện tượng typographic attack: mô hình sinh chữ hoặc ký hiệu giống câu trả lời đúng để đánh lừa reward model, thay vì thật sự sinh đúng số lượng đối tượng trong ảnh.
+Những ví dụ này cho thấy DDPO là một công cụ tối ưu mạnh, nhưng sức mạnh đó phụ thuộc trực tiếp vào chất lượng reward.
+Nếu reward chỉ đo một proxy hẹp, mô hình có thể tối ưu proxy thay vì tối ưu khái niệm chất lượng mà người dùng mong muốn.
+
+\subsubsection*{Ý nghĩa đối với tutorial}
+
+DDPO có ý nghĩa đặc biệt với chủ đề \textit{Generative AI Meets Reinforcement Learning} vì nó làm rõ quan hệ hai chiều giữa hai lĩnh vực.
+Ở chiều thứ nhất, generative models có thể mở rộng lớp policy trong RL: transformer hoặc diffusion model có thể biểu diễn các phân phối hành động phức tạp, đa mode.
+Ở chiều thứ hai, RL cung cấp ngôn ngữ objective và estimator để huấn luyện generative models theo reward downstream.
+DDPO nằm ở chiều thứ hai này.
+Nó cho thấy quá trình sampling của diffusion model không chỉ là một thủ tục sinh mẫu, mà còn có thể được xem như một chuỗi quyết định có thể tối ưu bằng policy gradient.
+
+Từ góc nhìn báo cáo, bài báo DDPO cũng giúp phân biệt hai cách đưa reward vào mô hình sinh.
+Cách thứ nhất là guidance ở inference time: reward hoặc classifier chỉ can thiệp vào quá trình lấy mẫu mà không thay đổi tham số mô hình chính.
+Cách thứ hai là reinforcement learning fine-tuning: reward được dùng để cập nhật tham số policy, tức tham số diffusion model.
+DDPO thuộc cách thứ hai.
+Sự phân biệt này quan trọng vì nó ảnh hưởng đến chi phí, độ ổn định và nguy cơ overoptimization.
+Fine-tuning bằng RL có thể tạo ra cải thiện bền hơn theo objective, nhưng cũng có thể làm mô hình lệch khỏi phân phối gốc nếu reward bị thiết kế sai hoặc quá hẹp.
+
+\subsubsection*{Hạn chế và câu hỏi mở}
+
+Hạn chế đầu tiên là chi phí tính toán.
+Mỗi trajectory của DDPO là một quá trình denoising nhiều bước; mỗi lần cập nhật cần sinh ảnh, chấm reward, rồi tính gradient qua log-probability của các transition.
+So với supervised fine-tuning thông thường, vòng lặp này tốn kém hơn và phụ thuộc nhiều vào tốc độ sampling của diffusion model.
+DDPO-IS giảm một phần vấn đề bằng cách tái sử dụng batch, nhưng không loại bỏ bản chất đắt đỏ của việc thu thập trajectory từ một generative model lớn.
+
+Hạn chế thứ hai là phụ thuộc vào reward model.
+Các reward như aesthetic predictor hoặc feedback từ vision-language model chỉ là proxy cho đánh giá của con người.
+Nếu proxy sai, mô hình có thể học cách khai thác proxy.
+Do đó, việc dùng DDPO trong hệ thống thực tế cần đi kèm đánh giá định tính, kiểm tra phân phối prompt rộng hơn, và cơ chế phát hiện reward hacking.
+Một câu hỏi mở là làm thế nào thiết kế reward vừa đủ giàu để phản ánh mục tiêu người dùng, vừa đủ ổn định để không bị mô hình khai thác.
+
+Hạn chế thứ ba là vấn đề cân bằng giữa tối ưu reward và giữ năng lực nền của mô hình.
+Fine-tuning mạnh theo một reward hẹp có thể làm thay đổi style, giảm đa dạng hoặc làm suy yếu các khả năng khác của base model.
+Vì vậy, các hướng mở hợp lý bao gồm regularization giữ gần policy gốc, đánh giá đa tiêu chí sau fine-tuning, kết hợp human feedback chất lượng cao hơn, và nghiên cứu các estimator có hiệu quả mẫu tốt hơn.
+Nhìn chung, DDPO không chỉ đóng góp một thuật toán cụ thể; nó đặt ra một chương trình nghiên cứu rộng hơn về cách huấn luyện generative models bằng objective của RL mà không đánh đổi quá nhiều tính ổn định, tính đa dạng và độ tin cậy của mô hình sinh.
