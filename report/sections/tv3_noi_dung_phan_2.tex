@@ -1,187 +1,8 @@
 % =====================================================================
 % TV3: Trần Kim Ngọc
-% Phần II: Tương tác như một Generative Model
-% Phần III: Học Likelihoods
-% Phần IV: Data Tự Sinh
+% Phần III: Học Likelihoods (Learning Likelihoods)
+% Phần IV: Data Tự Sinh (Self-Generated Feedback)
 % =====================================================================
-
-% =====================================================================
-\section{Phần II: Tương tác như một Generative Model}
-% =====================================================================
-
-Trong Phần I, chúng ta đã thấy cách các generative model có thể được
-tích hợp vào các thuật toán RL hiện có dưới dạng world model hoặc
-policy. Phần II tiến thêm một bước: thay vì chỉ \textit{sử dụng}
-generative model trong RL, chúng ta sẽ nhìn nhận bản thân quá trình
-tương tác của RL agent với môi trường như một \textbf{quá trình
-generative}. Góc nhìn mới này mở ra những thuật toán và ứng dụng
-hoàn toàn mới, đặc biệt là khả năng loại bỏ sự phụ thuộc vào reward
-function -- một trong những thách thức lớn nhất của RL trong thực tế.
-
-% ---------------------------------------------------------------------
-\subsection{RL Agent là Generative Model}
-% ---------------------------------------------------------------------
-
-\subsubsection{Generative Model là gì?}
-
-Một generative model thường được hiểu là một mô hình có khả năng:
-\begin{enumerate}
-    \item \textbf{Tạo ra mẫu} (sampling) từ một phân phối nào đó.
-    \item \textbf{Ước lượng likelihood} (khả năng xảy ra) của các mẫu.
-\end{enumerate}
-
-Ví dụ quen thuộc bao gồm language model, diffusion model, VAE hay
-Gaussian mixture model. Điểm chung của các mô hình mạnh nhất là chúng
-đều thực hiện \textbf{tính toán lặp đi lặp lại} để tạo ra mẫu: VAE và
-normalizing flow biến đổi một vector nhiễu qua nhiều lớp mạng neural,
-diffusion model lặp đi lặp lại quá trình khử nhiễu để tạo ra ảnh chất
-lượng cao.
-
-\subsubsection{RL Agent như một Quá trình Generative}
-
-Một RL agent tương tác với môi trường theo chuỗi:
-\[
-s_0 \xrightarrow{\pi} a_0 \xrightarrow{p} s_1 \xrightarrow{\pi} a_1
-\xrightarrow{p} s_2 \xrightarrow{\pi} \cdots
-\]
-
-Nếu nhìn từ góc độ generative modeling, quá trình này có thể được coi
-là một \textbf{generative model của các quan sát}, trong đó:
-\begin{itemize}
-    \item \textbf{Mẫu được tạo ra} = quan sát $s_f$ tại một thời điểm
-    nào đó trong tương lai.
-    \item \textbf{Tính toán lặp lại} = chuỗi tương tác
-    policy-environment qua nhiều bước thời gian.
-    \item \textbf{Điều kiện hóa} = thông tin bổ sung cung cấp cho
-    policy (ví dụ: goal, ngôn ngữ).
-\end{itemize}
-
-Hình~\ref{fig:rl_as_genai} minh họa sự tương đồng này: trong khi
-diffusion model thực hiện các bước khử nhiễu để tạo ra ảnh đẹp, RL
-agent thực hiện các bước tương tác để đến được trạng thái mong muốn.
-
-\begin{figure}[H]
-    \centering
-    % Trích từ tutorial Eysenbach & Zhang, ICML 2025
-    \includegraphics[width=0.8\textwidth]{images/rl_as_genai.png}
-    \caption{So sánh giữa generative model thông thường (trái) và RL
-    agent (phải). Cả hai đều thực hiện tính toán lặp lại để tạo ra kết
-    quả mong muốn. Nguồn: \cite{eysenbach2025tutorial}.}
-    \label{fig:rl_as_genai}
-\end{figure}
-
-\subsubsection{Tại sao Góc nhìn này Hữu ích?}
-
-Góc nhìn ``RL là Generative AI'' mang lại ba lợi ích quan trọng
-\cite{eysenbach2025tutorial}:
-
-\textbf{(1) Ngôn ngữ hình thức cho tương tác.} Hầu hết các LLM hiện
-tại thực hiện suy luận thuần túy trong ``tâm trí'' -- không thực sự
-thay đổi thế giới. Để AI có thể tương tác với con người, công cụ và
-môi trường vật lý, cần một ngôn ngữ hình thức mô tả quá trình tương
-tác. RL cung cấp chính xác ngôn ngữ đó. Coi tương tác như một quá
-trình generative cho phép tận dụng toàn bộ bộ công cụ của generative
-AI để xây dựng các hệ thống có khả năng hành động trong thế giới thực.
-
-\textbf{(2) Giải quyết thách thức thiết kế reward.} Reward engineering
--- thiết kế hàm phần thưởng -- là một trong những thách thức thực tế
-lớn nhất của RL. Với bài toán dọn phòng robot, người thiết kế phải tự
-hỏi: nhặt một chiếc áo được bao nhiêu điểm? Xếp sách ngay ngắn được
-bao nhiêu? Đây là công việc tốn kém và dễ sai. Bằng cách định nghĩa
-lại bài toán RL theo hướng goal-reaching (đạt đến trạng thái đích),
-chúng ta có thể loại bỏ hoàn toàn nhu cầu thiết kế reward thủ công.
-
-\textbf{(3) Thống nhất với các lĩnh vực ML khác.} Trong học có giám
-sát, bài toán được định nghĩa qua dữ liệu. Trong RL truyền thống, bài
-toán được định nghĩa qua scalar reward -- một sự bất hòa với phần còn
-lại của ML. Góc nhìn generative cho phép định nghĩa bài toán RL qua
-dữ liệu (trạng thái đích mong muốn), thống nhất với phương pháp luận
-của toàn bộ cộng đồng ML.
-
-% ---------------------------------------------------------------------
-\subsection{Goal-Conditioned Reinforcement Learning}
-% ---------------------------------------------------------------------
-
-\subsubsection{Định nghĩa Bài toán Goal-Reaching}
-
-Thay vì sử dụng scalar reward, goal-conditioned RL định nghĩa nhiệm vụ
-bằng một \textbf{trạng thái đích} $g$ mà agent cần đạt tới. Mục tiêu
-được hình thức hóa như sau:
-
-\begin{equation}
-    \max_\pi (1-\gamma) \mathbb{E}_\pi \left[ \sum_t \gamma^t
-    p(s_{t+1} = g \mid s_t, a_t) \right]
-    \label{eq:goal_reaching}
-\end{equation}
-
-Phương trình~\eqref{eq:goal_reaching} có thể được hiểu trực quan như
-sau: agent nhận phần thưởng +1 khi ở tại goal $g$ và +0 khi không ở
-đó, với hệ số chiết khấu $\gamma$ khuyến khích đến goal càng sớm càng
-tốt. Việc định nghĩa mục tiêu theo xác suất $p(s_{t+1} = g \mid s_t,
-a_t)$ thay vì hàm indicator $\mathbf{1}(s_t = g)$ cho phép hoạt động
-tốt trong cả không gian trạng thái liên tục lẫn rời rạc.
-
-Mục tiêu này tương đương với bài toán RL tiêu chuẩn với hàm reward:
-\begin{equation}
-    r_g(s, a) = (1-\gamma) \, p(s' = g \mid s, a)
-    \label{eq:goal_reward}
-\end{equation}
-
-Điểm quan trọng của công thức~\eqref{eq:goal_reward} là reward được
-định nghĩa trực tiếp qua \textbf{dữ liệu} (trạng thái đích $g$) thay
-vì qua các giá trị scalar do người thiết kế quy định.
-
-\subsubsection{Ứng dụng Thực tế}
-
-Goal-reaching có rất nhiều ứng dụng thực tế
-\cite{eysenbach2025tutorial}:
-\begin{itemize}
-    \item \textbf{Robot locomotion và manipulation}: robot học cách di
-    chuyển đến vị trí mục tiêu hoặc thao tác đối tượng về trạng thái
-    mong muốn.
-    \item \textbf{Lái xe tự động}: xe học cách đến đích trong các điều
-    kiện giao thông khác nhau.
-    \item \textbf{Tổng hợp hóa học}: tìm chuỗi phản ứng để tổng hợp
-    phân tử mục tiêu.
-    \item \textbf{Games}: xây dựng công trình trong Minecraft, giải câu
-    đố.
-\end{itemize}
-
-\subsubsection{Goal-Conditioned Behavioral Cloning (GCBC)}
-
-Một phương pháp đơn giản và hiệu quả để học goal-reaching từ dữ liệu
-là \textbf{Goal-Conditioned Behavioral Cloning (GCBC)}
-\cite{eysenbach2025tutorial}. Thay vì học policy $\pi(a \mid s)$,
-GCBC học policy có điều kiện theo goal $\pi_\theta(a \mid s, g)$ bằng
-cách tối đa hóa:
-
-\begin{equation}
-    \max_\pi \mathbb{E}_{\tau \sim \mathcal{D},\, (s,a,s_f)}
-    \left[ \log \pi_\theta(a \mid s,\, g = s_f) \right]
-    \label{eq:gcbc}
-\end{equation}
-
-Công thức~\eqref{eq:gcbc} có thể được hiểu theo quy tắc Bayes: học
-policy tối đa hóa likelihood trên là tương đương với tối đa hóa:
-
-\begin{equation}
-    \max_{\pi_\theta} \mathbb{E}_{a \sim \pi_\theta(a|s,g)} \left[
-    \log \mathbb{E}\left[\sum_t \gamma^t \mathbf{1}(s_t = g)
-    \mid s, a\right] + \log \beta(a \mid s) \right]
-    \label{eq:gcbc_bayes}
-\end{equation}
-
-trong đó $\beta(a \mid s)$ là behavior policy -- phân phối hành động
-trong dữ liệu gốc. Số hạng $\log \beta(a \mid s)$ đóng vai trò
-\textbf{regularization}, ngăn policy học các hành động quá khác biệt
-so với dữ liệu training.
-
-Một điểm thú vị của GCBC là kỹ thuật \textbf{masking}: mô hình che đi
-một số token trạng thái hoặc hành động trong chuỗi và học cách điền
-vào chỗ trống (tương tự BERT). Điều này làm mờ ranh giới giữa world
-model và policy -- \textit{một generative model duy nhất có thể vừa
-dự đoán hành động tiếp theo (vai trò policy) vừa dự đoán trạng thái
-tiếp theo (vai trò world model)}, tùy thuộc vào token nào bị che.
 
 % =====================================================================
 \section{Phần III: Học Likelihoods}
@@ -243,6 +64,71 @@ Tại điểm tối ưu: $f_\theta(s, a, s_f) = \frac{p^\pi(s_f \mid s,
 a)}{p(s_f)}$. Đây chính là \textbf{temporal contrastive learning}
 \cite{eysenbach2025tutorial}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/contrastive_learning.png}
+    \caption{Ước lượng relative likelihood qua temporal contrastive
+    learning. Classifier học phân biệt cặp $(s, a, s_f)$ thật (future
+    state thực sự) với cặp ngẫu nhiên, từ đó ước lượng tỉ lệ xác suất
+    $p^\pi(s_f \mid s, a) / p(s_f)$. Nguồn:
+    \cite{eysenbach2025tutorial}.}
+    \label{fig:contrastive_learning}
+\end{figure}
+
+\subsubsection{Temporal Difference Methods: Mở rộng sang Off-policy}
+
+Các phương pháp Monte Carlo ở trên ước lượng successor measure bằng
+cách quan sát trực tiếp nơi policy đến. Tuy nhiên, chúng không trả lời
+được câu hỏi: \textit{nếu policy thay đổi, agent sẽ visit những state
+nào mới?} Temporal difference (TD) methods giải quyết vấn đề này bằng
+cách ``ghép nối'' dữ liệu từ các experience khác nhau thông qua
+Bellman flow constraint \cite{eysenbach2025tutorial}:
+
+\begin{equation}
+    p^\pi(s_f \mid s_0, a_0) = p(s_1 = s_f \mid s_0, a_0)
+    + \gamma \mathbb{E}_{p(s_1|s_0,a_0)\pi(a_1|s_1)}
+    [p^\pi(s_f \mid s_1, a_1)]
+    \label{eq:bellman_flow}
+\end{equation}
+
+Identity này cho phép viết lại contrastive loss dưới dạng chỉ phụ
+thuộc vào các transition $(s, a, s')$ và policy hiện tại -- không cần
+sample future states trực tiếp. Đây là nền tảng của một số phương
+pháp quan trọng:
+
+\begin{table}[H]
+    \centering
+    \caption{So sánh các phương pháp ước lượng successor measure.
+    Nguồn: \cite{eysenbach2025tutorial}.}
+    \label{tab:td_methods}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Phương pháp} & \textbf{Loại} & \textbf{Đặc điểm} \\
+        \midrule
+        Monte Carlo contrastive & On-policy & Đơn giản, cần nhiều mẫu \\
+        C-learning & TD, off-policy & Recursive classification \\
+        Forward-Backward (FB) & TD, off-policy & Linear parametrization \\
+        TD InfoNCE & TD, off-policy & Log-linear, InfoNCE loss \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{C-learning} \cite{eysenbach2025tutorial} reformulate
+goal-reaching như bài toán phân loại đệ quy: thay vì học trực tiếp
+$p^\pi(s_f \mid s, a)$, học classifier phân biệt các cặp $(s, s_f)$
+có quan hệ nhân quả với các cặp ngẫu nhiên, kết hợp TD updates để
+propagate thông tin qua thời gian.
+
+\textbf{Forward-Backward representation} sử dụng linear parametrization
+$f_\theta(s, a, s_f) = F_\theta(s,a)^\top B_\theta(s_f)$, cho phép
+tính Q-function cho bất kỳ reward function nào chỉ bằng một tích vô
+hướng sau khi đã học representation -- nền tảng cho zero-shot RL.
+
+\textbf{TD InfoNCE} sử dụng log-linear parametrization
+$f_\theta(s, a, s_f) = e^{F_\theta(s,a)^\top B_\theta(s_f)}$ kết hợp
+với InfoNCE loss, cho phép scaling tốt hơn và có liên hệ chặt chẽ với
+temporal contrastive learning trong computer vision.
+
 \subsubsection{Biểu diễn Tham số hóa}
 
 Thay vì coi $f_\theta$ như một black-box, có thể tham số hóa dưới dạng
@@ -276,6 +162,94 @@ Q-function cũng có thể được ước lượng từ các biểu diễn này
 
 Điều này cho thấy một reward function bất kỳ có thể được biểu diễn
 như một vector $z$ duy nhất -- nền tảng cho zero-shot RL.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/successor_measure.png}
+    \caption{Successor measure (discounted state occupancy measure) là
+    phân phối các trạng thái tương lai mà agent có thể đến được. Phần
+    III giới thiệu các kỹ thuật ước lượng phân phối này và sử dụng nó
+    cho RL. Nguồn: \cite{eysenbach2025tutorial}.}
+    \label{fig:successor_measure}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{Fully-general RL từ Density Ratios}
+% ---------------------------------------------------------------------
+
+\subsubsection{Từ Goal-reaching đến RL Tổng quát}
+
+Các phương pháp ở phần trước cho phép ước lượng xác suất agent đến
+một trạng thái đích $s_f$ cụ thể. Tuy nhiên, nhiều bài toán thực tế
+không thể mô tả bằng một goal state duy nhất -- chúng ta có thể muốn
+tối đa hóa reward tổng quát, hoặc có nhiều trạng thái tốt với mức độ
+khác nhau \cite{eysenbach2025tutorial}.
+
+Điểm then chốt là: các density ratio $f_\theta(s, a, s_f)$ đã học có
+thể được tái sử dụng trực tiếp để giải quyết bài toán RL tổng quát.
+Cho một tập trạng thái có nhãn reward $\{(s_f, r(s_f))\}$, Q-function
+được ước lượng bằng:
+
+\begin{equation}
+    Q(s, a) = \mathbb{E}_{p(s_f|s,a)}[r(s_f)]
+    = \mathbb{E}_{p(s_f)} \left[ \frac{p(s_f|s,a)}{p(s_f)} r(s_f)
+    \right]
+    \approx \frac{1}{k} \sum_{s_f, r} f_\theta(s, a, s_f) \cdot r(s_f)
+    \label{eq:q_general}
+\end{equation}
+
+Biểu thức này có dạng \textbf{kernel smoothing}: thay vì kernel cố
+định, ta học biểu diễn sao cho kernel có ý nghĩa về mặt xác suất.
+Điều này cho phép giải quyết bất kỳ reward function nào chỉ với một
+lần học representation -- không cần train lại từ đầu.
+
+\subsubsection{Linear Parametrization}
+
+Với tham số hóa tuyến tính:
+\begin{equation}
+    f_\theta(s, a, s_f) = F_\theta(s, a)^\top B_\theta(s_f)
+    \label{eq:linear_param}
+\end{equation}
+
+Q-function trở thành hàm tuyến tính của representation:
+\begin{equation}
+    Q(s, a) \approx \frac{1}{k} \sum_{s_f, r} F_\theta(s,a)^\top
+    B_\theta(s_f) \cdot r = F_\theta(s,a)^\top \underbrace{\left(
+    \frac{1}{k} \sum_{s_f, r} B_\theta(s_f) \cdot r \right)}_{z}
+    \label{eq:linear_q}
+\end{equation}
+
+Ký hiệu $z = \frac{1}{k} \sum_{s_f,r} B_\theta(s_f) \cdot r$ là
+vector đặc trưng của reward function. Tính chất quan trọng:
+\textbf{mỗi reward function được biểu diễn bởi một vector $z$ duy
+nhất}, và Q-function chỉ là tích vô hướng $F_\theta(s,a)^\top z$.
+Điều này cho phép zero-shot generalization: khi có reward function
+mới, chỉ cần tính $z$ mới mà không cần cập nhật $F_\theta$
+\cite{eysenbach2025tutorial}.
+
+\subsubsection{Log-linear Parametrization}
+
+Với tham số hóa log-linear:
+\begin{equation}
+    f_\theta(s, a, s_f) = e^{F_\theta(s,a)^\top B_\theta(s_f)}
+    \label{eq:loglinear_param}
+\end{equation}
+
+Parametrization này phù hợp tự nhiên với các contrastive loss dạng
+InfoNCE \cite{eysenbach2025tutorial}. So với linear parametrization,
+log-linear có một số tính chất nổi bật:
+
+\begin{itemize}
+    \item \textbf{Scaling mạnh hơn}: mạng sâu đến 1000 lớp vẫn cải
+    thiện đáng kể, điều hiếm thấy trong RL thông thường.
+    \item \textbf{Triangle inequality}: biểu diễn học được thỏa mãn
+    bất đẳng thức tam giác trong không gian metric, cho phép lập kế
+    hoạch bằng nội suy giữa các biểu diễn.
+    \item \textbf{Horizon generalization}: huấn luyện trên horizon
+    ngắn, suy ra được policy cho horizon dài hơn.
+    \item \textbf{Emergent exploration}: chiến lược khám phá tự xuất
+    hiện khi huấn luyện với một goal duy nhất.
+\end{itemize}
 
 % ---------------------------------------------------------------------
 \subsection{RLZero: Zero-shot RL từ Ngôn ngữ Tự nhiên}
@@ -411,6 +385,68 @@ khác hoàn toàn. RLZero đạt win rate 80\% và 100\% lần lượt trên mô
 trường Stickman (2D Humanoid) và HumEnv (3D Humanoid) khi imitating
 video người thật -- điều mà chưa phương pháp nào trước đó làm được
 \cite{sikchi2025rlzero}.
+
+% ---------------------------------------------------------------------
+\subsection{Bài báo gốc: RLZero -- Direct Policy Inference from Language Without In-Domain Supervision}
+% ---------------------------------------------------------------------
+
+\subsubsection{Bối cảnh và Vấn đề}
+
+Bài báo RLZero của Sikchi và cộng sự \cite{sikchi2025rlzero} giải
+quyết một thách thức cơ bản trong việc triển khai RL vào thực tế: làm
+thế nào để một agent có thể thực hiện hành vi được chỉ định bằng ngôn
+ngữ tự nhiên mà không cần bất kỳ dữ liệu có nhãn nào trong domain đó?
+
+Các phương pháp trước đây như GenRL hoặc image-language reward đều yêu
+cầu một trong hai điều: hoặc dữ liệu demonstration có nhãn liên kết
+ngôn ngữ với hành vi cụ thể trong domain, hoặc quá trình training tốn
+nhiều giờ cho mỗi task mới. Điều này làm hạn chế khả năng mở rộng khi
+số lượng task tăng lên.
+
+\subsubsection{Phương pháp}
+
+RLZero đề xuất framework gồm ba bước tuần tự:
+
+\textbf{Imagine:} Từ câu lệnh ngôn ngữ $\ell$, một Video Foundation
+Model (VFM) được huấn luyện unsupervised trên dữ liệu offline của
+agent sinh ra chuỗi frame video $\{i_1, \ldots, i_T\}$ minh họa hành
+vi tương ứng. VFM sử dụng InternVideo2 làm video-language encoder kết
+hợp với kiến trúc GRU để sinh video.
+
+\textbf{Project:} Do video được tưởng tượng có thể không khớp với
+domain thực của agent (khác embodiment, background), bước Project tìm
+frame thực tế gần nhất trong offline dataset bằng cosine similarity
+trong embedding space của SigLIP. Sử dụng $k=3$ frame liên tiếp để
+nắm bắt thông tin động học.
+
+\textbf{Imitate:} Đây là đóng góp lý thuyết chính của bài báo.
+Theorem 1 chứng minh rằng với KL divergence, bài toán imitation
+learning từ expert trajectory $\{s_1, \ldots, s_T\}$ có nghiệm
+closed-form:
+\begin{equation}
+    z_{\text{imit}} = \mathbb{E}_{\rho^E}[\phi(s)]
+\end{equation}
+trong đó $\phi(s)$ là backward representation của Behavioral Foundation
+Model (BFM) đã được pretrain. Nghiệm này không yêu cầu gradient
+updates hay tương tác với môi trường -- chỉ cần tính trung bình các
+state representations của expert trajectory.
+
+\subsubsection{Kết quả}
+
+RLZero được đánh giá trên 25 tasks trong DeepMind Control Suite.
+Kết quả cho thấy win rate 83.2\% so với baseline tốt nhất (GenRL:
+76.8\%), đồng thời thời gian inference chỉ khoảng 25 giây so với
+3--5 giờ của GenRL. Với cross-embodiment transfer từ video YouTube,
+RLZero đạt 80\% và 100\% trên môi trường Stickman và HumEnv.
+
+\subsubsection{Hạn chế}
+
+Bài báo thừa nhận hai hạn chế chính. Thứ nhất, chất lượng pipeline
+phụ thuộc hoàn toàn vào khả năng của VFM -- khi VFM tưởng tượng sai
+hành vi phức tạp, toàn bộ pipeline thất bại. Thứ hai, bước Project
+dựa vào cosine similarity của SigLIP có thể bị ảnh hưởng bởi
+background distractors hoặc rough symmetries của agent, dẫn đến
+matching sai frame.
 
 % =====================================================================
 \section{Phần IV: Data Tự Sinh}
