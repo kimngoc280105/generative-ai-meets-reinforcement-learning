@@ -1,86 +1,493 @@
 % TV1 phụ trách -- Tổng quan & Kiến thức nền
-
+% Thành viên: Trần Đình Luân (23120059)
+ 
 % =====================================================================
 \section{Tổng quan chủ đề}
 % =====================================================================
-
+ 
 \subsection{Giới thiệu bài toán}
-% Gợi ý: bắt đầu bằng câu chuyện Mechanical Turk
-% Độ dài: 0.5 -- 1 trang
-
-[Nội dung TV1 điền vào đây]
-
-\subsection{Động lực nghiên cứu}
-% Gợi ý:
-%   - Imitation learning bị giới hạn bởi chất lượng dữ liệu
-%   - RL cho phép vượt qua giới hạn con người
-%   - Generative models cung cấp công cụ mạnh cho RL
-% Độ dài: 0.5 trang
-
-[Nội dung TV1 điền vào đây]
-
-\subsection{Tầm quan trọng và tính thời sự}
-% Gợi ý:
-%   - Ứng dụng: robotics, nuclear fusion, education
-%   - Xu hướng tại ICML/NeurIPS 2025
-%   - Kết nối với LLM agents, foundation models
-% Độ dài: 0.5 trang
-
-[Nội dung TV1 điền vào đây]
-
-\subsection{Cấu trúc báo cáo}
-
-Báo cáo được tổ chức gồm các phần sau:
+ 
+Năm 1770, Wolfgang von Kempelen giới thiệu với châu Âu một cỗ máy
+biết chơi cờ mang tên ``Mechanical Turk'' -- một thiết bị tinh vi với
+hàng chục bánh răng và đòn bẩy. Nó đánh bại Napoleon, Benjamin
+Franklin và vô số đối thủ khác. Hóa ra, toàn bộ bộ máy chỉ là vỏ
+bọc, bên trong có một kỳ thủ thật ngồi điều khiển mọi nước đi qua hệ
+thống gương phản chiếu.
+ 
+Câu chuyện này phản ánh chính xác trạng thái của AI ngày nay. Phần
+lớn các hệ thống AI hiện đại -- từ GPT-4, Gemini cho đến Stable
+Diffusion -- đều được xây dựng trên nguyên tắc \textbf{maximum
+likelihood imitation}: mô hình học cách tái tạo hành vi của con người
+bằng cách tối đa hóa xác suất sinh ra dữ liệu giống dữ liệu huấn
+luyện. Phương pháp này rất mạnh, nhưng chứa đựng một giới hạn nền
+tảng không thể tránh khỏi:
+ 
+\begin{equation}
+    \text{Khả năng của mô hình} \;\leq\; \text{Khả năng của dữ liệu
+    huấn luyện}
+    \label{eq:imitation_bound}
+\end{equation}
+ 
+Nếu tất cả dữ liệu đều sai, mô hình sẽ sai theo. Nếu chưa có con
+người nào giải được một bài toán, mô hình không thể học cách giải nó
+từ dữ liệu đó. Đây là bài toán cốt lõi mà tutorial
+\textit{Generative AI Meets Reinforcement Learning}
+\cite{eysenbach2025tutorial} đặt ra: làm thế nào để xây dựng AI có
+thể \textbf{vượt qua giới hạn của dữ liệu huấn luyện}?
+ 
+Tutorial được trình bày tại ICML 2025 bởi Benjamin Eysenbach (Princeton
+University) và Amy Zhang (UT Austin), xoay quanh hai câu hỏi liên
+quan chặt chẽ:
 \begin{itemize}
-    \item \textbf{Phần 2} trình bày kiến thức nền về Reinforcement Learning và Generative Models.
-    \item \textbf{Phần 3} trình bày nội dung chính của tutorial.
-    \item \textbf{Phần 4} mô tả thực nghiệm và kết quả.
-    \item \textbf{Phần 5} đánh giá ưu nhược điểm và hướng nghiên cứu tương lai.
+    \item Reinforcement Learning và Generative AI -- hai lĩnh vực tưởng
+    như tách biệt -- liệu có chia sẻ cùng cấu trúc toán học không?
+    \item Nếu có, chúng ta có thể khai thác điều đó để xây dựng các hệ
+    thống AI mạnh mẽ hơn như thế nào?
 \end{itemize}
-
+ 
+\subsection{Động lực nghiên cứu}
+ 
+\subsubsection{Giới hạn của Imitation Learning}
+ 
+Như đã trình bày, phần lớn AI hiện đại được huấn luyện bằng cách tối
+đa hóa khả năng tái tạo hành vi của con người. Cách tiếp cận này hiệu
+quả khi có đủ dữ liệu chất lượng cao và nhiệm vụ nằm trong phân phối
+dữ liệu. Tuy nhiên, nó gặp khó khăn cơ bản khi bài toán đòi hỏi sự
+sáng tạo vượt ngoài dữ liệu, hoặc khi chưa có ai giải được bài toán
+đó trước đây.
+ 
+Một hệ quả đáng lo ngại hơn nữa là hiện tượng \textit{model collapse}:
+khi AI được huấn luyện đệ quy trên dữ liệu do chính AI sinh ra, chất
+lượng suy giảm theo cấp số nhân \cite{eysenbach2025tutorial}.
+ 
+\subsubsection{Giới hạn của Reward Engineering}
+ 
+Nền tảng của Reinforcement Learning là tín hiệu phần thưởng (reward).
+Tuy nhiên, hầu hết bài toán thực tế rất khó thiết kế reward function
+phù hợp -- đây là mâu thuẫn cốt lõi: RL hứa hẹn tìm ra giải pháp
+tốt hơn con người, nhưng chính reward function lại đòi hỏi con người
+phải hiểu rõ vấn đề mới có thể thiết kế được.
+ 
+Với bài toán dọn phòng robot, người thiết kế phải tự hỏi: nhặt một
+chiếc áo được bao nhiêu điểm? Xếp sách ngay ngắn được bao nhiêu? Nếu
+thiết kế sai, robot có thể học cách ``gian lận'' thay vì thực sự dọn
+dẹp -- một hiện tượng được gọi là \textit{reward hacking}.
+ 
+\subsubsection{Sự hội tụ của hai lĩnh vực}
+ 
+Trong nhiều thập kỷ, RL và Generative AI phát triển song song nhưng
+tương đối độc lập. Gần đây, giới nghiên cứu nhận ra rằng hai lĩnh vực
+này đang giải quyết cùng một bài toán từ hai góc nhìn khác nhau, và
+khai thác điểm chung này mở ra ba hướng giao thoa chính:
+ 
+\begin{table}[H]
+    \centering
+    \caption{Ba hướng giao thoa giữa Generative AI và RL.}
+    \label{tab:convergence}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Hướng} & \textbf{Ý nghĩa} \\
+        \midrule
+        GenAI $\to$ RL   & Dùng generative models làm thành phần trong RL \\
+        RL $\to$ GenAI   & Nhìn tương tác RL như một generative process \\
+        RL để train GenAI & Dùng RL để cải thiện cách huấn luyện generative models \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+ 
+\subsection{Tầm quan trọng và tính thời sự}
+ 
+\subsubsection{Ứng dụng thực tiễn}
+ 
+Sự kết hợp giữa Generative AI và RL có nhiều ứng dụng thực tiễn quan
+trọng \cite{eysenbach2025tutorial}:
+ 
+\textbf{Robotics:} Diffusion policies đã đạt kết quả tốt nhất trong
+nhiều tác vụ điều khiển robot. Kết hợp với RL, robot có thể vượt qua
+giới hạn của dữ liệu demonstration, tự học cách thực hiện các hành vi
+chưa từng được quan sát.
+ 
+\textbf{Behavioral Foundation Models:} Tương tự như GPT là foundation
+model cho ngôn ngữ, các Behavioral Foundation Model -- được học thông
+qua RL không có reward -- có thể đóng vai trò foundation model cho
+hành động, một model dùng được cho nhiều tác vụ robot khác nhau mà
+không cần huấn luyện lại.
+ 
+\textbf{RLHF và AI alignment:} Reinforcement Learning from Human
+Feedback (RLHF) -- kỹ thuật cốt lõi làm cho ChatGPT ``nghe lời'' --
+là ứng dụng trực tiếp của RL để fine-tune generative models. Hiểu
+sâu mối liên hệ này giúp thiết kế các phương pháp alignment tốt hơn.
+ 
+\textbf{Khoa học và khám phá:} AlphaFold dự đoán cấu trúc protein,
+AlphaProof giải bài thi toán Olympic -- các hệ thống này đều dùng RL
+để tìm giải pháp mà không có dữ liệu tương ứng từ trước.
+ 
+\subsubsection{Generalization -- bài toán còn bỏ ngỏ}
+ 
+Tutorial đặt ra một câu hỏi quan trọng về tương lai: điều gì làm cho
+generative image models và language models trở nên ấn tượng không phải
+là chúng ghi nhớ dữ liệu đã thấy, mà là chúng \textit{generalize} --
+tạo ra output đúng trên những input chưa bao giờ thấy trong training.
+ 
+Trong khi đó, RL agents ngày nay phần lớn vẫn chỉ ghi nhớ thay vì
+generalize. Tutorial đặt câu hỏi: tương tự như một generative image
+model có thể tạo ra ảnh sống động sau khi chỉ thấy một phần nhỏ các
+ảnh có thể, liệu ta có thể xây dựng RL agents có thể giải quyết các
+bài toán mới sau khi chỉ practice trên một phần nhỏ không gian bài
+toán đó? Đây chính là \textit{generalization frontier} mà kết hợp
+Generative AI và RL hướng tới.
+ 
+\subsection{Cấu trúc báo cáo}
+ 
+Báo cáo được tổ chức thành các phần chính như sau:
+\begin{itemize}
+    \item \textbf{Phần 2} trình bày kiến thức nền về Reinforcement
+    Learning và Generative Models, các khái niệm cơ sở cần thiết để
+    hiểu nội dung tutorial.
+    \item \textbf{Phần 3} trình bày nội dung chính của tutorial, bao
+    gồm Phần I (Generative Models trong RL), Phần II (Tương tác như
+    một Generative Model), Phần III (Học Likelihoods) và Phần IV (Data
+    Tự Sinh).
+    \item \textbf{Phần 4} mô tả thực nghiệm và kết quả demo nhóm thực
+    hiện.
+    \item \textbf{Phần 5} đánh giá ưu nhược điểm của các phương pháp
+    và thảo luận hướng nghiên cứu tương lai.
+\end{itemize}
+ 
 % =====================================================================
 \section{Kiến thức nền}
 % =====================================================================
-
+ 
 \subsection{Reinforcement Learning}
-
+ 
 \subsubsection{Định nghĩa bài toán RL}
-% Gợi ý: MDP, state s_t, action a_t, reward r(s,a), policy pi, trajectory tau
-% Công thức: R(tau) = sum gamma^t r(s_t, a_t)
-
-[Nội dung TV1 điền vào đây]
-
-\subsubsection{Mục tiêu RL}
-% Gợi ý: J(pi) = E[sum gamma^t r(s_t, a_t)]
-% So sánh với supervised learning
-
-[Nội dung TV1 điền vào đây]
-
-\subsubsection{Phân biệt Supervised Learning và Reinforcement Learning}
-% Gợi ý: dùng ví dụ Tetris từ tutorial
-
-[Nội dung TV1 điền vào đây]
-
+ 
+Bài toán Reinforcement Learning được hình thức hóa bằng khung
+\textbf{Markov Decision Process (MDP)}, bao gồm năm thành phần:
+ 
+\begin{equation}
+    \text{MDP} = (\mathcal{S},\; \mathcal{A},\; p,\; r,\; \gamma)
+    \label{eq:mdp}
+\end{equation}
+ 
+\begin{table}[H]
+    \centering
+    \caption{Các thành phần của MDP, minh họa qua game Tetris.}
+    \label{tab:mdp}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Ký hiệu} & \textbf{Tên} & \textbf{Ví dụ (Tetris)} \\
+        \midrule
+        $\mathcal{S}$ & Không gian trạng thái & Mọi cấu hình bảng có thể \\
+        $\mathcal{A}$ & Không gian hành động & \{trái, phải, xoay, thả\} \\
+        $p(s'\mid s,a)$ & Dynamics & Xác suất khối rơi vào ô nào \\
+        $r(s,a)$ & Hàm phần thưởng & $+1$ mỗi dòng xóa được \\
+        $\gamma \in [0,1)$ & Hệ số chiết khấu & Thường từ $0.9$ đến $0.999$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+ 
+Giả định \textbf{Markov} là nền tảng quan trọng của khung này: trạng
+thái hiện tại $s_t$ chứa đủ thông tin để quyết định hành động tiếp
+theo, không cần nhớ toàn bộ lịch sử. Nhờ tính Markov, ta có thể dùng
+các phương trình đệ quy (Bellman equations) để tính toán hiệu quả.
+ 
+\subsubsection{Policy và Mục tiêu RL}
+ 
+\textbf{Policy} $\pi$ là hàm ánh xạ từ trạng thái sang hành động (hoặc
+phân phối trên hành động):
+\[
+    \pi(a \mid s) = \text{xác suất chọn action } a \text{ khi ở state }
+    s
+\]
+ 
+Một \textbf{trajectory} $\tau = (s_0, a_0, s_1, a_1, \ldots)$ là chuỗi
+trạng thái và hành động theo thời gian. \textbf{Discounted return}
+$R(\tau)$ là tổng phần thưởng có chiết khấu:
+ 
+\begin{equation}
+    R(\tau) = \sum_{t=0}^{\infty} \gamma^t \, r(s_t, a_t)
+    \label{eq:return}
+\end{equation}
+ 
+Hệ số chiết khấu $\gamma < 1$ giải quyết hai vấn đề: nó đảm bảo tổng
+phần thưởng hội tụ (không vô hạn), đồng thời phản ánh nguyên tắc kinh
+tế học rằng phần thưởng gần hơn có giá trị hơn.
+ 
+\textbf{Mục tiêu RL} là tìm policy $\pi$ tối đa hóa expected return:
+ 
+\begin{equation}
+    J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \right]
+    = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t
+    r(s_t, a_t) \right]
+    \label{eq:rl_objective}
+\end{equation}
+ 
+\subsubsection{So sánh RL và Supervised Learning}
+ 
+Sự khác biệt căn bản giữa RL và Supervised Learning (SL) nằm ở nguồn
+gốc dữ liệu:
+ 
+\begin{equation}
+    \text{SL:} \quad \max_\theta \; \mathbb{E}_{(s,a) \sim \mathcal{D}}
+    \bigl[\log \pi_\theta(a \mid s)\bigr]
+    \label{eq:sl_obj}
+\end{equation}
+\begin{equation}
+    \text{RL:} \quad \max_\theta \; \mathbb{E}_{\tau \sim \pi_\theta}
+    \bigl[R(\tau)\bigr]
+    \label{eq:rl_obj_compare}
+\end{equation}
+ 
+Trong SL, dữ liệu đến từ dataset cố định $\mathcal{D}$ và không phụ
+thuộc vào tham số đang học. Trong RL, trajectory được sinh ra bởi
+chính policy $\pi_\theta$ đang được tối ưu -- khi $\theta$ thay đổi,
+cả phân phối hành động lẫn phân phối trạng thái được ghé thăm đều thay
+đổi theo. Đây chính là điểm mạnh (agent có thể khám phá) nhưng cũng
+là thách thức chính (dữ liệu non-stationary) của RL.
+ 
+Ví dụ trực quan: nếu dùng SL để học chơi Tetris trên dataset từ người
+chơi mới bắt đầu, model sẽ không thể giỏi hơn người đó. Nhưng với RL,
+agent tự tạo dữ liệu thông qua tương tác và có thể tìm ra chiến lược
+tốt hơn bất kỳ dữ liệu nào trong dataset \cite{eysenbach2025tutorial}.
+ 
+\subsubsection{Value Functions và Bellman Equations}
+ 
+Để tối ưu $J(\pi)$, cần biết ``từ trạng thái này, hành động nào dẫn
+đến return cao nhất?'' -- đây là vai trò của \textbf{value functions}.
+ 
+\textbf{Q-function} $Q^\pi(s, a)$ cho biết return kỳ vọng khi bắt đầu
+từ cặp $(s, a)$ và sau đó theo policy $\pi$:
+ 
+\begin{equation}
+    Q^\pi(s, a) = \mathbb{E}_\pi \left[ \sum_{t=0}^{\infty} \gamma^t
+    r(s_t, a_t) \;\Big|\; s_0 = s,\, a_0 = a \right]
+    \label{eq:q_function}
+\end{equation}
+ 
+Q-function thỏa \textbf{phương trình Bellman} -- quan hệ đệ quy cơ bản
+của RL:
+ 
+\begin{equation}
+    Q^\pi(s, a) = r(s, a) + \gamma \, \mathbb{E}_{s' \sim p(\cdot|s,a),
+    \; a' \sim \pi(\cdot|s')} \bigl[ Q^\pi(s', a') \bigr]
+    \label{eq:bellman}
+\end{equation}
+ 
+Phương trình này nói rằng: giá trị hiện tại bằng phần thưởng ngay lập
+tức cộng với giá trị tương lai (chiết khấu). Q-function xuất hiện
+xuyên suốt tutorial -- trong diffusion policies (dùng $Q$ để chọn
+hành động), trong temporal contrastive learning ($Q \approx$ log
+likelihood ratio), và trong zero-shot RL (tính $Q$ từ biểu diễn học
+được).
+ 
+\subsubsection{Policy Gradient}
+ 
+Để tối đa hóa $J(\pi_\theta)$, ta lấy gradient theo tham số $\theta$:
+ 
+\begin{equation}
+    \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta}
+    \left[ R(\tau) \cdot \sum_t \nabla_\theta \log \pi_\theta(a_t \mid
+    s_t) \right]
+    \label{eq:policy_gradient}
+\end{equation}
+ 
+Số hạng $\nabla_\theta \log \pi_\theta(a \mid s)$ được gọi là
+\textbf{score function} của policy. Trực quan của policy gradient: làm
+nhiều hơn những gì đã dẫn đến return cao, và ít hơn những gì dẫn đến
+return thấp.
+ 
+Score function này là cầu nối kỹ thuật giữa RL và generative modeling:
+trong score-based diffusion models, đại lượng tương tự
+$\nabla_x \log p(x)$ được dùng để hướng dẫn quá trình sinh mẫu. Bất
+kỳ họ mô hình sinh nào cho phép tính score đều có thể được tích hợp
+vào cập nhật kiểu policy gradient.
+ 
+% ---------------------------------------------------------------------
 \subsection{Generative Models}
-
+% ---------------------------------------------------------------------
+ 
+\subsubsection{Tổng quan}
+ 
+\textbf{Generative model} là mô hình có khả năng (1) tạo ra mẫu mới
+từ một phân phối học được, và (2) ước lượng likelihood (xác suất) của
+các mẫu. Các mô hình mạnh nhất đều thực hiện \textbf{tính toán lặp đi
+lặp lại} để tạo ra mẫu: VAE và normalizing flow biến đổi vector nhiễu
+qua nhiều lớp mạng neural, diffusion model lặp đi lặp lại quá trình
+khử nhiễu, transformer sinh token từng bước một.
+ 
 \subsubsection{Diffusion Models}
-% Gợi ý: forward process, reverse process, score function
-% Liên hệ: dùng làm policy trong RL
-
-[Nội dung TV1 điền vào đây]
-
+ 
+Diffusion model là họ mô hình sinh hiện đại, đứng sau nhiều hệ thống
+tạo ảnh mạnh nhất hiện nay như Stable Diffusion và DALL-E.
+ 
+\textbf{Quá trình forward} (thêm nhiễu): bắt đầu từ dữ liệu sạch
+$x_0$, dần dần thêm Gaussian noise qua $T$ bước để thu được
+$x_1, x_2, \ldots, x_T$, trong đó $x_T$ gần với nhiễu trắng hoàn
+toàn:
+\[
+    q(x_t \mid x_{t-1}) = \mathcal{N}\bigl(x_t;\, \sqrt{1-\beta_t}\,
+    x_{t-1},\; \beta_t \mathbf{I}\bigr)
+\]
+ 
+\textbf{Quá trình reverse} (khử nhiễu): mô hình học cách đảo ngược
+quá trình trên, tức là từ $x_T$ nhiễu, dần dần tái tạo dữ liệu sạch
+$x_0$ qua nhiều bước. Mô hình học hàm \textbf{score}
+$\nabla_x \log p_t(x)$ -- gradient của log-likelihood tại mỗi bước --
+để hướng dẫn quá trình khử nhiễu.
+ 
+Trong RL, diffusion model được dùng làm \textbf{diffusion policy}: thay
+vì policy Gaussian đơn giản, agent dùng một diffusion model để biểu
+diễn phân phối hành động phức tạp, đa mode. Kết nối sâu hơn: quá
+trình denoising nhiều bước của diffusion model tương đồng với quá trình
+tương tác nhiều bước của RL agent với môi trường.
+ 
 \subsubsection{Flow Matching Models}
-% Gợi ý: mô tả ngắn gọn, liên hệ với RL
-
-[Nội dung TV1 điền vào đây]
-
+ 
+Flow matching là một hướng tiếp cận thay thế cho diffusion, học cách
+biến đổi trực tiếp một phân phối đơn giản (thường là Gaussian) thành
+phân phối dữ liệu thông qua một vector field có thể học được. Khác với
+diffusion model cần nhiều bước nhỏ với schedule cố định, flow matching
+học một đường đi thẳng hơn trong không gian xác suất, thường cho phép
+sinh mẫu nhanh hơn.
+ 
+Trong bối cảnh RL, Temporal Difference Flows
+\cite{eysenbach2025tutorial} áp dụng flow matching để ước lượng
+likelihood của trạng thái tương lai, kết hợp với cấu trúc Bellman để
+tận dụng dữ liệu off-policy.
+ 
 \subsubsection{Transformer và Autoregressive Models}
-% Gợi ý: Decision Transformer, sequence modeling trong RL
-
-[Nội dung TV1 điền vào đây]
-
+ 
+Transformer là kiến trúc mạng neural dựa trên cơ chế
+\textit{self-attention}, hiện đang chi phối phần lớn AI hiện đại (GPT,
+BERT, ViT). Mô hình autoregressive sinh chuỗi token từng bước một,
+trong đó mỗi token được sinh có điều kiện trên toàn bộ các token đã
+sinh trước đó:
+\[
+    p(x_1, x_2, \ldots, x_T) = \prod_{t=1}^{T} p(x_t \mid x_1, \ldots,
+    x_{t-1})
+\]
+ 
+\textbf{Decision Transformer} \cite{eysenbach2025tutorial} áp dụng trực
+tiếp kiến trúc này cho RL: thay vì học value function hay thực hiện
+Bellman backup, mô hình coi một trajectory RL -- chuỗi
+$(s_0, a_0, R_1, s_1, a_1, \ldots)$ -- như một chuỗi token và học sinh
+hành động có điều kiện trên return mục tiêu. Đây là ví dụ tiêu biểu
+của việc dùng generative model làm policy trong RL.
+ 
+% ---------------------------------------------------------------------
 \subsection{Successor Measure}
-% Gợi ý: định nghĩa M^pi, ý nghĩa trực quan, liên hệ với Q-function
-% Đây là khái niệm xuyên suốt tutorial -- giải thích kỹ
-
-[Nội dung TV1 điền vào đây]
+% ---------------------------------------------------------------------
+ 
+\textbf{Successor measure} (hay discounted state occupancy measure)
+$p^\pi(s_f)$ là một trong những khái niệm xuyên suốt toàn bộ tutorial.
+Nó được định nghĩa là xác suất mà agent đến được trạng thái $s_f$ tại
+một thời điểm nào đó trong tương lai khi theo policy $\pi$:
+ 
+\begin{equation}
+    p^\pi(s_f) \triangleq (1-\gamma) \, \mathbb{E}_\pi \left[
+    \sum_{t=0}^{\infty} \gamma^t \, p(s_{t+1} = s_f \mid s_t, a_t)
+    \right]
+    \label{eq:successor_measure_intro}
+\end{equation}
+ 
+Hệ số $(1-\gamma)$ chuẩn hóa để $p^\pi$ là một phân phối xác suất hợp
+lệ (tổng bằng 1). Phiên bản có điều kiện $p^\pi(s_f \mid s, a)$ cho
+biết xác suất đến $s_f$ khi bắt đầu từ trạng thái $s$ và thực hiện
+hành động $a$.
+ 
+\subsubsection{Ý nghĩa trực quan}
+ 
+Successor measure trả lời câu hỏi: ``Nếu agent bắt đầu từ trạng thái
+$s$ và theo policy $\pi$, nó có bao nhiêu khả năng ghé thăm trạng thái
+$s_f$ trong tương lai?'' Khái niệm này tổng quát hóa Q-function: trong
+khi Q-function tính tổng phần thưởng kỳ vọng, successor measure tính
+phân phối đầy đủ trên các trạng thái tương lai.
+ 
+\subsubsection{Liên hệ với Q-function}
+ 
+Kết nối giữa successor measure và Q-function rất trực tiếp. Nếu có
+successor measure $p^\pi(s_f \mid s, a)$ và tập trạng thái có nhãn
+thưởng $r(s_f)$, ta có thể tính Q-function bằng:
+ 
+\begin{equation}
+    Q^\pi(s, a) = \mathbb{E}_{s_f \sim p^\pi(\cdot|s,a)} \left[
+    r(s_f) \right] = \int r(s_f) \, p^\pi(s_f \mid s, a) \, ds_f
+    \label{eq:q_from_succ}
+\end{equation}
+ 
+Điều này có ý nghĩa lớn: nếu học được successor measure một lần, ta có
+thể tính Q-function cho \textbf{bất kỳ reward function nào} mà không
+cần huấn luyện lại -- đây là nền tảng cho zero-shot RL được trình bày
+trong Phần III.
+ 
+\subsubsection{Tính toán qua Bellman}
+ 
+Successor measure thỏa mãn một phương trình Bellman tương tự
+Q-function:
+ 
+\begin{equation}
+    p^\pi(s_f \mid s, a) = (1-\gamma) \, p(s' = s_f \mid s, a)
+    + \gamma \, \mathbb{E}_{s' \sim p(\cdot|s,a), \; a' \sim \pi(\cdot|s')}
+    \bigl[ p^\pi(s_f \mid s', a') \bigr]
+    \label{eq:bellman_succ}
+\end{equation}
+ 
+Tính chất này cho phép ước lượng successor measure từ dữ liệu
+off-policy bằng Temporal Difference learning, tương tự như cách ta ước
+lượng Q-function. Đây là lý do successor measure có thể được học hiệu
+quả từ dữ liệu tương tác.
+ 
+\subsubsection{Vị trí trong Tutorial}
+ 
+Successor measure xuất hiện ở nhiều phần khác nhau của tutorial với
+các vai trò đa dạng. Trong Phần II, nó mô tả phân phối trạng thái đích
+của goal-reaching problem. Trong Phần III, nó là likelihood của
+``interactive generative model'' cần được ước lượng. Trong zero-shot
+RL, các biểu diễn forward-backward học cách phân tích tử successor
+measure để cho phép tính policy tối ưu cho bất kỳ reward function nào
+chỉ trong vài bước tính toán.
+ 
+% ---------------------------------------------------------------------
+\subsection{Bảng đối chiếu RL và Generative Modeling}
+% ---------------------------------------------------------------------
+ 
+Một trong những đóng góp quan trọng nhất của tutorial là chỉ ra sự
+tương đương toán học giữa RL và Generative Modeling. Bảng~\ref{tab:rl_genai}
+tổng hợp các khái niệm tương ứng giữa hai lĩnh vực, giúp hiểu tại sao
+kỹ thuật từ lĩnh vực này có thể áp dụng cho lĩnh vực kia.
+ 
+\begin{table}[H]
+    \centering
+    \caption{Các khái niệm tương đương giữa RL và Generative Modeling.
+    Nguồn: \cite{eysenbach2025tutorial}.}
+    \label{tab:rl_genai}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Reinforcement Learning} & \textbf{Generative Modeling} &
+        \textbf{Ý nghĩa chung} \\
+        \midrule
+        Policy $\pi(a \mid s)$ & Generative model $p(x)$ & Phân phối
+        cần học \\
+        Score function $\nabla_\theta \log \pi(a \mid s)$ & Score
+        $\nabla_x \log p(x)$ & Gradient của log-xác suất \\
+        Return $R(\tau)$ & Log-likelihood $\log p(x)$ & Tín hiệu học \\
+        Trajectory $\tau$ & Latent variable $z$ & Biến tiềm ẩn \\
+        Policy gradient & Score function estimator & Cách tối ưu phân
+        phối \\
+        Q-function $Q(s,a)$ & Likelihood ratio
+        $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương
+        lai \\
+        Occupancy measure $d^\pi(s,a)$ & Data distribution $p(x)$ &
+        Phân phối muốn matching \\
+        Bellman equation & Markov property & Cấu trúc đệ quy \\
+        Skill label $z$ & Latent code $z$ trong VAE & Điều khiển hành
+        vi \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+ 
+Hiểu bảng này giúp đọc phần nội dung chính dễ hơn đáng kể: mỗi khi
+tutorial dùng kỹ thuật từ một lĩnh vực để giải quyết bài toán của
+lĩnh vực kia, đều có thể truy về một cặp tương đương trong
+bảng~\ref{tab:rl_genai}.
