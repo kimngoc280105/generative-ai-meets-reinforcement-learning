@@ -1,14 +1,12 @@
-\documentclass[12pt, a4paper]{article}
+\documentclass[12pt,a4paper]{article}
 
-% ========== GÓI CẦN THIẾT ==========
+% ========== GOI CAN THIET ==========
 \usepackage[utf8]{inputenc}
 \usepackage[T5]{fontenc}
 \usepackage[vietnamese]{babel}
-\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
 \usepackage{graphicx}
-\usepackage{amsmath, amssymb, amsthm}
-\usepackage{hyperref}
-\usepackage{url}
+\usepackage{amsmath,amssymb,amsthm}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{multirow}
@@ -22,17 +20,18 @@
 \usepackage{indentfirst}
 \usepackage{algorithm}
 \usepackage{tikz}
-\usetikzlibrary{shapes, arrows.meta, positioning, calc}
+\usetikzlibrary{shapes,arrows.meta,positioning,calc}
 \usepackage{algpseudocode}
 \usepackage{listings}
-\usepackage{cite}
-\setlength{\headheight}{14.5pt}
-\addtolength{\topmargin}{-2.5pt}
+\usepackage{url}
+\usepackage{hyperref}
 
-% ========== CÀI ĐẶT TRANG ==========
+% ========== CAI DAT TRANG ==========
 \onehalfspacing
 \setlength{\parindent}{1cm}
 \setlength{\parskip}{6pt}
+\setlength{\headheight}{16.6pt}
+\addtolength{\topmargin}{-2.1pt}
 
 % ========== HEADER/FOOTER ==========
 \pagestyle{fancy}
@@ -52,7 +51,8 @@
 
 \begin{document}
 
-% ========== TRANG BÌA ==========
+% ========== TRANG BIA ==========
+\pagenumbering{gobble}
 \begin{titlepage}
     \centering
     \vspace*{1cm}
@@ -60,22 +60,24 @@
     {\large \textbf{TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}}\\[0.3cm]
     {\large \textbf{KHOA CÔNG NGHỆ THÔNG TIN}}\\[2cm]
     {\LARGE \textbf{BÁO CÁO ĐỒ ÁN 3}}\\[0.5cm]
-    {\Large \textbf{CÁC CHỦ ĐỀ MỚI \\ TRONG NGHIÊN CỨU HỌC MÁY}}\\[1cm]
+    {\Large \textbf{CÁC CHỦ ĐỀ MỚI TRONG NGHIÊN CỨU HỌC MÁY}}\\[1cm]
     \rule{\linewidth}{0.5pt}\\[0.5cm]
     {\large \textbf{Generative AI Meets Reinforcement Learning}}\\[0.2cm]
     {\normalsize ICML 2025 Tutorial -- Benjamin Eysenbach \& Amy Zhang}\\[0.3cm]
     \rule{\linewidth}{0.5pt}\\[1.5cm]
+
     \begin{tabular}{ll}
         \textbf{Môn học:}    & Nhập môn Học Máy \\
         \textbf{Mã môn:}     & CSC14005 \\
         \textbf{Học kỳ:}     & Học kỳ 2 -- 2025/2026 \\
-        \textbf{Giảng viên:} & Th.S Lê Nhựt Nam \\
+        \textbf{Giảng viên:} & ThS. Lê Nhựt Nam \\
     \end{tabular}\\[2cm]
+
     \begin{tabular}{|c|l|l|}
         \hline
         \textbf{MSSV} & \textbf{Họ và tên} & \textbf{Phần đóng góp} \\
         \hline
-        23120059 & Trần Đình Luân & Tổng quan, Kiến thức nền \\
+        23120059 & Trần Đình Luân & Tổng quan, kiến thức nền \\
         \hline
         23120063 & Nguyễn Thành Nguyên & Nội dung chính -- Phần 1 \\
         \hline
@@ -83,61 +85,29 @@
         \hline
         23120084 & Nguyễn Mạnh Thắng & Demo thực nghiệm \\
         \hline
-        23120064 & Nguyễn Thiện Nhân & Đánh giá, Kết luận \\
+        23120064 & Nguyễn Thiện Nhân & Đánh giá, kết luận \\
         \hline
     \end{tabular}\\[2cm]
 \end{titlepage}
 
-% ========== MỤC LỤC ==========
+% ========== MUC LUC ==========
+\pagenumbering{roman}
 \tableofcontents
 \newpage
 \listoffigures
 \newpage
 
-% ========== NỘI DUNG ==========
+% ========== NOI DUNG ==========
+\pagenumbering{arabic}
 \include{sections/tv1_tong_quan_kien_thuc_nen}
 \include{sections/tv2_noi_dung_phan_1}
 \include{sections/tv3_noi_dung_phan_2}
 \include{sections/tv4_thuc_nghiem}
 \include{sections/tv5_danh_gia_ket_luan}
 
-% ========== TÀI LIỆU THAM KHẢO ==========
+% ========== TAI LIEU THAM KHAO ==========
 \newpage
-\begin{thebibliography}{99}
-
-\bibitem{eysenbach2025tutorial}
-Eysenbach, B., \& Zhang, A. (2025).
-\textit{Generative AI Meets Reinforcement Learning}.
-ICML 2025 Tutorial.
-\url{https://generative-rl-tutorial.github.io/}
-
-\bibitem{sikchi2025rlzero}
-Sikchi, H., et al. (2025).
-\textit{RLZero: Direct Policy Inference from Language Without In-Domain Supervision}.
-NeurIPS 2025.
-
-\bibitem{mao2024diffusiondice}
-Mao, L., et al. (2024).
-\textit{Diffusion-DICE: In-Sample Diffusion Guidance for Offline Reinforcement Learning}.
-NeurIPS 2024.
-
-\bibitem{black2024ddpo}
-Black, K., et al. (2024).
-\textit{Training Diffusion Models with Reinforcement Learning}.
-ICLR 2024.
-
-\bibitem{eysenbach2022contrastive}
-Eysenbach, B., et al. (2022).
-\textit{Contrastive Learning as Goal-Conditioned Reinforcement Learning}.
-NeurIPS 2022.
-
-\bibitem{touati2021fb}
-Touati, A., \& Ollivier, Y. (2021).
-\textit{Learning One Representation to Optimize All Rewards}.
-NeurIPS 2021.
-
-% [Thêm tài liệu tham khảo khác vào đây]
-
-\end{thebibliography}
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}
