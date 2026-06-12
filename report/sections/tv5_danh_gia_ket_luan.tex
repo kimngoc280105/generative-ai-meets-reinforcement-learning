@@ -1,50 +1,250 @@
-% TV5 phụ trách -- Đánh giá, Nhận xét, Kết luận
+% TV5 phụ trách -- Đánh giá, Kết luận
+% Sinh viên: 23120064 -- Nguyễn Thiện Nhân
 
 % =====================================================================
-\section{Đánh giá và Nhận xét}
+\section{Đánh giá và Kết luận}
 % =====================================================================
 
-\subsection{Ưu điểm}
-% Gợi ý:
-%   - RLZero: không cần dữ liệu có nhãn, inference ~25 giây
-%   - Góc nhìn thống nhất GenAI và RL
-%   - Skill learning: không cần demonstrations
-%   - Successor measure: zero-shot cho mọi reward function
+% ---------------------------------------------------------------------
+\subsection{Đánh giá tổng thể tutorial}
+% ---------------------------------------------------------------------
 
-[Nội dung TV5 điền vào đây]
+\subsubsection{Đóng góp khoa học chính}
 
-\subsection{Hạn chế}
-% Gợi ý:
-%   - Video generation model còn yếu
-%   - Semantic search thất bại khi background nhiễu
-%   - Reward engineering vẫn cần cho một số bài toán
-%   - Generalization vẫn là bài toán mở
+Tutorial \textit{Generative AI Meets Reinforcement Learning} của Eysenbach và Zhang~\cite{eysenbach2025tutorial} trình bày
+một khung nhìn thống nhất về mối quan hệ hai chiều giữa hai lĩnh vực từng được coi là tương đối độc lập.
+Đóng góp khoa học có thể được tóm gọn theo ba luận điểm cốt lõi.
 
-[Nội dung TV5 điền vào đây]
+\textbf{Luận điểm 1: Generative models là công cụ mạnh cho RL.}
+Bằng cách thay thế các thành phần truyền thống của RL (world model, policy) bằng các mô hình sinh hiện đại như
+diffusion model, transformer hay flow matching, hiệu năng của thuật toán RL có thể được cải thiện đáng kể mà
+không cần thiết kế lại toàn bộ kiến trúc thuật toán.
+Cụ thể, diffusion policy trong offline RL (ví dụ Diffusion-DICE~\cite{mao2024diffusiondice}) cho thấy rằng biểu diễn
+phân phối đa mode của hành động là yếu tố quan trọng trong các bài toán có không gian hành động phức tạp.
 
+\textbf{Luận điểm 2: Quá trình tương tác RL là một generative model.}
+Tutorial làm rõ rằng policy tương tác với môi trường tạo thành một mô hình sinh của các quan sát tương lai.
+Xác suất đến được một trạng thái $s_f$ trong tương lai -- tức \textit{discounted state occupancy measure} hay
+\textit{successor measure} -- đóng vai trò tương đương với likelihood trong các mô hình sinh truyền thống.
+Nhận thức này dẫn tới các thuật toán goal-conditioned RL không cần thiết kế reward thủ công, thay vào đó
+định nghĩa bài toán hoàn toàn qua dữ liệu (trạng thái đích mong muốn).
+
+\textbf{Luận điểm 3: RL là công cụ để huấn luyện và cải thiện generative models.}
+Quá trình denoising của diffusion model có thể được mô hình hóa như một MDP nhiều bước,
+cho phép fine-tune model theo các mục tiêu downstream không biểu diễn được bằng likelihood (DDPO~\cite{black2024ddpo}).
+Mở rộng hơn, self-supervised RL cho phép xây dựng các Behavioral Foundation Model khám phá và nén không
+gian hành vi của môi trường mà không cần dữ liệu curated hay reward thủ công.
+
+\subsubsection{Tính nhất quán và mạch lạc của framework}
+
+Điểm đáng chú ý là tutorial xây dựng được một luận điểm nhất quán từ đầu đến cuối.
+Bắt đầu từ quan sát đơn giản rằng score function -- đối tượng trung tâm của generative modeling --
+xuất hiện trực tiếp trong policy gradient của RL, tutorial dần mở rộng mối liên hệ này qua nhiều lớp:
+từ reward-weighted regression, đến dual RL, đến successor measure, rồi đến temporal contrastive learning
+và cuối cùng là zero-shot RL.
+Mỗi bước đều có nền tảng toán học rõ ràng và kết nối trực tiếp với bước tiếp theo.
+
+Cách trình bày này giúp người đọc không chỉ nắm bắt từng phương pháp cụ thể mà còn hiểu được
+\textit{tại sao} các kết nối đó tồn tại ở mức nguyên lý, từ đó có thể tự suy ra các biến thể và mở rộng.
+
+% ---------------------------------------------------------------------
+\subsection{Ưu điểm của hướng tiếp cận}
+% ---------------------------------------------------------------------
+
+\subsubsection{Loại bỏ sự phụ thuộc vào reward engineering}
+
+Một trong những nút thắt lớn nhất khi triển khai RL trong thực tế là việc thiết kế hàm reward.
+Reward phải vừa phản ánh đúng mục tiêu của người dùng, vừa đủ dense để tạo gradient học, vừa không
+bị mô hình khai thác theo cách không mong muốn.
+Trong nhiều ứng dụng thực tế -- robot dọn phòng, phẫu thuật robot, tổng hợp hóa học -- việc mã hóa
+``mục tiêu'' thành scalar reward là gần như bất khả thi.
+
+Khung goal-conditioned RL được trình bày trong tutorial giải quyết vấn đề này một cách triệt để.
+Bằng cách định nghĩa bài toán qua \textit{dữ liệu} (quan sát mục tiêu $g$) thay vì scalar,
+người dùng chỉ cần cung cấp ví dụ về trạng thái mong muốn.
+Phần còn lại -- bao gồm đánh giá chính sách và tối ưu -- được dẫn xuất tự động từ cấu trúc xác suất.
+Điều này về cơ bản đưa RL đến gần hơn với phương pháp luận học máy tiêu chuẩn: bài toán được định
+nghĩa qua dữ liệu, không phải qua code đặc thù.
+
+\subsubsection{Mở rộng năng lực biểu diễn của policy}
+
+Việc sử dụng diffusion model hay transformer làm policy mang lại khả năng biểu diễn phân phối hành
+động đa mode -- điều mà Gaussian policy truyền thống không làm được.
+Trong các bài toán robot manipulation hay tổng hợp hóa học, thường tồn tại nhiều chuỗi hành động hợp lệ
+để đạt cùng một mục tiêu.
+Policy Gaussian sẽ trung bình hóa các mode này, dẫn tới các hành động không hợp lệ.
+Diffusion policy tránh được vấn đề này bằng cách biểu diễn trực tiếp phân phối đa mode.
+
+\subsubsection{Khả năng học không cần giám sát và dữ liệu tự thu thập}
+
+Góc nhìn self-supervised RL (Phần IV của tutorial) giải quyết câu hỏi cơ bản: dữ liệu từ đâu mà có?
+Thay vì phụ thuộc vào dataset curated do con người tạo ra, agent có thể tự khám phá môi trường,
+thu thập dữ liệu và tổ chức kiến thức thông qua skill learning.
+Khung Behavioral Foundation Model~\cite{eysenbach2025tutorial} cho thấy rằng
+quá trình học như vậy có thể tạo ra các biểu diễn kỹ năng có khả năng tổng quát hóa mạnh,
+sẵn sàng được \textit{prompt} để giải quyết downstream task mới -- tương tự LLM nhưng trong không gian
+hành vi thay vì không gian ngôn ngữ.
+
+% ---------------------------------------------------------------------
+\subsection{Hạn chế và thách thức còn tồn tại}
+% ---------------------------------------------------------------------
+
+\subsubsection{Hạn chế về khả năng mở rộng (scalability)}
+
+Mặc dù có nền tảng lý thuyết vững chắc, phần lớn các phương pháp được trình bày trong tutorial
+vẫn được thực nghiệm trên các môi trường quy mô nhỏ hoặc trung bình (MuJoCo, Atari, maze navigation).
+Khi chuyển sang các bài toán thực tế với không gian trạng thái và hành động cực kỳ lớn --
+ví dụ robot thao tác trong môi trường chưa biết, hay điều khiển lò phản ứng hạt nhân --
+các thuật toán hiện tại vẫn đối mặt với thách thức về hiệu quả mẫu và độ ổn định huấn luyện.
+
+Temporal contrastive learning và successor measure estimation đòi hỏi lượng dữ liệu lớn để ước lượng
+chính xác trong không gian chiều cao.
+Mặc dù các biểu diễn log-linear (Section 4.6 của tutorial) có một số tính chất lý thuyết tốt,
+tính thực tiễn ở quy mô lớn vẫn cần được kiểm chứng thêm.
+
+\subsubsection{Vấn đề phân phối lệch (distribution shift)}
+
+Phần lớn các phương pháp offline RL trong tutorial đều đối mặt với vấn đề distribution shift:
+policy được học từ dữ liệu của behavior policy, nhưng sau đó được triển khai theo phân phối khác.
+Diffusion-DICE giải quyết phần nào vấn đề này thông qua guide-then-select, nhưng vẫn phụ thuộc vào
+giả định rằng dataset offline đủ phong phú để phủ được vùng hành động tối ưu.
+
+Trong setting online hay hybrid, vấn đề trở nên phức tạp hơn khi policy liên tục cập nhật và
+phân phối dữ liệu thay đổi theo.
+Các thuật toán dual RL (Section 3.4) cung cấp công cụ lý thuyết để phân tích vấn đề này,
+nhưng cài đặt thực tế vẫn yêu cầu nhiều kỹ thuật ổn định hóa bổ sung.
+
+\subsubsection{Phụ thuộc vào chất lượng reward model}
+
+Đối với các phương pháp kết hợp reward trong RL fine-tuning generative models (ví dụ DDPO),
+chất lượng toàn bộ hệ thống phụ thuộc trực tiếp vào độ chính xác của reward model.
+Khi reward model chỉ là một proxy hẹp cho mục tiêu thực sự của người dùng,
+mô hình có thể tối ưu proxy thay vì cải thiện chất lượng thực -- hiện tượng \textit{reward hacking}.
+Đây là vấn đề không chỉ của DDPO mà của toàn bộ paradigm RLHF (Reinforcement Learning from Human Feedback)
+và đang là chủ đề nghiên cứu tích cực trong cộng đồng.
+
+\subsubsection{Thách thức trong khái quát hóa (generalization)}
+
+Tutorial kết thúc bằng lời kêu gọi về vai trò của generalization trong RL (Section 6 của tutorial).
+Đây là một thiếu hụt hiện tại quan trọng: trong khi các mô hình ngôn ngữ và hình ảnh có thể
+generalize tốt sang các input chưa gặp trong training, hầu hết các RL agent vẫn bị
+overfitting vào môi trường và phân phối task cụ thể đã train.
+Skill learning và successor measure cung cấp một số công cụ để giải quyết vấn đề này,
+nhưng khả năng generalize của RL agent vẫn còn kém xa so với LLM hay visual generative models.
+
+% ---------------------------------------------------------------------
 \subsection{Hướng nghiên cứu tương lai}
-% Gợi ý:
-%   - Dùng video generation model lớn hơn
-%   - Generalization trong RL
-%   - RL để train foundation models
-%   - AI agents tương tác thế giới thực
+% ---------------------------------------------------------------------
 
-[Nội dung TV5 điền vào đây]
+\subsubsection{Tích hợp nền tảng mô hình (foundation models) với RL}
 
-\subsection{Nhận xét của nhóm}
-% Gợi ý:
-%   - Điểm thú vị nhất
-%   - Điểm còn chưa rõ ràng
-%   - Ứng dụng thực tế tiềm năng
+Một hướng nghiên cứu hứa hẹn là tận dụng các foundation model (LLM, vision-language model)
+như nguồn prior kiến thức để khởi động quá trình học RL.
+Trong khi tutorial giới thiệu RLZero như một bước đầu tiên -- dùng video generative model để
+tưởng tượng hành vi mục tiêu -- vẫn còn nhiều câu hỏi mở về cách kết hợp
+language grounding, visual perception và decision-making trong một framework thống nhất.
 
-[Nội dung TV5 điền vào đây]
+Đặc biệt, khả năng suy luận theo ngữ cảnh dài của LLM có thể bổ sung hiệu quả cho successor measure
+trong việc lập kế hoạch nhiều bước.
+Thay vì chỉ ước lượng xác suất đến trạng thái $s_f$ theo phân phối hình học,
+có thể kết hợp với khả năng lập kế hoạch ngôn ngữ để xử lý các task phức tạp hơn.
 
-% =====================================================================
-\section{Kết luận}
-% =====================================================================
-% Gợi ý:
-%   - Nhắc lại 4 phần chính của tutorial
-%   - Ý tưởng cốt lõi: GenAI và RL bổ sung cho nhau
-%   - Tầm quan trọng trong tương lai AI
+\subsubsection{Cải thiện hiệu quả mẫu trong môi trường thực}
 
-[Nội dung TV5 điền vào đây]
+Đối với các ứng dụng thực tế như robotics hay y tế, số lượng tương tác với môi trường bị giới hạn
+nghiêm ngặt.
+Các phương pháp model-based RL (Section 2.2) kết hợp với world model chất lượng cao (ví dụ diffusion-based
+world model) là hướng đi tự nhiên để giảm yêu cầu dữ liệu thực.
+Tuy nhiên, như tutorial đề cập, compounding error của world model vẫn là thách thức lớn cần
+các kỹ thuật phát hiện và điều chỉnh hiệu quả hơn.
+
+\subsubsection{Reward-free RL ở quy mô lớn}
+
+Skill learning và self-supervised RL (Phần IV) đặt nền móng cho RL không cần reward.
+Bước tiếp theo là đưa paradigm này lên quy mô lớn hơn, tương đương với scale của LLM pretraining.
+Câu hỏi mở bao gồm: làm thế nào thiết kế không gian skill $\mathcal{Z}$ sao cho đủ phong phú
+để biểu diễn đa dạng hành vi? Làm thế nào kết hợp skill learning với instruction following để tạo
+ra các agent thực sự có thể nhận lệnh ngôn ngữ?
+
+\subsubsection{Lý thuyết về generalization trong RL}
+
+Như tutorial nhấn mạnh, generalization là \textit{the next frontier} của RL.
+Cần xây dựng lý thuyết rõ ràng về khi nào và tại sao các biểu diễn học từ một tập task
+có thể transfer sang task mới.
+Kết quả về \textit{horizon generalization}~\cite{eysenbach2025tutorial} -- train trên task ngắn, giải được
+task dài -- là một tín hiệu tích cực, nhưng vẫn còn hạn chế ở các setting đặc thù.
+Việc mở rộng các kết quả này sang không gian trạng thái và hành động liên tục, đa chiều là
+một bài toán lý thuyết quan trọng.
+
+% ---------------------------------------------------------------------
+\subsection{Nhận xét về ý nghĩa thực tiễn}
+% ---------------------------------------------------------------------
+
+Nhìn từ góc độ ứng dụng, framework được trình bày trong tutorial có ý nghĩa thực tiễn rõ ràng
+trong ít nhất ba lĩnh vực.
+
+Đối với \textbf{robotics}, khả năng học goal-reaching từ video demonstration mà không cần reward
+(GCBC, goal-conditioned RL) và khả năng biểu diễn policy đa mode (diffusion policy) trực tiếp
+giải quyết hai điểm yếu lớn nhất của robot learning hiện tại: thiếu dữ liệu có nhãn reward và
+sự đa dạng của chuỗi hành động hợp lệ.
+
+Đối với \textbf{LLM agents}, việc nhìn nhận chuỗi token generation như một MDP (tương tự DDPO áp
+dụng cho diffusion model) cung cấp nền tảng lý thuyết cho RLHF và các phương pháp fine-tuning
+bằng reward.
+Framework dual RL và successor measure còn gợi ý các cách mới để đánh giá và tối ưu khả năng
+lập kế hoạch của LLM mà không phụ thuộc vào human annotation.
+
+Đối với \textbf{khoa học và kỹ thuật} (điều khiển lò phản ứng, thiết kế phân tử, tối ưu hóa
+quy trình công nghiệp), việc kết hợp world model chất lượng cao với thuật toán RL hiệu quả mẫu
+mở ra khả năng học chính sách tốt với rất ít tương tác thực với hệ thống vật lý -- giảm thiểu
+chi phí và rủi ro trong quá trình thực nghiệm.
+
+% ---------------------------------------------------------------------
+\subsection{Kết luận}
+% ---------------------------------------------------------------------
+
+Tutorial \textit{Generative AI Meets Reinforcement Learning} của Eysenbach và Zhang tại ICML 2025
+trình bày một quan điểm thống nhất và có chiều sâu về mối quan hệ giữa hai lĩnh vực.
+Từ reward-weighted regression, diffusion policy, Diffusion-DICE đến temporal contrastive learning,
+dual RL, skill learning và zero-shot RL, mỗi chủ đề đều được gắn kết bởi một ngôn ngữ toán học
+chung: phân phối xác suất trên trajectory, score function, và successor measure.
+
+Báo cáo này đã tổng hợp và trình bày các nội dung chính của tutorial qua bốn phần:
+kiến thức nền về RL và generative models (Phần 2),
+ứng dụng generative models trong RL bao gồm world model, diffusion policy và DDPO (Phần 3),
+tương tác như generative model -- goal-conditioned RL, dual RL, successor measure và skill learning (Phần 4),
+cùng với kết quả thực nghiệm minh họa (Phần 5).
+
+Nhóm nhận thấy rằng đóng góp lớn nhất của tutorial không chỉ nằm ở các thuật toán cụ thể,
+mà ở chỗ nó cung cấp một \textit{khung nhìn} giúp các nhà nghiên cứu từ cả hai phía --
+generative modeling và RL -- có thể đọc hiểu kết quả của nhau và phát triển ý tưởng mới ở giao thoa.
+Khi mô hình ngôn ngữ lớn và các hệ thống agent ngày càng phát triển,
+sự hợp nhất giữa generative AI và reinforcement learning không còn là một
+hướng nghiên cứu tùy chọn mà đang trở thành nền tảng không thể thiếu.
+
+\begin{table}[H]
+    \centering
+    \caption{Tóm tắt các phương pháp chính và vị trí trong framework}
+    \label{tab:summary}
+    \begin{tabular}{p{3.5cm} p{4cm} p{4.5cm}}
+        \toprule
+        \textbf{Phương pháp} & \textbf{Vai trò} & \textbf{Đóng góp chính} \\
+        \midrule
+        Reward-weighted Regression & Dữ liệu trong RL & Kết nối RL và maximum likelihood \\
+        \midrule
+        Diffusion Policy / Diffusion-DICE & Policy biểu diễn phong phú & Xử lý phân phối đa mode trong offline RL \\
+        \midrule
+        DDPO & Fine-tune generative model & RL objective cho diffusion model \\
+        \midrule
+        Goal-conditioned RL / GCBC & Loại bỏ reward engineering & Định nghĩa bài toán qua dữ liệu \\
+        \midrule
+        Temporal Contrastive Learning & Ước lượng successor measure & Học biểu diễn không cần reward \\
+        \midrule
+        Dual RL / DICE & Phân tích phân phối dữ liệu & Thống nhất on-policy và off-policy \\
+        \midrule
+        Skill Learning / BFM & Khám phá và tổ quát hóa & Agent tự tạo dữ liệu và kỹ năng \\
+        \midrule
+        RLZero & Zero-shot task inference & Điều khiển từ ngôn ngữ, không cần giám sát \\
+        \bottomrule
+    \end{tabular}
+\end{table}
