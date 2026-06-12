@@ -5,7 +5,7 @@
 % =====================================================================
 
 % =====================================================================
-\subsection{Phần III: Học Likelihoods}
+\subsection{Học Likelihoods}
 % =====================================================================
 
 Phần II đã giới thiệu cách nhìn nhận tương tác như một quá trình
@@ -45,6 +45,37 @@ trạng thái $s$ và thực hiện hành động $a$.
     cho RL. Nguồn: \cite{eysenbach2025tutorial}.}
     \label{fig:successor_measure}
 \end{figure}
+
+% ---------------------------------------------------------------------
+\subsubsection{Ước lượng Density Trực tiếp}
+% ---------------------------------------------------------------------
+
+\paragraph{Phương pháp Trực tiếp và Hạn chế}
+
+Một cách tiếp cận trực quan để ước lượng $p^\pi(s_f)$ là sử dụng các
+mô hình generative hiện đại như \textbf{flow-matching}, \textbf{GANs},
+hoặc \textbf{normalizing flows} để học phân phối của các trạng thái mà
+agent thực sự ghé thăm. Sau khi có mô hình mật độ, bài toán
+goal-reaching được giải quyết bằng cách tối đa hóa xác suất đến trạng
+thái mục tiêu $g$:
+
+\begin{equation}
+    \arg\max_a \; p^\pi(s_f = g \mid s, a)
+    \label{eq:direct_density}
+\end{equation}
+
+Tuy nhiên, cách tiếp cận này gặp phải một khó khăn cơ bản:
+\textbf{ước lượng mật độ trong không gian chiều cao} là cực kỳ khó
+khăn. Với không gian trạng thái liên tục nhiều chiều (như hình ảnh
+hoặc trạng thái robot), các phương pháp density estimation trực tiếp
+bị ảnh hưởng bởi curse of dimensionality và đòi hỏi lượng dữ liệu
+rất lớn để hội tụ.
+
+Nhận thức này dẫn đến hướng tiếp cận hiệu quả hơn: thay vì ước lượng
+$p^\pi(s_f)$ trực tiếp, ta chỉ cần ước lượng \textbf{tỉ lệ xác suất
+tương đối} (relative likelihood) -- một bài toán dễ hơn và có thể
+được quy về bài toán phân loại nhị phân
+\cite{eysenbach2025tutorial}.
 
 % ---------------------------------------------------------------------
 \subsubsection{Temporal Contrastive Learning}
@@ -256,6 +287,51 @@ log-linear có một số tính chất nổi bật:
 \end{itemize}
 
 % ---------------------------------------------------------------------
+\subsubsection{Proto-Successor Measure (PSM)}
+% ---------------------------------------------------------------------
+
+\paragraph{Tập hợp Affine của Successor Measures}
+
+Các biểu diễn Forward-Backward đã cho phép ước lượng Q-function cho
+bất kỳ reward function nào thông qua một tích vô hướng. Tuy nhiên, có
+thể tổng quát hóa thêm: tập hợp tất cả các successor measures có thể
+học được tạo thành một \textbf{affine set} và được mô hình hóa qua:
+
+\begin{equation}
+    M^\pi(s, a, s_f) = \Phi(s, a, s_f)^\top w^\pi + b(s, a, s_f)
+    \label{eq:psm}
+\end{equation}
+
+trong đó $\Phi(s, a, s_f)$ là một \textbf{basis set} chung cho tất cả
+các policy, và $w^\pi$ là vector trọng số phụ thuộc vào policy cụ thể.
+\textbf{Proto-Successor Measure (PSM)} là ý tưởng học chính các basis
+functions $\Phi$ này từ dữ liệu transitions offline; khi đó, với bất
+kỳ policy $\pi$ mới nào, chỉ cần tìm $w^\pi$ phù hợp mà không cần
+học lại biểu diễn từ đầu.
+
+\paragraph{Liên hệ với RLZero và Zero-shot RL}
+
+PSM có một tính chất quan trọng: khi được huấn luyện trên dữ liệu
+offline từ nhiều policy khác nhau, PSM học được một \textbf{biểu diễn
+phổ quát của hành vi} -- không phụ thuộc vào policy hay reward function
+cụ thể nào. Đây là \textbf{nền tảng kỹ thuật} trực tiếp cho
+RLZero \cite{sikchi2025rlzero}:
+
+\begin{enumerate}
+    \item PSM cung cấp backward representation $\phi(s)$ đã được
+    pretrain trên dữ liệu offline của môi trường.
+    \item Khi nhận expert trajectory $\{s_1, \ldots, s_T\}$ (từ
+    ngôn ngữ hay video), RLZero chỉ cần tính trung bình:
+    $z_{\text{imit}} = \mathbb{E}_{\rho^E}[\phi(s)]$.
+    \item Điểm $z_{\text{imit}}$ tra vào PSM cho ra policy tối
+    ưu tức thì -- không cần gradient update, không cần interaction
+    mới với môi trường.
+\end{enumerate}
+
+Nói cách khác, PSM cung cấp ``từ điển hành vi'' mà RLZero tra cứu để
+biến ngôn ngữ tự nhiên thành policy \cite{eysenbach2025tutorial}.
+
+% ---------------------------------------------------------------------
 \subsubsection{RLZero: Zero-shot RL từ Ngôn ngữ Tự nhiên}
 % ---------------------------------------------------------------------
 
@@ -358,36 +434,34 @@ Stickman. Kết quả (Bảng~\ref{tab:rlzero_results}) cho thấy:
 
 \begin{table}[H]
     \centering
-    \caption{Win rate của các phương pháp khi so sánh với baseline
-    TD3+Image-language reward. Nguồn: \cite{sikchi2025rlzero}.}
+    \caption{Win rate của các phương pháp khi đánh giá bằng GPT-4o-preview
+    trên 25 tasks trong DeepMind Control Suite. Nguồn: \cite{sikchi2025rlzero}.}
     \label{tab:rlzero_results}
-    \begin{tabular}{lcc}
+    \begin{tabular}{lc}
         \toprule
-        \textbf{Phương pháp} & \textbf{Win Rate} &
-        \textbf{Thời gian Inference} \\
+        \textbf{Phương pháp} & \textbf{Win Rate} \\
         \midrule
-        Image-language reward (IQL)  & 51.2\% & Vài giờ \\
-        Video-language reward (TD3)  & 40.0\% & Vài giờ \\
-        GenRL                        & 76.8\% & 3--5 giờ/task \\
-        \textbf{RLZero (của chúng tôi)} & \textbf{83.2\%} &
-        \textbf{$\approx$25 giây} \\
+        Image-language reward (IQL)  & 51.2\% \\
+        Video-language reward (TD3)  & 40.0\% \\
+        \textbf{RLZero (của chúng tôi)} & \textbf{83.2\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-RLZero đạt win rate \textbf{83.2\%} so với baseline tốt nhất (GenRL:
-76.8\%), đồng thời chỉ cần \textbf{khoảng 25 giây} để tạo ra policy
--- nhanh hơn GenRL tới hàng trăm lần (3--5 giờ training).
+RLZero đạt win rate \textbf{83.2\%} so với baseline tốt nhất
+(Image-language IQL: 51.2\%), đồng thời chỉ cần \textbf{khoảng 25 giây}
+\cite{sikchi2025rlzero} để tạo ra policy zero-shot mà không cần bất kỳ
+gradient update hay tương tác mới nào với môi trường.
 
 \paragraph{Cross-Embodiment Transfer}
 
 Một khả năng đặc biệt của RLZero là \textbf{cross-embodiment
 transfer}: có thể bỏ qua bước Imagine và trực tiếp dùng video từ
 YouTube (quay người thật) làm expert trajectory cho robot có hình dạng
-khác hoàn toàn. RLZero đạt win rate 80\% và 100\% lần lượt trên môi
-trường Stickman (2D Humanoid) và HumEnv (3D Humanoid) khi imitating
-video người thật -- điều mà chưa phương pháp nào trước đó làm được
-\cite{sikchi2025rlzero}.
+khác hoàn toàn. Trên 10 video YouTube trong môi trường Stickman
+(2D Humanoid), RLZero đạt win rate \textbf{80\%} so với SMODICE --
+phương pháp imitation learning từ state-only data -- điều mà chưa
+phương pháp nào trước đó làm được \cite{sikchi2025rlzero}.
 
 \paragraph{Tóm tắt Bài báo Gốc}
 
@@ -409,10 +483,10 @@ $z_{\text{imit}} = \mathbb{E}_{\rho^E}[\phi(s)]$ -- không yêu cầu
 gradient updates hay tương tác với môi trường.
 
 Kết quả thực nghiệm trên 25 tasks trong DeepMind Control Suite cho
-thấy win rate 83.2\% so với baseline tốt nhất (GenRL: 76.8\%), với
-thời gian inference chỉ khoảng 25 giây so với 3--5 giờ của GenRL. Với
-cross-embodiment transfer từ video YouTube, RLZero đạt 80\% và 100\%
-trên môi trường Stickman và HumEnv.
+thấy win rate 83.2\% so với baseline tốt nhất (Image-language IQL:
+51.2\%), với thời gian inference chỉ khoảng 25 giây -- không cần
+training thêm. Với cross-embodiment transfer từ 10 video YouTube, RLZero
+đạt 80\% win rate trên môi trường Stickman khi bắt chước video người thật.
 
 Bài báo thừa nhận hai hạn chế chính. Thứ nhất, chất lượng pipeline
 phụ thuộc hoàn toàn vào khả năng của VFM -- khi VFM tưởng tượng sai
@@ -422,7 +496,7 @@ background distractors hoặc rough symmetries của agent, dẫn đến
 matching sai frame.
 
 % =====================================================================
-\subsection{Phần IV: Data Tự Sinh}
+\subsection{Data Tự Sinh}
 % =====================================================================
 
 Trong các phần trước, dữ liệu luôn được coi là cho trước. Phần IV đặt
@@ -457,6 +531,8 @@ Tuy nhiên, exploration không chỉ là đi khắp nơi -- mà còn là
 \textbf{chuẩn bị để giải quyết các nhiệm vụ mới trong tương lai}. Câu
 hỏi đặt ra là: làm thế nào để agent học các kỹ năng có thể tái sử
 dụng từ quá trình khám phá?
+
+
 
 % ---------------------------------------------------------------------
 \subsubsection{Empowerment}
@@ -494,6 +570,16 @@ cao, tích lũy khả năng hành động cho tương lai. Khái niệm này cũ
 được mở rộng sang setting \textbf{multi-agent}: thay vì tự empowerment
 bản thân, AI agent có thể học cách empowerment con người, hỗ trợ con
 người có nhiều lựa chọn và khả năng hành động hơn.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.78\textwidth]{images/empowerment.png}
+    \caption{Empowerment được đo bằng mutual information giữa hành động
+    và trạng thái tương lai. Vị trí ngã tư có empowerment cao (nhiều
+    phương án tác động đến tương lai) so với ngõ cụt (empowerment thấp).
+    Nguồn: \cite{eysenbach2025tutorial}.}
+    \label{fig:empowerment}
+\end{figure}
 
 % ---------------------------------------------------------------------
 \subsubsection{Skill Learning}
@@ -544,6 +630,40 @@ khuyến khích policy làm hành vi rõ ràng, dễ nhận biết.
 \textbf{Posterior optimization:} với policy $\pi$ cố định, cập nhật
 $q(z \mid s)$ bằng maximum likelihood trên dữ liệu $(s, z)$.
 
+\paragraph{Thuật toán Cụ thể: DIAYN và VISR}
+
+Framework trên được hiện thực hóa trong hai thuật toán tiêu biểu
+được đề cập trong tutorial:
+
+\textbf{DIAYN -- Diversity is All You Need}
+\cite{eysenbach2025tutorial} là cài đặt trực tiếp của mục tiêu mutual
+information trên, sử dụng SAC (Soft Actor-Critic) cho bước policy
+optimization và một mạng discriminator đơn giản làm $q(z \mid s)$.
+DIAYN huấn luyện hoàn toàn không có reward bên ngoài, chỉ dùng
+intrinsic reward $r_t = \log q(z \mid s_t) - \log p(z)$. Kết quả là
+agent tự học được các kỹ năng đa dạng (chạy, nhảy, cân bằng...) mà
+không cần bất kỳ reward engineering nào từ người dùng.
+
+\textbf{VISR -- Variational Intrinsic Successor Representations}
+\cite{eysenbach2025tutorial} kết hợp skill learning với successor
+representations: thay vì discriminator phân biệt skill từ trạng thái
+tức thì $s_t$, VISR học phân biệt skill từ toàn bộ successor
+feature -- tức là ``tất cả các trạng thái mà agent sẽ ghé thăm trong
+tương lai''. Điều này giúp skill có tính \textbf{temporal consistency}
+rõ ràng hơn và có thể được tái sử dụng trực tiếp trong zero-shot RL
+thông qua forward-backward representations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.82\textwidth]{images/skill_learning_diayn.png}
+    \caption{Minh họa Skill Learning (DIAYN): agent học các skill đa dạng
+    (chạy, nhảy, cân bằng) bằng cách tối đa hóa mutual information giữa
+    skill label $z$ và trajectory $\tau$. Discriminator $q(z|s)$ học nhận
+    biết skill từ trạng thái, tạo ra intrinsic reward cho policy. Nguồn:
+    \cite{eysenbach2025tutorial}.}
+    \label{fig:skill_learning}
+\end{figure}
+
 \paragraph{Giải quyết Downstream Tasks}
 
 Sau khi học xong tập skills, có nhiều cách sử dụng để giải quyết
@@ -591,13 +711,13 @@ giải quyết triệt để.
 
 \textbf{Hạn chế 1: ``What I Cannot Imagine, I Cannot Imitate''}
 
-Video generation model được sử dụng trong RLZero có kích thước khá
-nhỏ (khoảng 43 triệu tham số) và nhạy cảm với prompt engineering. Khi
-gặp các hành vi phức tạp (ví dụ: ``raise hand while standing in
-place''), model tưởng tượng sai hoàn toàn (Hình 4a trong
-\cite{sikchi2025rlzero}). Đây là một \textbf{bottleneck cơ bản}: chất
-lượng của toàn bộ pipeline phụ thuộc hoàn toàn vào khả năng tưởng
-tượng của video generation model.
+Video generation model được sử dụng trong RLZero (kiến trúc GRU +
+MLP ensemble từ GenRL \cite{sikchi2025rlzero}) nhạy cảm với prompt
+engineering. Khi gặp các hành vi phức tạp (ví dụ:
+``raise hand while standing in place''), model tưởng tượng sai hoàn
+toàn (Hình 4a trong \cite{sikchi2025rlzero}). Đây là một
+\textbf{bottleneck cơ bản}: chất lượng của toàn bộ pipeline phụ thuộc
+hoàn toàn vào khả năng tưởng tượng của video generation model.
 
 \textit{Phân tích sâu:} Vấn đề này không chỉ đến từ kích thước model
 mà còn từ \textbf{distribution mismatch}: video generation model được
