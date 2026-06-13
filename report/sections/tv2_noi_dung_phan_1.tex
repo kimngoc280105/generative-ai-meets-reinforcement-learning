@@ -1,4 +1,4 @@
-\graphicspath{{../../member2/source_figures/}{../images/}{images/}}
+\graphicspath{{images/}{report/images/}}
 \setlength{\emergencystretch}{3em}
 
 \section{Nội dung chính của tutorial}
@@ -25,7 +25,7 @@ Mỗi công trình không được trình bày như một mục literature revie
 
 \subsection{Generative Models in RL Engines}
 
-\subsubsection{From Supervised Learning Objective to Reinforcement Learning Objective}
+\subsubsection{SL Objective vs RL Objective}
 
 Điểm xuất phát của phân tích là sự khác biệt giữa cách supervised learning và reinforcement learning tạo ra dữ liệu.
 Trong supervised learning, dataset được xem như cố định.
@@ -263,12 +263,11 @@ Kết quả này không phụ thuộc vào giả thiết policy Gaussian; transf
 Khi policy được nhìn như phân phối có điều kiện $\pi_\theta(a\mid s)$, chính policy đã là một generative model sinh action từ state.
 Ở mức kỹ thuật, các policy distribution đơn giản được thay bằng những kiến trúc sinh mạnh hơn, đặc biệt là sequence models và diffusion models.
 
-Một ví dụ trọng tâm là \textbf{Decision Transformer}~\cite{chen2021decision}.
-Thay vì học value function hoặc thực hiện Bellman backup, Decision Transformer huấn luyện transformer trên chuỗi state, action và reward trong offline trajectory:
+Lecture notes trước hết trừu tượng hóa hướng sequence modeling cho RL bằng cách xem offline trajectory như một chuỗi state, action và reward~\cite{eysenbach2025tutorial}:
 \[
     S_t,\; A_t,\; R_{t+1},\; S_{t+1},\; A_{t+1},\ldots
 \]
-Policy học phân phối hành động có điều kiện trên return-to-go và lịch sử trajectory,
+Trong công trình \textbf{Decision Transformer}, ý tưởng này được cụ thể hóa bằng một autoregressive transformer không học value function hoặc Bellman backup trực tiếp, mà học phân phối hành động có điều kiện trên return-to-go và lịch sử trajectory~\cite{chen2021decision}:
 $\pi(a_t\mid s_{\leq t},a_{<t},R_{\mathrm{target}})$, thay cho conditioning chỉ trên state hiện tại.
 Giá trị return mục tiêu đóng vai trò biến điều kiện điều chỉnh phân phối hành động học được từ offline data.
 Điểm mạnh của cách tiếp cận này là tận dụng năng lực sequence modeling đã thành công trong generative AI.
@@ -397,15 +396,8 @@ Action không nên hiểu cứng là predicted noise; cách mô tả đúng hơn
     p_\theta(x_{t-1}\mid x_t,c).
     \label{eq:tv2-ddpo-policy}
 \end{equation}
-Reward được chấm ở sample cuối:
-\begin{equation}
-    r(x_0,c)
-    \in
-    \{
-        \text{compressibility, aesthetic quality, prompt-image alignment, ...}
-    \}.
-\end{equation}
-Khi đó objective là kỳ vọng reward trên denoising trajectory, và policy-gradient estimator có dạng:
+Reward được chấm ở sample cuối, ký hiệu chung là $r(x_0,c)$; các ví dụ được DDPO khảo sát gồm compressibility, aesthetic quality và prompt--image alignment~\cite{black2024ddpo}.
+Theo bài báo DDPO, khi đó objective là kỳ vọng reward trên denoising trajectory, và policy-gradient estimator có dạng:
 \begin{equation}
     \nabla_\theta J(\theta)
     =
@@ -837,7 +829,7 @@ Viết gọn theo notation của notes, objective này có dạng:
     \frac{1}{4}
     \mathbb{E}_{\mathrm{Mix}_\beta(q,\rho)}
     \left[
-        \gamma S(s',\pi_g(s'),g)-S(s,a,g)
+        \gamma S(s',a',g)-S(s,a,g)
     \right]^2 .
 \end{aligned}
     \label{eq:tv2-offline-gcrl-score}
@@ -892,7 +884,4 @@ Cuối cùng, các tác vụ không thể đặc tả bằng một goal observat
     \label{fig:tv2-part1-part2-synthesis}
 \end{figure}
 
-Hai phần trên cùng xoay quanh một đối tượng: phân phối do policy tạo ra.
-Part I thay đổi cách tham số hóa hoặc tối ưu các thành phần sinh bên trong hệ thống RL; Part II đặt trực tiếp distribution của observation và occupancy làm đối tượng điều khiển.
-Sự thống nhất này chỉ mang ý nghĩa thuật toán khi score, likelihood hoặc density ratio tương ứng có thể được ước lượng ổn định từ dữ liệu.
-Vì thế, nút thắt chung không chỉ nằm ở độ biểu đạt của generative model, mà còn ở estimation dưới policy shift, giới hạn support và chất lượng tín hiệu dùng để định hướng phân phối.
+Điểm chung của các hướng trên không phải là thay RL bằng density estimation, mà là kiểm soát phân phối do policy tạo ra bằng các đại lượng có thể ước lượng ổn định như score, likelihood hoặc density ratio.
