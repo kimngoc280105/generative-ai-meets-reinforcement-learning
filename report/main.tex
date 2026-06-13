@@ -12,9 +12,11 @@
 \usepackage{multirow}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{titlesec}
 \usepackage{subcaption}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{fancyhdr}
 \usepackage{setspace}
 \usepackage{indentfirst}
@@ -33,21 +35,38 @@
 \setlength{\headheight}{16.6pt}
 \addtolength{\topmargin}{-2.1pt}
 
-% ========== HEADER/FOOTER ==========
+\definecolor{HCMUSBlue}{HTML}{153E6F}
+\definecolor{HCMUSLightBlue}{HTML}{EAF1F8}
+\definecolor{HCMUSGray}{HTML}{777777}
+\definecolor{TableLine}{HTML}{2E4F73}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=HCMUSBlue,
+  citecolor=HCMUSBlue,
+  urlcolor=HCMUSBlue
+}
+
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small Nhập môn Học Máy -- CSC14005}
-\fancyhead[R]{\small Đồ Án 3}
-\fancyfoot[C]{\thepage}
+\fancyhead[L]{\small\textcolor{HCMUSGray}{CSC14005 -- Machine Learning}}
+\fancyhead[R]{\small\textcolor{HCMUSGray}{Đồ án 3}}
+\fancyfoot[C]{\small\thepage}
+\setlength{\headheight}{24.02pt}
 \renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{HCMUSGray}\leaders\hrule height \headrulewidth\hfill}}
 
-% ========== HYPERLINK ==========
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    citecolor=blue,
-    urlcolor=blue
-}
+\titleformat{\section}
+  {\Large\bfseries\color{HCMUSBlue}}
+  {\thesection.}{0.65em}{}[\vspace{-0.15em}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{HCMUSBlue}}
+  {\thesubsection.}{0.55em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{HCMUSBlue}}
+  {\thesubsubsection.}{0.5em}{}
+
+
 
 \begin{document}
 
@@ -55,16 +74,17 @@
 \pagenumbering{gobble}
 \begin{titlepage}
     \centering
-    \vspace*{1cm}
-    {\large \textbf{ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH}}\\[0.3cm]
-    {\large \textbf{TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}}\\[0.3cm]
-    {\large \textbf{KHOA CÔNG NGHỆ THÔNG TIN}}\\[2cm]
-    {\LARGE \textbf{BÁO CÁO ĐỒ ÁN 3}}\\[0.5cm]
-    {\Large \textbf{CÁC CHỦ ĐỀ MỚI TRONG NGHIÊN CỨU HỌC MÁY}}\\[1cm]
-    \rule{\linewidth}{0.5pt}\\[0.5cm]
+    \vspace*{1.15cm}
+    {\Large \textbf{ĐẠI HỌC QUỐC GIA TP. HỒ CHÍ MINH}}\\[0.15cm]
+    {\Large \textbf{TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN}}\\[0.25cm]
+    {\large Khoa Công nghệ Thông tin}\\[2.0cm]
+
+    {\LARGE \selectfont\bfseries\color{HCMUSBlue}{BÁO CÁO ĐỒ ÁN 3}}\\[0.5cm]
+    {\fontsize{15}{20} \textbf{CÁC CHỦ ĐỀ MỚI TRONG NGHIÊN CỨU HỌC MÁY}}\\[0.5cm]
+    {\color{HCMUSBlue}\rule{\linewidth}{0.5pt}}\\[0.5cm]
     {\large \textbf{Generative AI Meets Reinforcement Learning}}\\[0.2cm]
     {\normalsize ICML 2025 Tutorial -- Benjamin Eysenbach \& Amy Zhang}\\[0.3cm]
-    \rule{\linewidth}{0.5pt}\\[1.5cm]
+    {\color{HCMUSBlue}\rule{\linewidth}{0.5pt}}\\[2.0cm]
 
     \begin{tabular}{ll}
         \textbf{Môn học:}    & Nhập môn Học Máy \\
