@@ -4,135 +4,207 @@
 \section{Thực nghiệm và Kết quả}
 % =====================================================================
 
-Trong phần này, chúng tôi trình bày các kết quả thực nghiệm của phương pháp Diffusion-DICE trên các tập dữ liệu chuẩn của bài toán Học tăng cường ngoại tuyến (Offline Reinforcement Learning), bao gồm hai nhóm bài toán chính được đề cập trong tài liệu tutorial: các tác vụ chuyển động liên tục MuJoCo locomotion và các tác vụ mê cung phức tạp AntMaze từ bộ benchmark D4RL \cite{fu2020d4rl}.
+Để kiểm chứng trực quan cơ chế hoạt động của thuật toán Diffusion-DICE và làm rõ
+nguyên lý chống chịu lỗi ngoại suy (error exploitation), chúng tôi đã tự cài đặt
+từ đầu bài toán mô phỏng \textbf{2D Bandit Toy Case} bằng Python, lấy cảm hứng
+và tái hiện kịch bản toy case được trình bày trong bài báo gốc Diffusion-DICE
+\cite{mao2024diffusiondice} và tutorial ICML 2025 \cite{eysenbach2025generativerl}.
+Thực nghiệm so sánh ba phương pháp trên cùng một thiết lập: IDQL (select-only),
+QGPO (guide-only) và Diffusion-DICE (guide-then-select), nhằm minh họa trực quan
+ưu điểm của cơ chế kết hợp dẫn dắt in-sample.
 
-\subsection{Mô tả thực nghiệm}
-Thực nghiệm định lượng được thiết lập nhằm đánh giá khả năng mô hình hóa chính sách phức tạp và chống khai thác lỗi của Diffusion-DICE:
+% =====================================================================
+\subsection{Thiết lập bài toán}
+% =====================================================================
 
-\begin{itemize}
-    \item \textbf{Tập dữ liệu MuJoCo Locomotion}: Gồm các môi trường \texttt{halfcheetah}, \texttt{hopper}, và \texttt{walker2d} với các mức độ dữ liệu khác nhau như \texttt{medium-v2} (dữ liệu thu thập từ chính sách hiệu năng trung bình), \texttt{medium-replay-v2} (toàn bộ bộ nhớ đệm trải nghiệm trong quá trình huấn luyện chính sách trung bình), và \texttt{medium-expert-v2} (kết hợp dữ liệu từ chính sách trung bình và chuyên gia).
-    \item \textbf{Tập dữ liệu AntMaze}: Robot kiến di chuyển qua mê cung phức tạp (\texttt{antmaze-medium-play-v2}, \texttt{antmaze-large-play-v2}). Đây là tác vụ có phần thưởng cực kỳ thưa thớt (sparse reward) và yêu cầu khả năng lập kế hoạch dài hạn (long-horizon planning) rất cao.
-    \item \textbf{Môi trường huấn luyện}: Lập trình trên ngôn ngữ Python, sử dụng thư viện học sâu PyTorch. Quá trình huấn luyện sử dụng card đồ họa GPU NVIDIA (ví dụ cấu hình đề xuất RTX 3080/4090 hoặc Google Colab T4/A100) để tăng tốc độ tính toán cho mô hình khuếch tán. Mạng Score được cấu trúc dưới dạng U-Net 1D (đối với D4RL) hoặc MLP (đối với toy case).
-    \item \textbf{Các phương pháp so sánh (Baselines)}:
-    \begin{itemize}
-        \item Các phương pháp chính sách Gaussian truyền thống: CQL \cite{kumar2020cql}, IQL \cite{kostrikov2021iql}, và OptiDICE \cite{lee2021optidice}.
-        \item Các phương pháp dựa trên mô hình khuếch tán: Diffuser \cite{janner2022diffuser}, QGPO \cite{lu2023contrastive}, và IDQL \cite{hansen2023idql}.
-    \end{itemize}
-    \item \textbf{Metrics đánh giá}: Điểm số chuẩn hóa D4RL (D4RL normalized score), chạy trung bình qua 5 seeds ngẫu nhiên khác nhau để đảm bảo tính khách quan và khoa học.
-\end{itemize}
+Bài toán 2D Bandit giả lập không gian hành động liên tục $a \in \mathbb{R}^2$ với
+tập dữ liệu ngoại tuyến $\mathcal{D}$ gồm 1.500 mẫu phân bố trong vùng hình
+vành khăn (annular region):
+\[
+    1.5 \leq \|a\|_2 \leq 2.5
+\]
+Vùng bên trong ($\|a\|_2 < 1.5$) hoàn toàn không có dữ liệu, đây là vùng
+Out-of-Distribution (OOD). Hàm phần thưởng thực tế $R(a)$ đạt cực đại tại hai
+điểm trên đường tròn ngoài ($\|a\|_2 = 2.5$) ở $\theta = 0$ và $\theta = \pi$:
+\[
+    R(a) = \exp\!\left(-\frac{(\|a\|_2 - 2.5)^2}{0.5}\right)
+           \cdot \frac{\cos(2\theta) + 1}{2}
+\]
 
-\subsection{Kết quả}
-Bảng \ref{tab:results} thống kê điểm số chuẩn hóa trung bình của Diffusion-DICE so với các baselines chính trên các tác vụ MuJoCo locomotion và AntMaze, được tổng hợp từ kết quả nghiên cứu công bố của phương pháp.
+Mạng critic $\hat{R}(a)$ (MLP 3 lớp, 64 đơn vị ẩn) được huấn luyện trên
+$\mathcal{D}$ bằng MSE loss. Do không có dữ liệu tại tâm, mạng MLP bị lỗi ngoại
+suy sai lệch và tạo ra đỉnh giá trị cực đại giả (\textit{overestimation peak})
+tại tâm $(0,0)$, giả lập chính xác bẫy giá trị thường gặp trong Offline RL
+thực tế.
 
-\begin{table}[H]
-    \centering
-    \caption{Điểm số chuẩn hóa trung bình trên các tác vụ D4RL MuJoCo và AntMaze (trung bình qua 5 seeds).}
-    \label{tab:results}
-    \begin{tabular}{lcccc}
-        \toprule
-        \textbf{Tập dữ liệu (Dataset)} & \textbf{IQL} & \textbf{QGPO} & \textbf{IDQL} & \textbf{Diffusion-DICE (Ours)} \\
-        \midrule
-        halfcheetah-medium-v2        & 47.4 & 51.6 & 52.3 & \textbf{54.1} \\
-        hopper-medium-v2             & 66.3 & 91.2 & 92.4 & \textbf{95.3} \\
-        walker2d-medium-v2           & 78.3 & 82.5 & 84.1 & \textbf{86.7} \\
-        halfcheetah-medium-replay-v2 & 44.2 & 46.8 & 47.9 & \textbf{49.5} \\
-        hopper-medium-replay-v2      & 94.7 & 96.1 & 96.8 & \textbf{98.2} \\
-        walker2d-medium-replay-v2    & 73.9 & 81.3 & 82.5 & \textbf{85.4} \\
-        \midrule
-        antmaze-medium-play-v2       & 71.2 & 72.0 & 73.4 & \textbf{76.8} \\
-        antmaze-large-play-v2        & 42.0 & 39.5 & 45.2 & \textbf{51.0} \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+Mô hình khuếch tán hành vi (Behavior Diffusion Model) được xây dựng theo kiến
+trúc DDPM với 16 bước khuếch tán, mạng score dạng MLP kết hợp time-embedding.
+Toàn bộ mã nguồn viết bằng Python + PyTorch, chạy trên CPU, không yêu cầu GPU
+hay simulator phức tạp như MuJoCo. Thời gian chạy khoảng 3--5 phút trên máy
+tính thông thường.
 
-\textbf{Phân tích ý nghĩa kết quả}:
-\begin{enumerate}
-    \item \textbf{Tính hiệu quả của mô hình khuếch tán}: Việc chuyển đổi từ chính sách phân phối Gaussian đơn mode (ở các thuật toán như IQL, CQL) sang mô hình khuếch tán đa mode giúp chính sách mô hình hóa chính xác hơn các tập dữ liệu hỗn hợp (như replay hoặc medium).
-    \item \textbf{Sự ổn định của cơ chế đối ngẫu DICE}: Diffusion-DICE liên tục đạt điểm số cao hơn so với các phương pháp khuếch tán khác (như QGPO, IDQL). Điều này chứng minh rằng việc kết hợp ràng buộc phân phối của DICE vào mô hình khuếch tán giúp giảm thiểu hiện tượng trệch phân phối (distribution shift) một cách triệt để.
-\end{enumerate}
+% =====================================================================
+\subsection{Các phương pháp so sánh}
+% =====================================================================
 
-\subsection{Mô tả Demo Thực nghiệm}
-\label{sec:demo_description}
-
-Để kiểm chứng trực quan cơ chế hoạt động của thuật toán và làm rõ nguyên lý chống chịu lỗi ngoại suy (error exploitation), chúng tôi đã xây dựng và chạy thực nghiệm bài toán mô phỏng \textbf{2D Bandit Toy Case} trong thư mục \texttt{demo/}. Demo được cài đặt từ đầu bằng Python, lấy cảm hứng và tái hiện kịch bản toy case được trình bày trong bài báo gốc Diffusion-DICE \cite{mao2024diffusiondice} và tutorial ICML 2025 \cite{eysenbach2025tutorial}. Ngoài kịch bản gốc, chúng tôi thực hiện thêm hai mở rộng:
+Chúng tôi cài đặt 3 phương pháp trên cùng một mô hình khuếch tán hành vi đã
+được huấn luyện:
 
 \begin{enumerate}
-    \item Thử nghiệm trên tập dữ liệu đa phương thức \textbf{4 cụm Gaussian (4-Cluster Dataset)}.
-    \item Khảo sát \textbf{siêu tham số Guidance Scale} để đánh giá định lượng sự đánh đổi giữa hiệu năng và tính an toàn.
+    \item \textbf{IDQL (Select-only)}: Sinh 500 hành động ứng viên từ mô hình
+    khuếch tán hành vi unguided, sau đó dùng $\hat{R}(a)$ để lựa chọn 64 hành
+    động có giá trị cao nhất.
+
+    \item \textbf{QGPO (Guide-only)}: Dẫn dắt quá trình khuếch tán ngược bằng
+    đạo hàm của critic:
+    \[
+        \epsilon_{\text{guided}}
+        = \epsilon_b
+          - \eta \sqrt{1 - \bar{\alpha}_t} \cdot \nabla_{a_t} \hat{R}(a_t)
+    \]
+    với guidance scale $\eta = 0.5$.
+
+    \item \textbf{Diffusion-DICE (Guide-then-select)}: Tối ưu biến đối ngẫu $V$
+    của DICE với piecewise $f$-divergence để tính trọng số in-sample:
+    \[
+        w^*(a) = (f')^{-1}\!\left(\frac{\hat{R}(a) - V}{\alpha}\right)
+    \]
+    Huấn luyện mạng chỉ dẫn $g_\theta(a_t, t)$ với IGL loss:
+    \[
+        \mathcal{L}_{\text{IGL}} = \mathbb{E}\!\left[w^*(a)\,e^{-g_\theta} + g_\theta\right]
+    \]
+    Sinh mẫu có chỉ dẫn từ $\nabla_{a_t} g_\theta$ với $\eta = 1.0$, sau đó lọc
+    chọn 64 hành động tốt nhất từ 500 ứng viên theo $\hat{R}(a)$.
 \end{enumerate}
 
-\subsubsection{Thiết lập bài toán Demo}
-Bài toán 2D Bandit giả lập không gian hành động liên tục $a \in \mathbb{R}^2$ với tập dữ liệu ngoại tuyến $\mathcal{D}$ gồm 1,500 mẫu phân bố trong vùng hình vành khăn (annular region):
-$$1.5 \leq \|a\|_2 \leq 2.5$$
-Vùng bên trong ($\|a\|_2 < 1.5$) hoàn toàn không có dữ liệu, đây là vùng Out-of-Distribution (OOD). Hàm phần thưởng thực tế $R(a)$ đạt cực đại tại hai điểm trên đường tròn ngoài ($\|a\|_2 = 2.5$) ở $\theta = 0$ và $\theta = \pi$:
-$$R(a) = \exp\!\left(-\frac{(\|a\|_2 - 2.5)^2}{0.5}\right) \cdot \frac{\cos(2\theta) + 1}{2}$$
-
-Mạng critic học được $\hat{R}(a)$ (MLP 3 lớp, 64 ẩn) được huấn luyện trên $\mathcal{D}$. Do không có dữ liệu tại tâm, mạng MLP bị lỗi ngoại suy sai lệch và tạo ra đỉnh giá trị cực đại giả (\textit{overestimation peak}) tại tâm $(0,0)$, giả lập chính xác bẫy giá trị thường gặp trong Offline RL thực tế.
-
-\subsubsection{Các thuật toán cài đặt}
-Chúng tôi cài đặt 3 phương pháp chính trên cùng một mô hình khuếch tán hành vi (Behavior Diffusion Model - DDPM, 16 bước khuếch tán):
-
-\begin{enumerate}
-    \item \textbf{IDQL (Select-only)}: Sinh 500 hành động ứng viên từ mô hình khuếch tán hành vi unguided, sau đó dùng $\hat{R}(a)$ để lựa chọn 64 hành động có giá trị cao nhất.
-    \item \textbf{QGPO (Guide-only)}: Dẫn dắt quá trình khuếch tán ngược bằng đạo hàm của critic:
-    $$\epsilon_{\text{guided}} = \epsilon_b - \eta \sqrt{1 - \bar{\alpha}_t} \cdot \nabla_{a_t} \hat{R}(a_t)$$
-    \item \textbf{Diffusion-DICE (Guide-then-select)}: Tối ưu biến đối ngẫu $V$ của DICE với piecewise $f$-divergence để tính trọng số in-sample $w^*(a) = (f')^{-1}\!\left(\frac{\hat{R}(a) - V}{\alpha}\right)$. Huấn luyện mạng chỉ dẫn $g_\theta(a_t, t)$ với loss IGL: $\mathbb{E}[w^*(a) e^{-g_\theta} + g_\theta]$. Sinh mẫu có chỉ dẫn từ $\nabla_{a_t} g_\theta$, cuối cùng lọc chọn hành động tốt nhất từ 500 ứng viên.
-\end{enumerate}
-
-\subsubsection{Kết quả trên Dataset gốc (Annular)}
+% =====================================================================
+\subsection{Kết quả thực nghiệm}
+% =====================================================================
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{images/toycase_results.png}
-    \caption{Kết quả trực quan hóa bài toán 2D Bandit Toy Case trên Annular Dataset. Hàng trên: phân phối dữ liệu, phần thưởng thực tế và phần thưởng học được (có đỉnh OOD giả tại tâm). Hàng dưới: hành động sinh ra bởi QGPO, IDQL và Diffusion-DICE.}
+    \caption{Kết quả trực quan hóa bài toán 2D Bandit Toy Case trên Annular
+    Dataset. Hàng trên: phân phối dữ liệu, phần thưởng thực tế $R(a)$ và phần
+    thưởng học được $\hat{R}(a)$ (có đỉnh OOD giả tại tâm). Hàng dưới: hành
+    động sinh ra bởi QGPO (guide-only), IDQL (select-only) và Diffusion-DICE
+    (guide-then-select).}
     \label{fig:toycase_demo}
 \end{figure}
 
 \textbf{Phân tích kết quả}:
 \begin{itemize}
-    \item \textbf{QGPO} bị hút hoàn toàn vào tâm OOD $(0,0)$ vì đạo hàm $\nabla_{a_t} \hat{R}(a_t)$ luôn chỉ về đỉnh ảo tưởng tại tâm. Đây là biểu hiện điển hình của \textit{value error exploitation}.
-    \item \textbf{IDQL} có nhiều mẫu bị kéo lệch vào vùng OOD vì một số ứng viên được sinh ra gần rìa trong và critic sai lệch chọn giữ chúng lại.
-    \item \textbf{Diffusion-DICE} sinh mẫu chính xác tập trung tại hai đỉnh phần thưởng thực tế trên vành ngoài, hoàn toàn tránh xa bẫy OOD ở tâm.
+    \item \textbf{QGPO} bị hút hoàn toàn vào tâm OOD $(0,0)$ vì đạo hàm
+    $\nabla_{a_t} \hat{R}(a_t)$ luôn chỉ về đỉnh ảo tưởng tại tâm. Đây là biểu
+    hiện điển hình của \textit{value error exploitation}: khi guidance dựa trực
+    tiếp vào critic bị sai lệch, toàn bộ quá trình sinh mẫu bị kéo sập về vùng
+    OOD nguy hiểm.
+
+    \item \textbf{IDQL} có nhiều mẫu bị kéo lệch vào vùng OOD vì một số ứng
+    viên được sinh ra gần rìa trong và critic sai lệch lại ưu tiên chọn giữ
+    chúng. Dù không bị sập hoàn toàn như QGPO, IDQL vẫn không thể tập trung
+    hành động vào vùng phần thưởng thực sự cao.
+
+    \item \textbf{Diffusion-DICE} sinh mẫu chính xác tập trung tại hai đỉnh
+    phần thưởng thực tế trên vành ngoài ($\theta \approx 0$ và $\theta \approx
+    \pi$), hoàn toàn tránh xa bẫy OOD ở tâm. Cơ chế IGL học trọng số
+    in-sample $w^*(a)$ từ chính dữ liệu trong $\mathcal{D}$, bảo đảm guidance
+    không bao giờ kéo chính sách ra ngoài support dữ liệu.
 \end{itemize}
 
-\subsubsection{Mở rộng 1: Thực nghiệm trên Dataset 4 cụm (4-Cluster)}
-Để kiểm tra khả năng tổng quát của Diffusion-DICE với phân phối dữ liệu phức tạp và rời rạc hơn, chúng tôi thử nghiệm thêm tập dữ liệu gồm 4 cụm Gaussian độc lập có tâm tại $(\pm 2.2, \pm 2.2)$ với độ lệch chuẩn $\sigma = 0.25$.
+% =====================================================================
+\subsection{Mở rộng 1: Thực nghiệm trên Dataset 4 cụm (4-Cluster)}
+% =====================================================================
+
+Để kiểm tra khả năng tổng quát của Diffusion-DICE với phân phối dữ liệu phức
+tạp và rời rạc hơn, chúng tôi thử nghiệm thêm tập dữ liệu gồm 4 cụm Gaussian
+độc lập có tâm tại $(\pm 2.2, \pm 2.2)$ với độ lệch chuẩn $\sigma = 0.25$.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{images/toycase_cluster_results.png}
-    \caption{Kết quả trực quan hóa trên tập dữ liệu 4 cụm Gaussian rời rạc (4-Cluster Dataset). Diffusion-DICE sinh mẫu chính xác tại tất cả 4 tâm cụm, trong khi QGPO và IDQL vẫn bị sập hoàn toàn vào tâm OOD $(0,0)$.}
+    \caption{Kết quả trực quan hóa trên tập dữ liệu 4 cụm Gaussian rời rạc
+    (4-Cluster Dataset). Diffusion-DICE sinh mẫu chính xác tại tất cả 4 tâm
+    cụm, trong khi QGPO và IDQL vẫn bị sập hoàn toàn vào tâm OOD $(0,0)$.}
     \label{fig:toycase_cluster}
 \end{figure}
 
-\textbf{Phân tích kết quả}: Trong kịch bản phân phối rời rạc này, Diffusion-DICE thể hiện khả năng mô hình hóa đa phương thức (multi-modal) vượt trội. Hành động sinh ra phân bố đồng đều tại tâm của cả 4 cụm Gaussian thật, trong khi QGPO và IDQL vẫn thất bại hoàn toàn -- bị hút vào gốc $(0,0)$ dù khu vực này không có bất kỳ điểm dữ liệu nào. Kết quả này chứng minh cơ chế IGL hoạt động hiệu quả bất kể cấu trúc phân phối của dữ liệu.
+\textbf{Phân tích kết quả}: Trong kịch bản phân phối rời rạc này, Diffusion-DICE
+thể hiện khả năng mô hình hóa đa phương thức (multi-modal) vượt trội. Hành động
+sinh ra phân bố đồng đều tại tâm của cả 4 cụm Gaussian thật, trong khi QGPO và
+IDQL vẫn thất bại hoàn toàn -- bị hút vào gốc $(0,0)$ dù khu vực này không có
+bất kỳ điểm dữ liệu nào. Kết quả này chứng minh cơ chế IGL hoạt động hiệu quả
+bất kể cấu trúc phân phối của dữ liệu.
 
-\subsubsection{Mở rộng 2: Khảo sát siêu tham số Guidance Scale}
-Chúng tôi thực hiện khảo sát hệ số dẫn đường $\eta \in \{0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.5, 2.0\}$ trên Annular Dataset để phân tích định lượng ảnh hưởng của $\eta$ đến hai chỉ số:
+% =====================================================================
+\subsection{Mở rộng 2: Khảo sát siêu tham số Guidance Scale}
+% =====================================================================
+
+Chúng tôi thực hiện khảo sát hệ số dẫn đường $\eta \in \{0.0, 0.2, 0.4, 0.6,
+0.8, 1.0, 1.2, 1.5, 2.0\}$ trên Annular Dataset để phân tích định lượng ảnh
+hưởng của $\eta$ đến hai chỉ số:
 \begin{enumerate}
-    \item \textbf{In-Distribution (ID) Ratio}: Tỉ lệ hành động sinh ra nằm trong vùng an toàn $1.4 \leq \|a\|_2 \leq 2.6$.
-    \item \textbf{Average True Reward}: Phần thưởng thực tế $R(a)$ trung bình của các hành động sinh ra.
+    \item \textbf{In-Distribution (ID) Ratio}: Tỉ lệ hành động sinh ra nằm trong
+    vùng an toàn $1.4 \leq \|a\|_2 \leq 2.6$.
+    \item \textbf{Average True Reward}: Phần thưởng thực tế $R(a)$ trung bình
+    của các hành động sinh ra.
 \end{enumerate}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{images/toycase_tuning.png}
-    \caption{Kết quả khảo sát Guidance Scale cho QGPO và Diffusion-DICE. Trái: Tỉ lệ hành động an toàn (ID Ratio). Phải: Phần thưởng thực tế trung bình (True Reward).}
+    \caption{Kết quả khảo sát Guidance Scale cho QGPO và Diffusion-DICE. Trái:
+    Tỉ lệ hành động an toàn (ID Ratio). Phải: Phần thưởng thực tế trung bình
+    (True Reward).}
     \label{fig:toycase_tuning}
 \end{figure}
 
 \textbf{Phân tích đồ thị}:
 \begin{itemize}
-    \item \textbf{Tính an toàn (ID Ratio)}: ID Ratio của QGPO giảm nhanh xuống 0 khi $\eta \geq 0.5$ -- toàn bộ hành động bị kéo ra ngoài phân phối. Ngược lại, Diffusion-DICE duy trì ID Ratio $\approx 95\%$--$100\%$ ở mọi giá trị $\eta$, chứng minh tính an toàn tuyệt đối của IGL.
-    \item \textbf{Hiệu năng (True Reward)}: True Reward của QGPO sập về 0 khi $\eta$ tăng do hành động đổ vào tâm OOD. Diffusion-DICE đạt True Reward cực đại tại $\eta \approx 1.0$ và giữ ổn định, cho thấy guidance scale tối ưu trong khoảng $[0.8, 1.2]$.
+    \item \textbf{Tính an toàn (ID Ratio)}: ID Ratio của QGPO giảm nhanh xuống
+    0 khi $\eta \geq 0.5$ -- toàn bộ hành động bị kéo ra ngoài phân phối.
+    Ngược lại, Diffusion-DICE duy trì ID Ratio $\approx 95\%$--$100\%$ ở mọi
+    giá trị $\eta$, chứng minh tính an toàn tuyệt đối của IGL.
+    \item \textbf{Hiệu năng (True Reward)}: True Reward của QGPO sập về 0 khi
+    $\eta$ tăng do hành động đổ vào tâm OOD. Diffusion-DICE đạt True Reward
+    cực đại tại $\eta \approx 1.0$ và giữ ổn định, cho thấy guidance scale tối
+    ưu trong khoảng $[0.8, 1.2]$.
 \end{itemize}
 
-Kết quả khảo sát này là bằng chứng định lượng xác nhận rằng sử dụng gradient trực tiếp của critic (như QGPO) là hướng tiếp cận không ổn định trong Offline RL. Cơ chế học chỉ dẫn in-sample dựa trên DICE là cần thiết để đồng thời đảm bảo hiệu năng và tính an toàn của chính sách.
+Kết quả khảo sát này là bằng chứng định lượng xác nhận rằng sử dụng gradient
+trực tiếp của critic (như QGPO) là hướng tiếp cận không ổn định trong Offline
+RL. Cơ chế học chỉ dẫn in-sample dựa trên DICE là cần thiết để đồng thời đảm
+bảo hiệu năng và tính an toàn của chính sách.
 
-\subsubsection{Tóm tắt Demo}
-Demo thực nghiệm được tổ chức trong thư mục \texttt{demo/}, có thể chạy lại hoàn toàn độc lập bằng lệnh:
+% =====================================================================
+\subsection{Mô tả Demo}
+\label{sec:demo_description}
+% =====================================================================
+
+Demo thực nghiệm được tổ chức trong thư mục \texttt{demo/} với cấu trúc như
+sau:
+
+\begin{itemize}
+    \item \texttt{demo/toycase\_bandit.py} -- mã nguồn chính, bao gồm toàn bộ
+    pipeline: sinh dữ liệu, huấn luyện reward MLP, huấn luyện behavior diffusion
+    model, tối ưu DICE, huấn luyện guidance network, sampling và visualization.
+    \item \texttt{demo/requirements.txt} -- danh sách thư viện cần thiết
+    (\texttt{torch}, \texttt{numpy}, \texttt{matplotlib}).
+    \item \texttt{demo/toycase\_results.png} -- kết quả kịch bản Annular gốc
+    (3 thuật toán so sánh).
+    \item \texttt{demo/toycase\_cluster\_results.png} -- kết quả mở rộng trên
+    4-Cluster Dataset.
+    \item \texttt{demo/toycase\_tuning.png} -- kết quả khảo sát Guidance Scale
+    (ID Ratio và True Reward theo $\eta$).
+\end{itemize}
+
+Để chạy lại demo hoàn toàn độc lập:
 \begin{verbatim}
 pip install -r demo/requirements.txt
 python demo/toycase_bandit.py
 \end{verbatim}
-Không cần GPU hay simulator phức tạp như MuJoCo. Toàn bộ mã nguồn sử dụng PyTorch trên CPU, thời gian chạy khoảng 3--5 phút trên máy tính thông thường. Hình ảnh kết quả được lưu tại \texttt{demo/toycase\_results.png} và tự động sao chép sang thư mục \texttt{report/images/} để đảm bảo biên dịch báo cáo luôn nhất quán.
+Không cần GPU hay simulator phức tạp. Toàn bộ mã nguồn sử dụng PyTorch trên
+CPU; seed cố định (\texttt{torch.manual\_seed(42)}, \texttt{np.random.seed(42)})
+đảm bảo kết quả tái tạo được. Hình ảnh kết quả được lưu tại
+\texttt{demo/toycase\_results.png} và tự động sao chép sang thư mục
+\texttt{report/images/} để đảm bảo biên dịch báo cáo luôn nhất quán.
