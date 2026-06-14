@@ -94,7 +94,7 @@ Chúng tôi cài đặt 3 phương pháp trên cùng một mô hình khuếch t�
 
 \textbf{Phân tích kết quả}:
 \begin{itemize}
-    \item \textbf{QGPO} bị hút hoàn toàn vào tâm OOD $(0,0)$ vì đạo hàm
+    \item \textbf{QGPO} bị hút vào tâm OOD $(0,0)$ vì đạo hàm
     $\nabla_{a_t} \hat{R}(a_t)$ luôn chỉ về đỉnh ảo tưởng tại tâm. Đây là biểu
     hiện điển hình của \textit{value error exploitation}: khi guidance dựa trực
     tiếp vào critic bị sai lệch, toàn bộ quá trình sinh mẫu bị kéo sập về vùng
@@ -105,11 +105,11 @@ Chúng tôi cài đặt 3 phương pháp trên cùng một mô hình khuếch t�
     chúng. Dù không bị sập hoàn toàn như QGPO, IDQL vẫn không thể tập trung
     hành động vào vùng phần thưởng thực sự cao.
 
-    \item \textbf{Diffusion-DICE} sinh mẫu chính xác tập trung tại hai đỉnh
+    \item \textbf{Diffusion-DICE} sinh mẫu tập trung tại hai đỉnh
     phần thưởng thực tế trên vành ngoài ($\theta \approx 0$ và $\theta \approx
-    \pi$), hoàn toàn tránh xa bẫy OOD ở tâm. Cơ chế IGL học trọng số
+    \pi$), gần như hoàn toàn tránh xa bẫy OOD ở tâm. Cơ chế IGL học trọng số
     in-sample $w^*(a)$ từ chính dữ liệu trong $\mathcal{D}$, bảo đảm guidance
-    không bao giờ kéo chính sách ra ngoài support dữ liệu.
+    không kéo chính sách ra ngoài support dữ liệu.
 \end{itemize}
 
 % =====================================================================
@@ -129,12 +129,11 @@ tạp và rời rạc hơn, chúng tôi thử nghiệm thêm tập dữ liệu g
     \label{fig:toycase_cluster}
 \end{figure}
 
-\textbf{Phân tích kết quả}: Trong kịch bản phân phối rời rạc này, Diffusion-DICE
-thể hiện khả năng mô hình hóa đa phương thức (multi-modal) vượt trội. Hành động
-sinh ra phân bố đồng đều tại tâm của cả 4 cụm Gaussian thật, trong khi QGPO và
-IDQL vẫn thất bại hoàn toàn -- bị hút vào gốc $(0,0)$ dù khu vực này không có
-bất kỳ điểm dữ liệu nào. Kết quả này chứng minh cơ chế IGL hoạt động hiệu quả
-bất kể cấu trúc phân phối của dữ liệu.
+\textbf{Phân tích kết quả}: 
+\begin{itemize}
+    \item Trong kịch bản phân phối rời rạc này, cả IDQL và Diffusion-DICE đều thể hiện khả năng mô hình hóa đa phương thức ở mức độ tương đương, với hành động sinh ra tập trung chủ yếu tại 4 cụm Gaussian đúng vị trí. Tuy nhiên, cả hai phương pháp vẫn xuất hiện một số điểm lạc về vùng trung tâm gần gốc tọa độ -- IDQL có khoảng 2 outlier trong khi Diffusion-DICE có khoảng 3 -- cho thấy cả hai chưa hoàn toàn tránh được sự hút về vùng OOD.
+    \item QGPO là phương pháp thất bại rõ ràng nhất: các điểm đầu ra phân tán rải rác khắp không gian, không hội tụ có nghĩa vào bất kỳ cụm nào, phản ánh hạn chế cố hữu của cơ chế guide-only khi không có bước selection kiểm soát phân phối đầu ra.
+\end{itemize}
 
 % =====================================================================
 \subsection{Mở rộng 2: Khảo sát siêu tham số Guidance Scale}
