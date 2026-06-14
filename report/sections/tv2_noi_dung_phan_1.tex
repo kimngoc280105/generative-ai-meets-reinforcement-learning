@@ -104,7 +104,7 @@ Danh sách này cho thấy ``world model'' không chỉ định một architectu
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{notes_fig3_world_model.png}
-    \caption{Pipeline model-based RL với world model: generative model được huấn luyện để học dynamics từ transition data, sau đó hỗ trợ học policy. Nguồn hình: Figure 3 trong \cite{eysenbach2025tutorial}.}
+    \caption{Pipeline model-based RL với world model: generative model được huấn luyện để học dynamics từ transition data, sau đó hỗ trợ học policy. Nguồn hình: Figure 3 trong \cite{eysenbach2025generativerl}.}
     \label{fig:tv2-notes-fig3-world-model}
 \end{figure}
 
@@ -172,7 +172,7 @@ Các trajectory tạo ra return cao chưa được biết trước và được 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.74\textwidth]{notes_fig6_latent_paths.png}
-    \caption{Diễn giải RL như một bài toán latent-variable, trong đó các path đến high-reward state là latent variables cần được suy luận. Nguồn hình: Figure 6 trong \cite{eysenbach2025tutorial}.}
+    \caption{Diễn giải RL như một bài toán latent-variable, trong đó các path đến high-reward state là latent variables cần được suy luận. Nguồn hình: Figure 6 trong \cite{eysenbach2025generativerl}.}
     \label{fig:tv2-notes-fig6-latent-paths}
 \end{figure}
 
@@ -263,7 +263,7 @@ Kết quả này không phụ thuộc vào giả thiết policy Gaussian; transf
 Khi policy được nhìn như phân phối có điều kiện $\pi_\theta(a\mid s)$, chính policy đã là một generative model sinh action từ state.
 Ở mức kỹ thuật, các policy distribution đơn giản được thay bằng những kiến trúc sinh mạnh hơn, đặc biệt là sequence models và diffusion models.
 
-Lecture notes trước hết trừu tượng hóa hướng sequence modeling cho RL bằng cách xem offline trajectory như một chuỗi state, action và reward~\cite{eysenbach2025tutorial}:
+Lecture notes trước hết trừu tượng hóa hướng sequence modeling cho RL bằng cách xem offline trajectory như một chuỗi state, action và reward~\cite{eysenbach2025generativerl}:
 \[
     S_t,\; A_t,\; R_{t+1},\; S_{t+1},\; A_{t+1},\ldots
 \]
@@ -372,7 +372,7 @@ Diffusion-DICE giảm rủi ro bằng cách kết hợp hai bước: guide để
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{notes_fig7_diffusion_dice_full.png}
-    \caption{Toycase 2D bandit của Diffusion-DICE: dataset action nằm trong vùng hình khuyên; true reward cao ở outer circle; learned reward overestimate inner circle; Diffusion-DICE giảm error exploitation tốt hơn các hướng guide-only hoặc select-only. Nguồn hình: Figure 7 trong \cite{eysenbach2025tutorial}.}
+    \caption{Toycase 2D bandit của Diffusion-DICE: dataset action nằm trong vùng hình khuyên; true reward cao ở outer circle; learned reward overestimate inner circle; Diffusion-DICE giảm error exploitation tốt hơn các hướng guide-only hoặc select-only. Nguồn hình: Figure 7 trong \cite{eysenbach2025generativerl}.}
     \label{fig:tv2-notes-fig7-diffusion-dice}
 \end{figure}
 
@@ -447,12 +447,12 @@ Ba động lực kỹ thuật làm cho cách mô hình hóa này hữu ích tron
 Động lực thứ nhất là RL cung cấp ngôn ngữ hình thức để mô tả hệ thống sinh có tương tác với con người, công cụ hoặc môi trường vật lý, kể cả khi một phần quá trình là hộp đen hoặc không khả vi.
 Động lực thứ hai là đặc tả tác vụ bằng scalar reward thường đòi hỏi reward engineering và reward shaping thủ công; các thành phần trung gian có thể vô tình mã hóa trước cách giải thay vì chỉ mô tả kết quả mong muốn.
 Động lực thứ ba là scalar reward tạo ra sự lệch pha với generative modeling thông thường, nơi supervision được cung cấp dưới dạng dữ liệu mẫu.
-Part II khảo sát khả năng đặc tả một lớp bài toán RL bằng desired observations hoặc goal data, qua đó chuyển một phần bài toán từ thiết kế reward sang khớp phân phối outcome~\cite{eysenbach2025tutorial}.
+Part II khảo sát khả năng đặc tả một lớp bài toán RL bằng desired observations hoặc goal data, qua đó chuyển một phần bài toán từ thiết kế reward sang khớp phân phối outcome~\cite{eysenbach2025generativerl}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.88\textwidth]{notes_fig8_interaction_generative_model.png}
-    \caption{So sánh generative models chuẩn với RL interaction. Cả hai đều dùng nhiều bước tính toán hoặc tương tác để tạo sample. Nguồn hình: Figure 8 trong \cite{eysenbach2025tutorial}.}
+    \caption{So sánh generative models chuẩn với RL interaction. Cả hai đều dùng nhiều bước tính toán hoặc tương tác để tạo sample. Nguồn hình: Figure 8 trong \cite{eysenbach2025generativerl}.}
     \label{fig:tv2-notes-fig8-interaction}
 \end{figure}
 
@@ -605,7 +605,7 @@ Sự thay đổi vai trò được quyết định bởi biến nào được qu
 
 GCBC cho thấy một cách tận dụng offline trajectories bằng supervised learning, nhưng policy học được vẫn bị ràng buộc mạnh bởi behavior support và các future states đã xuất hiện trong dữ liệu.
 Để phân tích các phương pháp vượt ra ngoài việc clone trực tiếp hành vi, cần chuyển từ likelihood của action sang phân phối occupancy mà policy tạo ra.
-Ở mức on-policy, f-divergence gradient cung cấp một cầu nối tự nhiên giữa khớp phân phối goal và policy gradient; trong offline setting, yêu cầu học từ dataset cố định dẫn tới các formulation dual và DICE được trình bày tiếp theo~\cite{eysenbach2025tutorial}.
+Ở mức on-policy, f-divergence gradient cung cấp một cầu nối tự nhiên giữa khớp phân phối goal và policy gradient; trong offline setting, yêu cầu học từ dataset cố định dẫn tới các formulation dual và DICE được trình bày tiếp theo~\cite{eysenbach2025generativerl}.
 
 \subsubsection{Dual RL and DICE}
 
@@ -714,7 +714,7 @@ Một đại lượng trung tâm là stationary distribution ratio:
 \end{equation}
 Tỉ số này cho biết state-action pair trong dataset nên được nhấn mạnh hơn hay ít hơn để tiến đến occupancy tối ưu.
 Từ góc nhìn tổng hợp của nhóm, density ratio ở đây cũng cung cấp một cách diễn giải cho guidance trong Diffusion-DICE: cả hai đều mô tả sự dịch chuyển từ behavior distribution về phía optimal distribution, trong khi ràng buộc in-sample hạn chế error exploitation.
-Liên hệ này là phép đối chiếu giữa hai phần của tutorial, không phải một đồng nhất thức được lecture notes phát biểu trực tiếp~\cite{eysenbach2025tutorial,mao2024diffusiondice}.
+Liên hệ này là phép đối chiếu giữa hai phần của tutorial, không phải một đồng nhất thức được lecture notes phát biểu trực tiếp~\cite{eysenbach2025generativerl,mao2024diffusiondice}.
 
 \subsubsection{f-Policy Gradients and State-MaxEnt RL}
 
@@ -761,7 +761,7 @@ Thừa số thứ nhất là tổng score function của policy trên trajectory
 Thừa số thứ hai cung cấp dense weights từ density ratio giữa state distribution hiện tại và goal distribution.
 Do bài toán tối thiểu hóa $J(\theta)$, hướng cập nhật có cấu trúc giống policy gradient với tín hiệu hiệu dụng $-f'(p_\theta(s_t)/p_g(s_t))$, thay vì reward thưa được thiết kế thủ công.
 Tuy nhiên, lecture notes lưu ý rằng không thể đồng nhất phép cập nhật này với việc cực đại hóa một surrogate return thông thường, bởi density ratio và trọng số tương ứng cũng phụ thuộc vào $\theta$.
-Estimator trên còn mang tính on-policy, nên đòi hỏi trajectory từ policy hiện tại và có thể kém hiệu quả dữ liệu~\cite{eysenbach2025tutorial}.
+Estimator trên còn mang tính on-policy, nên đòi hỏi trajectory từ policy hiện tại và có thể kém hiệu quả dữ liệu~\cite{eysenbach2025generativerl}.
 
 Trường hợp cụ thể với forward KL minh họa rõ hơn mối liên hệ giữa distribution matching và exploration.
 Khi $D_f$ là $D_{\mathrm{KL}}(p_\theta\Vert p_g)$, việc cực tiểu hóa divergence tương đương với:
@@ -781,7 +781,7 @@ Term thứ nhất đưa state distribution về các vùng có xác suất cao d
 Một policy có action entropy cao vẫn có thể tạo ra state distribution hẹp nếu dynamics khiến nhiều action dẫn tới cùng một vùng trạng thái.
 Ngược lại, \textbf{state-MaxEnt RL} tác động trực tiếp lên độ phủ của các trạng thái được ghé thăm.
 Đặc biệt, nếu $p_g$ là phân phối đều trên state space, term $\log p_g(s)$ trở thành hằng số và objective còn lại là cực đại hóa $\mathcal{H}(p_\theta(s))$, tức khuyến khích agent khám phá rộng trong môi trường.
-Diễn giải này là nội dung được nhấn mạnh trong phần f-Policy Gradients và state-MaxEnt RL của slide tutorial~\cite{eysenbach2025tutorial}.
+Diễn giải này là nội dung được nhấn mạnh trong phần f-Policy Gradients và state-MaxEnt RL của slide tutorial~\cite{eysenbach2025generativerl}.
 
 \subsubsection{Offline Goal-Conditioned RL and Technical Synthesis}
 
@@ -854,7 +854,7 @@ Tương tự, DDPO tối ưu trực tiếp reward proxy nhưng có thể overopt
 
 Một hướng nghiên cứu quan trọng là kết hợp generative policy biểu diễn đa mode với ước lượng uncertainty và cơ chế support-aware selection để kiểm soát policy shift.
 Hướng thứ hai là nối offline distribution matching với thu thập dữ liệu online có chủ đích, nhằm mở rộng support tại các vùng mà density ratio hoặc critic còn không chắc chắn.
-Cuối cùng, các tác vụ không thể đặc tả bằng một goal observation đơn lẻ đòi hỏi mô hình hóa distribution trên trajectory hoặc outcome có cấu trúc, thay vì chỉ thay reward bằng một goal observation tĩnh~\cite{eysenbach2025tutorial}.
+Cuối cùng, các tác vụ không thể đặc tả bằng một goal observation đơn lẻ đòi hỏi mô hình hóa distribution trên trajectory hoặc outcome có cấu trúc, thay vì chỉ thay reward bằng một goal observation tĩnh~\cite{eysenbach2025generativerl}.
 
 \begin{figure}[H]
     \centering
