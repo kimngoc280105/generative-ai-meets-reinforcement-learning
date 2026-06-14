@@ -1,0 +1,240 @@
+% TV4 phu trach -- Thuc nghiem va Ket qua
+
+% =====================================================================
+\section{Thực nghiệm và Kết quả}
+% =====================================================================
+
+Phần thực nghiệm của nhóm được xây dựng theo \textbf{Cách 2: tự xây dựng demo từ đầu}.
+Mục tiêu không phải tái hiện đầy đủ toàn bộ benchmark của bài báo Diffusion-DICE, mà là
+tự cài đặt một phiên bản rút gọn để minh họa cơ chế trung tâm trong tutorial: khi một
+generative policy dùng learned critic để guide hoặc select action, critic có thể bị khai thác
+ngoài vùng dữ liệu; cơ chế in-sample guidance của Diffusion-DICE giúp giảm rủi ro này.
+
+Khác với bản toy case ban đầu, demo chính hiện tại \textbf{không sử dụng dữ liệu tổng hợp}.
+Nhóm dùng hai real benchmark datasets có sẵn trong scikit-learn: \textbf{Breast Cancer
+Wisconsin Diagnostic} và \textbf{Wine Recognition}. Toàn bộ demo được chạy trong notebook
+\texttt{demo/real\_benchmark\_diffusion\_dice\_demo.ipynb}; mã nguồn backend nằm trong
+\texttt{demo/real\_benchmark\_diffusion\_dice.py}.
+
+% =====================================================================
+\subsection{Thiết lập bài toán}
+% =====================================================================
+
+Dữ liệu gốc là dữ liệu bảng nhiều chiều. Để có thể trực quan hóa quá trình sinh hành động,
+nhóm chuẩn hóa dữ liệu rồi chiếu xuống không gian hai chiều bằng PCA. Mỗi điểm dữ liệu sau
+PCA được xem như một action $a \in \mathbb{R}^2$ trong một bài toán contextual bandit rút
+gọn. Nhãn thật của dataset được dùng để xác định vùng target class, tức vùng có reward cao.
+
+Reward dùng để đánh giá không được đặt thủ công theo hình dạng tổng hợp. Thay vào đó, nhóm
+xây dựng một \textbf{KNN oracle reward} từ nhãn thật:
+\[
+    r(a) =
+    \frac{\sum_i K(a,a_i)\mathbf{1}[y_i = y^\star]}
+         {\sum_i K(a,a_i)} ,
+\]
+trong đó $a$ là action được sinh ra, $a_i$ là điểm dữ liệu thật, $y_i$ là nhãn thật,
+$y^\star$ là target class, và $K(a,a_i)$ là kernel đo độ gần giữa action và dữ liệu thật.
+Vì reward này được suy ra từ nhãn thật, nó được dùng như thước đo khách quan hơn so với
+điểm của learned critic.
+
+Hai dataset được dùng như sau:
+\begin{itemize}
+    \item \textbf{Breast Cancer Wisconsin Diagnostic}: target class là \texttt{benign}.
+    Sau PCA, hai thành phần đầu giải thích khoảng $63.2\%$ phương sai.
+    \item \textbf{Wine Recognition}: target class là \texttt{class\_0}. Sau PCA, hai
+    thành phần đầu giải thích khoảng $55.0\%$ phương sai.
+\end{itemize}
+
+% =====================================================================
+\subsection{Phương pháp và baseline}
+% =====================================================================
+
+Nhóm tự cài đặt ba hướng sinh action trên cùng một dữ liệu offline:
+\begin{enumerate}
+    \item \textbf{IDQL-style select-only}: học behavior diffusion model từ dữ liệu thật,
+    sinh nhiều candidate actions, sau đó chọn các action có learned critic score cao nhất.
+    Rủi ro của hướng này là critic có thể đánh giá quá cao các candidate nằm xa data support.
+
+    \item \textbf{QGPO-style guide-only}: dùng gradient của learned critic để guide quá
+    trình reverse diffusion:
+    \[
+        a \leftarrow a + \eta \nabla_a Q_\phi(a).
+    \]
+    Ở đây $Q_\phi(a)$ là learned critic và $\eta$ là guidance scale. Nếu critic không đáng
+    tin ở vùng ít dữ liệu, gradient này có thể kéo action ra khỏi phân phối thật.
+
+    \item \textbf{Diffusion-DICE-style guide-then-select}: học DICE weights trên dữ liệu
+    offline, sau đó dùng in-sample guidance để kéo candidate về vùng dữ liệu thật có trọng
+    số cao:
+    \[
+        g(a) = \log \sum_i w_i K(a,a_i).
+    \]
+    Trong đó $w_i$ là trọng số DICE của điểm dữ liệu thật $a_i$. Sau bước guide, nhóm vẫn
+    dùng learned critic để select, nhưng chỉ trong tập candidate đã được giữ gần data support.
+\end{enumerate}
+
+Các baseline trong demo là phiên bản \textit{style/proxy} của IDQL và QGPO nhằm minh họa
+cơ chế guide-only và select-only. Nhóm không claim đây là full implementation của hai paper
+IDQL hoặc QGPO.
+
+% =====================================================================
+\subsection{Metric đánh giá}
+% =====================================================================
+
+Mỗi phương pháp được đánh giá bằng cả metric định lượng và hình ảnh trực quan:
+\begin{itemize}
+    \item \textbf{ID ratio}: tỉ lệ generated actions nằm gần support của dữ liệu thật.
+    \item \textbf{OOD ratio}: tỉ lệ generated actions nằm ngoài support.
+    \item \textbf{Oracle reward mean}: reward trung bình theo KNN oracle từ nhãn thật.
+    \item \textbf{Critic reward mean}: score trung bình theo learned critic.
+    \item \textbf{Target region ratio}: tỉ lệ generated actions nằm trong vùng target class.
+    \item \textbf{Mean nearest distance}: khoảng cách trung bình từ generated actions tới
+    điểm dữ liệu thật gần nhất.
+\end{itemize}
+
+Nếu critic reward cao nhưng ID ratio thấp, phương pháp có dấu hiệu khai thác lỗi critic
+(\textit{critic exploitation}). Ngược lại, một phương pháp tốt cần vừa giữ ID ratio cao,
+vừa đạt oracle reward cao.
+
+% =====================================================================
+\subsection{Kết quả trên Breast Cancer}
+% =====================================================================
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{images/real_breast_cancer_results_notebook.png}
+    \caption{Kết quả trên Breast Cancer Wisconsin Diagnostic. Hàng trên lần lượt là data
+    support sau PCA, KNN oracle reward từ nhãn thật, và learned critic score. Hàng dưới là
+    action được sinh bởi QGPO-style, IDQL-style và Diffusion-DICE.}
+    \label{fig:real_breast_cancer_results}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \caption{Metric comparison trên Breast Cancer Wisconsin Diagnostic.}
+    \label{tab:real_breast_cancer_metrics}
+    \begin{tabular}{lccc}
+        \hline
+        \textbf{Method} & \textbf{ID ratio} & \textbf{OOD ratio} & \textbf{Oracle reward} \\
+        \hline
+        QGPO-style guide-only & 0.953 & 0.047 & 0.964 \\
+        IDQL-style select-only & 1.000 & 0.000 & 0.961 \\
+        Diffusion-DICE & 1.000 & 0.000 & 0.947 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Trên Breast Cancer, cả IDQL-style và Diffusion-DICE đều đạt reward cao và giữ action trong
+vùng dữ liệu thật. QGPO-style cũng đạt oracle reward cao, nhưng đã có một phần action rơi ra
+ngoài support dữ liệu (OOD ratio $=0.047$). Điểm đáng chú ý là Diffusion-DICE có mean nearest
+distance thấp nhất trong ba phương pháp, nghĩa là action sinh ra bám sát dữ liệu thật hơn.
+
+% =====================================================================
+\subsection{Kết quả trên Wine Recognition}
+% =====================================================================
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{images/real_wine_results_notebook.png}
+    \caption{Kết quả trên Wine Recognition. Các panel gồm data support, oracle reward,
+    learned critic, và action sinh bởi ba phương pháp.}
+    \label{fig:real_wine_results}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \caption{Metric comparison trên Wine Recognition.}
+    \label{tab:real_wine_metrics}
+    \begin{tabular}{lccc}
+        \hline
+        \textbf{Method} & \textbf{ID ratio} & \textbf{OOD ratio} & \textbf{Oracle reward} \\
+        \hline
+        QGPO-style guide-only & 0.984 & 0.016 & 0.750 \\
+        IDQL-style select-only & 0.984 & 0.016 & 0.931 \\
+        Diffusion-DICE & 1.000 & 0.000 & 0.916 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Trên Wine Recognition, IDQL-style đạt oracle reward cao nhất trong lần chạy này, cho thấy
+baseline select-only vẫn rất mạnh trong setting nhỏ và đơn giản. Tuy nhiên, Diffusion-DICE
+là phương pháp duy nhất giữ OOD ratio bằng 0 và ID ratio bằng 1.0. Điều này phù hợp với vai
+trò chính của Diffusion-DICE: không chỉ tối đa hóa critic score, mà còn kiểm soát generated
+actions để không rời khỏi support của dữ liệu thật.
+
+% =====================================================================
+\subsection{Mở rộng: khảo sát guidance scale}
+% =====================================================================
+
+Để đáp ứng yêu cầu mở rộng thực nghiệm, nhóm khảo sát guidance scale:
+\[
+    \eta \in \{0, 0.5, 1.0, 2.0, 3.0, 4.0\}.
+\]
+QGPO-style dùng $\eta$ để khuếch đại gradient của learned critic, trong khi Diffusion-DICE
+dùng $\eta$ trên guidance có ràng buộc in-sample. Hai metric chính trong khảo sát là ID ratio
+và oracle reward mean.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/real_breast_cancer_tuning_notebook.png}
+    \caption{Guidance-scale sweep trên Breast Cancer. Khi $\eta$ tăng lớn, QGPO-style mất
+    dần ID ratio, trong khi Diffusion-DICE duy trì ID ratio bằng 1.0.}
+    \label{fig:real_breast_cancer_tuning}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/real_wine_tuning_notebook.png}
+    \caption{Guidance-scale sweep trên Wine Recognition. Diffusion-DICE giữ ID ratio ổn định
+    và duy trì oracle reward cao trên nhiều giá trị $\eta$.}
+    \label{fig:real_wine_tuning}
+\end{figure}
+
+Kết quả sweep cho thấy khác biệt chính giữa critic guidance và in-sample guidance. Với
+Breast Cancer, QGPO-style có oracle reward tăng khi $\eta$ lớn, nhưng ID ratio giảm mạnh,
+cho thấy một phần action đã bị kéo ra khỏi support dữ liệu thật. Diffusion-DICE giữ ID ratio
+bằng 1.0 trên toàn bộ dải $\eta$. Với Wine Recognition, Diffusion-DICE cũng giữ ID ratio bằng
+1.0 và oracle reward ổn định hơn.
+
+% =====================================================================
+\subsection{Mô tả demo và khả năng tái lập}
+\label{sec:demo_description}
+% =====================================================================
+
+Demo Cách 2 được tổ chức trong thư mục \texttt{demo/} với các file chính:
+\begin{itemize}
+    \item \texttt{demo/real\_benchmark\_diffusion\_dice\_demo.ipynb}: notebook chính,
+    dùng để chạy từng bước, hiển thị hình và metric.
+    \item \texttt{demo/real\_benchmark\_diffusion\_dice.py}: backend tự implement
+    learned critic, behavior diffusion, DICE weights, in-sample guidance, baseline,
+    metric và visualization.
+    \item \texttt{demo/requirements.txt}: danh sách thư viện cần cài đặt.
+    \item \texttt{demo/real\_breast\_cancer\_*}: hình và CSV metric cho Breast Cancer.
+    \item \texttt{demo/real\_wine\_*}: hình và CSV metric cho Wine Recognition.
+\end{itemize}
+
+Để chạy lại demo:
+\begin{verbatim}
+python -m pip install -r demo/requirements.txt
+jupyter notebook demo/real_benchmark_diffusion_dice_demo.ipynb
+\end{verbatim}
+Hoặc chạy bằng script:
+\begin{verbatim}
+python demo/real_benchmark_diffusion_dice.py \
+    --dataset all \
+    --experiment all
+\end{verbatim}
+
+Demo chạy bằng Python và PyTorch, không cần GPU hay simulator như MuJoCo. Các output chính
+được lưu dưới dạng PNG và CSV, giúp người đọc kiểm tra cả kết quả định tính lẫn định lượng.
+
+% =====================================================================
+\subsection{Hạn chế}
+% =====================================================================
+
+Demo này là một phiên bản rút gọn để minh họa cơ chế của Diffusion-DICE, không phải
+reproduction đầy đủ của bài báo trên D4RL. PCA 2D giúp trực quan hóa rõ ràng nhưng làm mất
+một phần thông tin từ dữ liệu gốc. Ngoài ra, các baseline IDQL-style và QGPO-style là proxy
+để minh họa hai hướng select-only và guide-only, không phải full implementation của các paper
+tương ứng. Vì vậy, kết luận chính của demo là về cơ chế kiểm soát phân phối và giảm critic
+exploitation, không phải so sánh state-of-the-art trên benchmark lớn.
