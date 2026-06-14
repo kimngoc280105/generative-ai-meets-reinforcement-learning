@@ -200,10 +200,9 @@ def sample_diffusion(guidance_type="none", guidance_scale=1.0, num_samples=200):
         with torch.no_grad():
             pred_noise = diff_model(xt, t_float)
         
-        # Calculate guidance gradient
-        if guidance_type == "none":
-            guided_noise = pred_noise
-        elif guidance_type == "qgpo":
+        # Calculate guidance gradient (default: no guidance)
+        guided_noise = pred_noise
+        if guidance_type == "qgpo":
             # Guided by gradient of reward MLP
             xt_grad = xt.clone().detach().requires_grad_(True)
             rewards = learned_reward_fn(xt_grad)
