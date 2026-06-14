@@ -1,55 +1,10 @@
-﻿% TV4 phu trach -- Thuc nghiem va Ket qua
+% TV4 phu trach -- Thuc nghiem va Ket qua
 
 % =====================================================================
 \section{Thực nghiệm và Kết quả}
 % =====================================================================
 
-Trong phần này, chúng tôi trình bày các kết quả thực nghiệm của phương pháp Diffusion-DICE trên các tập dữ liệu chuẩn của bài toán Học tăng cường ngoại tuyến (Offline Reinforcement Learning), bao gồm hai nhóm bài toán chính được đề cập trong tài liệu tutorial: các tác vụ chuyển động liên tục MuJoCo locomotion và các tác vụ mê cung phức tạp AntMaze từ bộ benchmark D4RL \cite{fu2020d4rl}.
-
-\subsection{Mô tả thực nghiệm}
-Thực nghiệm định lượng được thiết lập nhằm đánh giá khả năng mô hình hóa chính sách phức tạp và chống khai thác lỗi của Diffusion-DICE:
-
-\begin{itemize}
-    \item \textbf{Tập dữ liệu MuJoCo Locomotion}: Gồm các môi trường \texttt{halfcheetah}, \texttt{hopper}, và \texttt{walker2d} với các mức độ dữ liệu khác nhau như \texttt{medium-v2} (dữ liệu thu thập từ chính sách hiệu năng trung bình), \texttt{medium-replay-v2} (toàn bộ bộ nhớ đệm trải nghiệm trong quá trình huấn luyện chính sách trung bình), và \texttt{medium-expert-v2} (kết hợp dữ liệu từ chính sách trung bình và chuyên gia).
-    \item \textbf{Tập dữ liệu AntMaze}: Robot kiến di chuyển qua mê cung phức tạp (\texttt{antmaze-medium-play-v2}, \texttt{antmaze-large-play-v2}). Đây là tác vụ có phần thưởng cực kỳ thưa thớt (sparse reward) và yêu cầu khả năng lập kế hoạch dài hạn (long-horizon planning) rất cao.
-    \item \textbf{Môi trường huấn luyện}: Lập trình trên ngôn ngữ Python, sử dụng thư viện học sâu PyTorch. Quá trình huấn luyện sử dụng card đồ họa GPU NVIDIA (ví dụ cấu hình đề xuất RTX 3080/4090 hoặc Google Colab T4/A100) để tăng tốc độ tính toán cho mô hình khuếch tán. Mạng Score được cấu trúc dưới dạng U-Net 1D (đối với D4RL) hoặc MLP (đối với toy case).
-    \item \textbf{Các phương pháp so sánh (Baselines)}:
-    \begin{itemize}
-        \item Các phương pháp chính sách Gaussian truyền thống: CQL \cite{kumar2020cql}, IQL \cite{kostrikov2021iql}, và OptiDICE \cite{lee2021optidice}.
-        \item Các phương pháp dựa trên mô hình khuếch tán: Diffuser \cite{janner2022diffuser}, QGPO \cite{lu2023contrastive}, và IDQL \cite{hansen2023idql}.
-    \end{itemize}
-    \item \textbf{Metrics đánh giá}: Điểm số chuẩn hóa D4RL (D4RL normalized score), chạy trung bình qua 5 seeds ngẫu nhiên khác nhau để đảm bảo tính khách quan và khoa học.
-\end{itemize}
-
-\subsection{Kết quả}
-Bảng \ref{tab:results} thống kê điểm số chuẩn hóa trung bình của Diffusion-DICE so với các baselines chính trên các tác vụ MuJoCo locomotion và AntMaze, được tổng hợp từ kết quả nghiên cứu công bố của phương pháp.
-
-\begin{table}[H]
-    \centering
-    \caption{Điểm số chuẩn hóa trung bình trên các tác vụ D4RL MuJoCo và AntMaze (trung bình qua 5 seeds).}
-    \label{tab:results}
-    \begin{tabular}{lcccc}
-        \toprule
-        \textbf{Tập dữ liệu (Dataset)} & \textbf{IQL} & \textbf{QGPO} & \textbf{IDQL} & \textbf{Diffusion-DICE (Ours)} \\
-        \midrule
-        halfcheetah-medium-v2        & 47.4 & 51.6 & 52.3 & \textbf{54.1} \\
-        hopper-medium-v2             & 66.3 & 91.2 & 92.4 & \textbf{95.3} \\
-        walker2d-medium-v2           & 78.3 & 82.5 & 84.1 & \textbf{86.7} \\
-        halfcheetah-medium-replay-v2 & 44.2 & 46.8 & 47.9 & \textbf{49.5} \\
-        hopper-medium-replay-v2      & 94.7 & 96.1 & 96.8 & \textbf{98.2} \\
-        walker2d-medium-replay-v2    & 73.9 & 81.3 & 82.5 & \textbf{85.4} \\
-        \midrule
-        antmaze-medium-play-v2       & 71.2 & 72.0 & 73.4 & \textbf{76.8} \\
-        antmaze-large-play-v2        & 42.0 & 39.5 & 45.2 & \textbf{51.0} \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\textbf{Phân tích ý nghĩa kết quả}:
-\begin{enumerate}
-    \item \textbf{Tính hiệu quả của mô hình khuếch tán}: Việc chuyển đổi từ chính sách phân phối Gaussian đơn mode (ở các thuật toán như IQL, CQL) sang mô hình khuếch tán đa mode giúp chính sách mô hình hóa chính xác hơn các tập dữ liệu hỗn hợp (như replay hoặc medium).
-    \item \textbf{Sự ổn định của cơ chế đối ngẫu DICE}: Diffusion-DICE liên tục đạt điểm số cao hơn so với các phương pháp khuếch tán khác (như QGPO, IDQL). Điều này chứng minh rằng việc kết hợp ràng buộc phân phối của DICE vào mô hình khuếch tán giúp giảm thiểu hiện tượng trệch phân phối (distribution shift) một cách triệt để.
-\end{enumerate}
+Trong phần này, chúng tôi trình bày thực nghiệm do nhóm tự cài đặt và chạy trực tiếp nhằm kiểm chứng trực quan cơ chế hoạt động của Diffusion-DICE, đặc biệt là nguyên lý chống khai thác lỗi ngoại suy (error exploitation) thông qua bài toán mô phỏng \textbf{2D Bandit Toy Case}.
 
 \subsection{Mô tả Demo Thực nghiệm}
 \label{sec:demo_description}
