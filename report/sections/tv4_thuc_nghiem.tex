@@ -91,25 +91,13 @@ Chúng tôi cài đặt 3 phương pháp trên cùng một mô hình khuếch t�
     (guide-then-select).}
     \label{fig:toycase_demo}
 \end{figure}
-
 \textbf{Phân tích kết quả}:
 \begin{itemize}
-    \item \textbf{QGPO} bị hút vào tâm OOD $(0,0)$ vì đạo hàm
-    $\nabla_{a_t} \hat{R}(a_t)$ luôn chỉ về đỉnh ảo tưởng tại tâm. Đây là biểu
-    hiện điển hình của \textit{value error exploitation}: khi guidance dựa trực
-    tiếp vào critic bị sai lệch, toàn bộ quá trình sinh mẫu bị kéo sập về vùng
-    OOD nguy hiểm.
+    \item \textbf{QGPO} không bị kéo sập hoàn toàn vào tâm OOD $(0,0)$ mà phân tán rộng thành một dạng vành khuyên bao quanh tâm. Điều này là do sự thiếu hụt dòng gradient dẫn đường hiệu quả từ critic trong quá trình lấy mẫu (ảnh hưởng từ thiết lập huấn luyện và đánh giá). Tuy nhiên, QGPO thể hiện chất lượng sinh mẫu kém, các hành động bị phân tán rất rộng và không thể hội tụ vào hai vùng phần thưởng cao thực tế trên vành ngoài.
 
-    \item \textbf{IDQL} có nhiều mẫu bị kéo lệch vào vùng OOD vì một số ứng
-    viên được sinh ra gần rìa trong và critic sai lệch lại ưu tiên chọn giữ
-    chúng. Dù không bị sập hoàn toàn như QGPO, IDQL vẫn không thể tập trung
-    hành động vào vùng phần thưởng thực sự cao.
+    \item \textbf{IDQL} sinh mẫu tập trung tương đối tốt ở hai vùng phần thưởng cao ($\theta \approx 0$ và $\theta \approx \pi$). Do IDQL chỉ lọc chọn hành động từ các ứng viên được sinh sẵn bởi behavior model (vốn nằm trong support của dữ liệu $\mathcal{D}$), phương pháp này tránh được việc bị kéo sập hoàn toàn vào tâm OOD $(0,0)$, mặc dù critic bị lỗi ngoại suy overestimation tại đó. Dù vậy, vẫn xuất hiện một số ít điểm bị rò rỉ vào vùng tâm (khoảng 4--5 mẫu) do sự ngẫu nhiên của quá trình sinh ứng viên.
 
-    \item \textbf{Diffusion-DICE} sinh mẫu tập trung tại hai đỉnh
-    phần thưởng thực tế trên vành ngoài ($\theta \approx 0$ và $\theta \approx
-    \pi$), gần như hoàn toàn tránh xa bẫy OOD ở tâm. Cơ chế IGL học trọng số
-    in-sample $w^*(a)$ từ chính dữ liệu trong $\mathcal{D}$, bảo đảm guidance
-    không kéo chính sách ra ngoài support dữ liệu.
+    \item \textbf{Diffusion-DICE} sinh mẫu chính xác và tập trung dày đặc nhất tại hai đỉnh phần thưởng thực tế trên vành ngoài, hoàn toàn tránh được bẫy OOD ở tâm (với tỉ lệ rò rỉ rất nhỏ tương tự IDQL). Cơ chế IGL học trọng số in-sample $w^*(a)$ từ chính dữ liệu trong $\mathcal{D}$, bảo đảm guidance không bao giờ kéo chính sách ra ngoài support dữ liệu.
 \end{itemize}
 
 % =====================================================================
@@ -124,15 +112,17 @@ tạp và rời rạc hơn, chúng tôi thử nghiệm thêm tập dữ liệu g
     \centering
     \includegraphics[width=1.0\textwidth]{images/toycase_cluster_results.png}
     \caption{Kết quả trực quan hóa trên tập dữ liệu 4 cụm Gaussian rời rạc
-    (4-Cluster Dataset). Diffusion-DICE sinh mẫu chính xác tại tất cả 4 tâm
-    cụm, trong khi QGPO và IDQL vẫn bị sập hoàn toàn vào tâm OOD $(0,0)$.}
+    (4-Cluster Dataset). Diffusion-DICE và IDQL đều sinh mẫu chính xác tại cả 4 tâm
+    cụm (với một vài điểm rò rỉ nhỏ về tâm OOD $(0,0)$), trong khi QGPO bị phân tán
+    mạnh và không thể hội tụ tốt vào các cụm.}
     \label{fig:toycase_cluster}
 \end{figure}
 
 \textbf{Phân tích kết quả}: 
 \begin{itemize}
-    \item Trong kịch bản phân phối rời rạc này, cả IDQL và Diffusion-DICE đều thể hiện khả năng mô hình hóa đa phương thức ở mức độ tương đương, với hành động sinh ra tập trung chủ yếu tại 4 cụm Gaussian đúng vị trí. Tuy nhiên, cả hai phương pháp vẫn xuất hiện một số điểm lạc về vùng trung tâm gần gốc tọa độ -- IDQL có khoảng 2 outlier trong khi Diffusion-DICE có khoảng 3 -- cho thấy cả hai chưa hoàn toàn tránh được sự hút về vùng OOD.
-    \item QGPO là phương pháp thất bại rõ ràng nhất: các điểm đầu ra phân tán rải rác khắp không gian, không hội tụ có nghĩa vào bất kỳ cụm nào, phản ánh hạn chế cố hữu của cơ chế guide-only khi không có bước selection kiểm soát phân phối đầu ra.
+    \item Trong kịch bản phân phối rời rạc này, cả \textbf{Diffusion-DICE} và \textbf{IDQL} đều thể hiện khả năng mô hình hóa đa phương thức (multi-modal) tốt khi tập trung hành động tại tâm của cả 4 cụm Gaussian thật. IDQL (select-only) không bị kéo sập về gốc $(0,0)$ (nơi critic bị overestimation cực đại) vì các ứng viên được tạo ra bởi behavior model nằm hoàn toàn trong support của dữ liệu thực tế. Critic chỉ có vai trò chấm điểm và chọn lựa trong các ứng viên an toàn này, do đó tránh được việc kéo mẫu ra vùng OOD không có ứng viên nào. Dù vậy, cả hai phương pháp vẫn xuất hiện một số lượng rất nhỏ điểm rò rỉ về gốc $(0,0)$ (IDQL có khoảng 2 outlier trong khi Diffusion-DICE có khoảng 3 outlier) do nhiễu khuếch tán ngẫu nhiên trong sampling.
+
+    \item \textbf{QGPO} là phương pháp thất bại rõ ràng nhất: các điểm đầu ra phân tán rải rác khắp không gian, không hội tụ có nghĩa vào bất kỳ cụm nào, phản ánh hạn chế cố hữu của cơ chế guide-only khi không có bước selection kiểm soát phân phối đầu ra và thiếu dòng gradient dẫn đường hiệu quả.
 \end{itemize}
 
 % =====================================================================
