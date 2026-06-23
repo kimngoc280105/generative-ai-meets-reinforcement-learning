@@ -4,6 +4,10 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T5]{fontenc}
 \usepackage[vietnamese]{babel}
+\addto\captionsvietnamese{
+  \renewcommand{\listfigurename}{Danh mục hình ảnh}
+  \renewcommand{\listtablename}{Danh mục bảng biểu}
+}
 \usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb,amsthm}
@@ -115,7 +119,96 @@
 \pagenumbering{roman}
 \tableofcontents
 \listoftables
+\listoffigures
 \newpage
+
+
+% ========== BẢNG THUẬT NGỮ ===========
+\section*{Bảng Thuật ngữ}
+\label{sub:glossary}
+% =====================================================================
+
+Bảng dưới đây tổng hợp các thuật ngữ chuyên ngành tiếng Anh được sử dụng trong báo cáo kèm theo giải thích bằng tiếng Việt.
+
+\begin{center}
+\begin{longtable}{p{5cm} p{4.5cm} p{4.5cm}}
+    \caption{Bảng thuật ngữ Anh--Việt.} \label{tab:glossary} \\
+    \toprule
+    \textbf{Thuật ngữ tiếng Anh} & \textbf{Dịch tiếng Việt} & \textbf{Ghi chú} \\
+    \midrule
+    \endfirsthead % <-- Sửa thành lệnh này (Không có \begin và có dấu \)
+
+    % Định nghĩa tiêu đề cho các trang sau (khi bảng bị ngắt sang trang mới)
+    \multicolumn{3}{c}{{\tablename\ \thetable{} -- Tiếp theo từ trang trước}} \\
+    \midrule
+    \textbf{Thuật ngữ tiếng Anh} & \textbf{Dịch tiếng Việt} & \textbf{Ghi chú} \\
+    \midrule
+    \endhead % <-- Sửa thành lệnh này 
+
+    % Định nghĩa phần chân bảng khi chưa hết bảng
+    % \midrule
+    % \multicolumn{3}{r}{{Còn tiếp ở trang sau...}} \\
+    % \endfoot % <-- Sửa thành lệnh này
+
+    % Định nghĩa chân bảng ở trang cuối cùng
+    \bottomrule
+    \endlastfoot % <-- Sửa thành lệnh này
+
+    % ================= DỮ LIỆU BẢNG GIỮ NGUYÊN HOÀN TOÀN TỪ ĐÂY =================
+    Reinforcement Learning (RL) & Học Tăng cường & Nhánh học máy học qua tương tác \\
+    Generative AI / Generative Model & AI Tạo sinh / Mô hình Tạo sinh & Mô hình có thể sinh mẫu mới \\
+    Imitation Learning & Học Bắt chước & Học từ dữ liệu hành vi chuyên gia \\
+    Reward Engineering & Thiết kế Hàm Thưởng & Xây dựng tín hiệu phần thưởng cho RL \\
+    Reward Hacking & Khai thác Phần thưởng & Tối ưu proxy thay vì mục tiêu thật \\
+    Policy & Chính sách & Quy tắc ra quyết định của tác nhân \\
+    Policy Gradient & Gradient Chính sách & Phương pháp tối ưu chính sách \\
+    Score Function & Hàm Điểm số & Gradient của log-xác suất \\
+    Trajectory & Quỹ đạo & Chuỗi trạng thái--hành động--thưởng \\
+    Return / Discounted Return & Lợi tức / Lợi tức Chiết khấu & Tổng phần thưởng (có chiết khấu) \\
+    Value Function / Q-function & Hàm Giá trị / Hàm Q & Ước lượng lợi tức kỳ vọng \\
+    Bellman Equation & Phương trình Bellman & Quan hệ đệ quy của hàm giá trị \\
+    Markov Decision Process (MDP) & Quá trình Quyết định Markov & Khung hình thức hóa bài toán RL \\
+    Successor Measure & Thước đo Kế tiếp & Phân phối trạng thái tương lai \\
+    Occupancy Measure & Thước đo Chiếm dụng & Phân phối trạng thái--hành động \\
+    Diffusion Model & Mô hình Khuếch tán & Mô hình tạo sinh qua khử nhiễu \\
+    Flow Matching & Khớp Luồng & Mô hình tạo sinh qua trường vector \\
+    Transformer & Transformer & Kiến trúc dựa trên cơ chế tự chú ý \\
+    Self-Attention & Tự chú ý & Cơ chế tập trung giữa các token \\
+    Autoregressive Model & Mô hình Tự Hồi quy & Sinh token tuần tự từng bước \\
+    VAE (Variational Autoencoder) & Bộ Mã hóa Biến phân & Mô hình tạo sinh có không gian tiềm ẩn \\
+    GAN (Generative Adversarial Network) & Mạng Đối kháng Tạo sinh & Mô hình tạo sinh kiểu bộ tạo--bộ phân biệt \\
+    World Model & Mô hình Thế giới & Mô hình học hàm chuyển trạng thái \\
+    Model-Based RL & Học Tăng cường Dựa trên Mô hình & RL sử dụng mô hình thế giới \\
+    Offline RL & Học Tăng cường Ngoại tuyến & RL học từ tập dữ liệu cố định \\
+    Goal-Reaching & Đạt Đích & Bài toán đưa tác nhân đến trạng thái đích \\
+    Goal-Conditioned RL & Học Tăng cường Có Điều kiện Đích & RL với chính sách phụ thuộc mục tiêu \\
+    Behavioral Cloning (BC) & Sao chép Hành vi & Học trực tiếp phân phối hành động \\
+    GCBC & Sao chép Hành vi Có Điều kiện Đích & BC mở rộng với điều kiện mục tiêu \\
+    Dual RL & Học Tăng cường Song nguyên & RL qua bài toán đối ngẫu \\
+    DICE & DICE & Phương pháp khớp phân phối chiếm dụng \\
+    Distribution Matching & Khớp Phân phối & Đưa phân phối chính sách về đích \\
+    Density Ratio & Tỉ lệ Mật độ & Tỉ lệ giữa hai phân phối xác suất \\
+    Temporal Contrastive Learning & Học Tương phản Thời gian & Học phân biệt cặp thật/giả theo thời gian \\
+    Forward-Backward Representation & Biểu diễn Tiến-Lùi & Biểu diễn nhân tố hóa thước đo kế tiếp \\
+    Zero-shot RL & Học Tăng cường Không cần Huấn luyện lại & Suy ra chính sách không cần train thêm \\
+    Skill Learning & Học Kỹ năng & Học các hành vi có thể tái sử dụng \\
+    Empowerment & Trao quyền & Khả năng tác nhân tác động đến tương lai \\
+    Mutual Information & Thông tin Tương hỗ & Đo lường phụ thuộc giữa hai biến \\
+    Behavioral Foundation Model (BFM) & Mô hình Nền tảng Hành vi & Mô hình nền tảng cho không gian hành vi \\
+    Self-Supervised RL & Học Tăng cường Tự Giám sát & RL tự tạo phần thưởng nội tại \\
+    RLHF & Học Tăng cường từ Phản hồi Con người & Fine-tune mô hình theo ý muốn người dùng \\
+    Error Exploitation & Khai thác Lỗi & Chính sách khai thác sai số của critic \\
+    Out-of-Distribution (OOD) & Ngoài Phân phối & Dữ liệu nằm ngoài vùng huấn luyện \\
+    Denoising & Khử nhiễu & Quá trình loại bỏ nhiễu dần dần \\
+    Score-Based Diffusion & Khuếch tán Dựa trên Điểm số & Khuếch tán dùng hàm điểm số \\
+    In-Distribution & Trong Phân phối & Dữ liệu nằm trong vùng huấn luyện \\
+    Horizon Generalization & Tổng quát hóa Chân trời & Huấn luyện ngắn, suy ra horizon dài \\
+    Cross-Embodiment Transfer & Chuyển giao Xuyên Thể xác & Chuyển kỹ năng sang robot có hình dạng khác \\
+\end{longtable}
+\end{center}
+
+\newpage
+
 
 % ========== NOI DUNG ==========
 \pagenumbering{arabic}
