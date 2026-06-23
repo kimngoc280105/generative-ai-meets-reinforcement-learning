@@ -1,0 +1,48 @@
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.log
+*.lot
+*.maf
+*.mtc
+*.mtc0
+*.nav
+*.out
+*.pdfsync
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.bcf
+*.run.xml
+
+# ====================================================================
+# Tool-specific Temporary Files (File tạm từ các trình soạn thảo TeX)
+# ====================================================================
+# TeXstudio
+*.烘
+*.bak
+*.tsv
+
+# TeXworks / VS Code LaTeX Workshop
+*.tex~
+.texpadtmp/
+_minted*/
+
+# ====================================================================
+# Backup & System Files
+# ====================================================================
+.DS_Store
+Thumbs.db
+*.swp
+*~

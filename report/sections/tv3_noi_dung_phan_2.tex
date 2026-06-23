@@ -47,7 +47,7 @@ trạng thái $s$ và thực hiện hành động $a$.
 \end{figure}
 
 % ---------------------------------------------------------------------
-\subsubsection{Ước lượng Density Trực tiếp}
+\subsubsection{Ước lượng Mật độ Trực tiếp}
 % ---------------------------------------------------------------------
 
 \paragraph{Phương pháp Trực tiếp và Hạn chế}
@@ -78,7 +78,7 @@ tương đối} (relative likelihood) -- một bài toán dễ hơn và có th�
 \cite{eysenbach2025generativerl}.
 
 % ---------------------------------------------------------------------
-\subsubsection{Temporal Contrastive Learning}
+\subsubsection{Học Tương phản Thời gian}
 % ---------------------------------------------------------------------
 
 \paragraph{Ước lượng Relative Likelihood}
@@ -143,8 +143,7 @@ pháp quan trọng:
 
 \begin{table}[H]
     \centering
-    \caption{So sánh các phương pháp ước lượng successor measure.
-    Nguồn: \cite{eysenbach2025generativerl}.}
+    \caption{So sánh các phương pháp ước lượng successor measure.}
     \label{tab:td_methods}
     \begin{tabular}{lll}
         \toprule
@@ -157,6 +156,7 @@ pháp quan trọng:
         \bottomrule
     \end{tabular}
 \end{table}
+Nguồn: \cite{eysenbach2025generativerl}.
 
 \textbf{C-learning} \cite{eysenbach2025generativerl} reformulate
 goal-reaching như bài toán phân loại đệ quy: thay vì học trực tiếp
@@ -209,7 +209,7 @@ Q-function cũng có thể được ước lượng từ các biểu diễn này
 như một vector $z$ duy nhất -- nền tảng cho zero-shot RL.
 
 % ---------------------------------------------------------------------
-\subsubsection{Fully-general RL từ Density Ratios}
+\subsubsection{Học Tăng cường Tổng quát từ Tỉ lệ Mật độ}
 % ---------------------------------------------------------------------
 
 \paragraph{Từ Goal-reaching đến RL Tổng quát}
@@ -287,7 +287,7 @@ log-linear có một số tính chất nổi bật:
 \end{itemize}
 
 % ---------------------------------------------------------------------
-\subsubsection{Proto-Successor Measure (PSM)}
+\subsubsection{Thước đo Kế tiếp Nguyên mẫu (PSM)}
 % ---------------------------------------------------------------------
 
 \paragraph{Tập hợp Affine của Successor Measures}
@@ -332,7 +332,7 @@ Nói cách khác, PSM cung cấp ``từ điển hành vi'' mà RLZero tra cứu 
 biến ngôn ngữ tự nhiên thành policy \cite{eysenbach2025generativerl}.
 
 % ---------------------------------------------------------------------
-\subsubsection{RLZero: Zero-shot RL từ Ngôn ngữ Tự nhiên}
+\subsubsection{RLZero: Học Tăng cường Không cần Huấn luyện lại từ Ngôn ngữ Tự nhiên}
 % ---------------------------------------------------------------------
 
 \paragraph{Vấn đề và Động lực}
@@ -435,7 +435,7 @@ Stickman. Kết quả (Bảng~\ref{tab:rlzero_results}) cho thấy:
 \begin{table}[H]
     \centering
     \caption{Win rate của các phương pháp khi đánh giá bằng GPT-4o-preview
-    trên 25 tasks trong DeepMind Control Suite. Nguồn: \cite{sikchi2025rlzero}.}
+    trên 25 tasks trong DeepMind Control Suite.}
     \label{tab:rlzero_results}
     \begin{tabular}{lc}
         \toprule
@@ -447,6 +447,7 @@ Stickman. Kết quả (Bảng~\ref{tab:rlzero_results}) cho thấy:
         \bottomrule
     \end{tabular}
 \end{table}
+Nguồn: \cite{sikchi2025rlzero}.
 
 RLZero đạt win rate \textbf{83.2\%} so với baseline tốt nhất
 (Image-language IQL: 51.2\%), đồng thời chỉ cần \textbf{khoảng 25 giây}
@@ -505,7 +506,7 @@ câu hỏi: làm thế nào để agent \textit{tự thu thập} dữ liệu c�
 không giải quyết được, nhưng RL lại có bộ công cụ phù hợp.
 
 % ---------------------------------------------------------------------
-\subsubsection{Bài toán Exploration}
+\subsubsection{Bài toán Khám phá}
 % ---------------------------------------------------------------------
 
 \paragraph{Coverage và Occupancy Measures}
@@ -535,7 +536,7 @@ dụng từ quá trình khám phá?
 
 
 % ---------------------------------------------------------------------
-\subsubsection{Empowerment}
+\subsubsection{Trao quyền}
 % ---------------------------------------------------------------------
 
 \paragraph{Định nghĩa và Ý nghĩa}
@@ -582,7 +583,7 @@ người có nhiều lựa chọn và khả năng hành động hơn.
 \end{figure}
 
 % ---------------------------------------------------------------------
-\subsubsection{Skill Learning}
+\subsubsection{Học Kỹ năng}
 % ---------------------------------------------------------------------
 
 \paragraph{Mục tiêu}

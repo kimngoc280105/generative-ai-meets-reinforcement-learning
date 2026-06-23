@@ -9,7 +9,7 @@
 \subsection{Đánh giá tổng thể tutorial}
 % ---------------------------------------------------------------------
 
-\subsubsection{Đóng góp khoa học chính}
+\subsubsection{Đóng góp Khoa học Chính}
 
 Tutorial \textit{Generative AI Meets Reinforcement Learning} của Eysenbach và Zhang~\cite{eysenbach2025generativerl} trình bày
 một khung nhìn thống nhất về mối quan hệ hai chiều giữa hai lĩnh vực từng được coi là tương đối độc lập.
@@ -35,7 +35,7 @@ cho phép fine-tune model theo các mục tiêu downstream không biểu diễn 
 Mở rộng hơn, self-supervised RL cho phép xây dựng các Behavioral Foundation Model khám phá và nén không
 gian hành vi của môi trường mà không cần dữ liệu curated hay reward thủ công.
 
-\subsubsection{Tính nhất quán và mạch lạc của framework}
+\subsubsection{Tính nhất quán và mạch lạc của Khung nghiên cứu}
 
 Điểm đáng chú ý là tutorial xây dựng được một luận điểm nhất quán từ đầu đến cuối.
 Bắt đầu từ quan sát đơn giản rằng score function -- đối tượng trung tâm của generative modeling --
@@ -48,10 +48,10 @@ Cách trình bày này giúp người đọc không chỉ nắm bắt từng ph�
 \textit{tại sao} các kết nối đó tồn tại ở mức nguyên lý, từ đó có thể tự suy ra các biến thể và mở rộng.
 
 % ---------------------------------------------------------------------
-\subsection{Ưu điểm của hướng tiếp cận}
+\subsection{Ưu điểm của Hướng tiếp cận}
 % ---------------------------------------------------------------------
 
-\subsubsection{Loại bỏ sự phụ thuộc vào reward engineering}
+\subsubsection{Loại bỏ sự phụ thuộc vào Thiết kế Hàm Thưởng}
 
 Một trong những nút thắt lớn nhất khi triển khai RL trong thực tế là việc thiết kế hàm reward.
 Reward phải vừa phản ánh đúng mục tiêu của người dùng, vừa đủ dense để tạo gradient học, vừa không
@@ -66,7 +66,7 @@ Phần còn lại -- bao gồm đánh giá chính sách và tối ưu -- đượ
 Điều này về cơ bản đưa RL đến gần hơn với phương pháp luận học máy tiêu chuẩn: bài toán được định
 nghĩa qua dữ liệu, không phải qua code đặc thù.
 
-\subsubsection{Mở rộng năng lực biểu diễn của policy}
+\subsubsection{Mở rộng Năng lực Biểu diễn của Chính sách}
 
 Việc sử dụng diffusion model hay transformer làm policy mang lại khả năng biểu diễn phân phối hành
 động đa mode -- điều mà Gaussian policy truyền thống không làm được.
@@ -75,7 +75,7 @@ Trong các bài toán robot manipulation hay tổng hợp hóa học, thường 
 Policy Gaussian sẽ trung bình hóa các mode này, dẫn tới các hành động không hợp lệ.
 Diffusion policy tránh được vấn đề này bằng cách biểu diễn trực tiếp phân phối đa mode.
 
-\subsubsection{Khả năng học không cần giám sát và dữ liệu tự thu thập}
+\subsubsection{Khả năng Học Không Giám sát và Dữ liệu Tự thu thập}
 
 Góc nhìn self-supervised RL (Phần IV của tutorial) giải quyết câu hỏi cơ bản: dữ liệu từ đâu mà có?
 Thay vì phụ thuộc vào dataset curated do con người tạo ra, agent có thể tự khám phá môi trường,
@@ -86,10 +86,10 @@ sẵn sàng được \textit{prompt} để giải quyết downstream task mới 
 hành vi thay vì không gian ngôn ngữ.
 
 % ---------------------------------------------------------------------
-\subsection{Hạn chế và thách thức còn tồn tại}
+\subsection{Hạn chế và Thách thức Còn tồn tại}
 % ---------------------------------------------------------------------
 
-\subsubsection{Hạn chế về khả năng mở rộng (scalability)}
+\subsubsection{Hạn chế về Khả năng Mở rộng}
 
 Mặc dù có nền tảng lý thuyết vững chắc, phần lớn các phương pháp được trình bày trong tutorial
 vẫn được thực nghiệm trên các môi trường quy mô nhỏ hoặc trung bình (MuJoCo, Atari, maze navigation).
@@ -102,7 +102,7 @@ chính xác trong không gian chiều cao.
 Mặc dù các biểu diễn log-linear (Section 4.6 của tutorial) có một số tính chất lý thuyết tốt,
 tính thực tiễn ở quy mô lớn vẫn cần được kiểm chứng thêm.
 
-\subsubsection{Vấn đề phân phối lệch (distribution shift)}
+\subsubsection{Vấn đề Dịch chuyển Phân phối}
 
 Phần lớn các phương pháp offline RL trong tutorial đều đối mặt với vấn đề distribution shift:
 policy được học từ dữ liệu của behavior policy, nhưng sau đó được triển khai theo phân phối khác.
@@ -114,7 +114,7 @@ phân phối dữ liệu thay đổi theo.
 Các thuật toán dual RL (Section 3.4) cung cấp công cụ lý thuyết để phân tích vấn đề này,
 nhưng cài đặt thực tế vẫn yêu cầu nhiều kỹ thuật ổn định hóa bổ sung.
 
-\subsubsection{Phụ thuộc vào chất lượng reward model}
+\subsubsection{Phụ thuộc vào Chất lượng Mô hình Phần thưởng}
 
 Đối với các phương pháp kết hợp reward trong RL fine-tuning generative models (ví dụ DDPO),
 chất lượng toàn bộ hệ thống phụ thuộc trực tiếp vào độ chính xác của reward model.
@@ -123,7 +123,7 @@ mô hình có thể tối ưu proxy thay vì cải thiện chất lượng thự
 Đây là vấn đề không chỉ của DDPO mà của toàn bộ paradigm RLHF (Reinforcement Learning from Human Feedback)
 và đang là chủ đề nghiên cứu tích cực trong cộng đồng.
 
-\subsubsection{Thách thức trong khái quát hóa (generalization)}
+\subsubsection{Thách thức trong Tổng quát hóa}
 
 Tutorial kết thúc bằng lời kêu gọi về vai trò của generalization trong RL (Section 6 của tutorial).
 Đây là một thiếu hụt hiện tại quan trọng: trong khi các mô hình ngôn ngữ và hình ảnh có thể
@@ -133,10 +133,10 @@ Skill learning và successor measure cung cấp một số công cụ để gi�
 nhưng khả năng generalize của RL agent vẫn còn kém xa so với LLM hay visual generative models.
 
 % ---------------------------------------------------------------------
-\subsection{Hướng nghiên cứu tương lai}
+\subsection{Hướng Nghiên cứu Tương lai}
 % ---------------------------------------------------------------------
 
-\subsubsection{Tích hợp nền tảng mô hình (foundation models) với RL}
+\subsubsection{Tích hợp Mô hình Nền tảng với Học Tăng cường}
 
 Một hướng nghiên cứu hứa hẹn là tận dụng các foundation model (LLM, vision-language model)
 như nguồn prior kiến thức để khởi động quá trình học RL.
@@ -149,7 +149,7 @@ trong việc lập kế hoạch nhiều bước.
 Thay vì chỉ ước lượng xác suất đến trạng thái $s_f$ theo phân phối hình học,
 có thể kết hợp với khả năng lập kế hoạch ngôn ngữ để xử lý các task phức tạp hơn.
 
-\subsubsection{Cải thiện hiệu quả mẫu trong môi trường thực}
+\subsubsection{Cải thiện Hiệu quả Mẫu trong Môi trường Thực}
 
 Đối với các ứng dụng thực tế như robotics hay y tế, số lượng tương tác với môi trường bị giới hạn
 nghiêm ngặt.
@@ -158,7 +158,7 @@ world model) là hướng đi tự nhiên để giảm yêu cầu dữ liệu th
 Tuy nhiên, như tutorial đề cập, compounding error của world model vẫn là thách thức lớn cần
 các kỹ thuật phát hiện và điều chỉnh hiệu quả hơn.
 
-\subsubsection{Reward-free RL ở quy mô lớn}
+\subsubsection{Học Tăng cường Không cần Phần thưởng ở Quy mô Lớn}
 
 Skill learning và self-supervised RL (Phần IV) đặt nền móng cho RL không cần reward.
 Bước tiếp theo là đưa paradigm này lên quy mô lớn hơn, tương đương với scale của LLM pretraining.
@@ -166,7 +166,7 @@ Câu hỏi mở bao gồm: làm thế nào thiết kế không gian skill $\math
 để biểu diễn đa dạng hành vi? Làm thế nào kết hợp skill learning với instruction following để tạo
 ra các agent thực sự có thể nhận lệnh ngôn ngữ?
 
-\subsubsection{Lý thuyết về generalization trong RL}
+\subsubsection{Lý thuyết về Tổng quát hóa trong Học Tăng cường}
 
 Như tutorial nhấn mạnh, generalization là \textit{the next frontier} của RL.
 Cần xây dựng lý thuyết rõ ràng về khi nào và tại sao các biểu diễn học từ một tập task
@@ -177,7 +177,7 @@ Việc mở rộng các kết quả này sang không gian trạng thái và hàn
 một bài toán lý thuyết quan trọng.
 
 % ---------------------------------------------------------------------
-\subsection{Nhận xét về ý nghĩa thực tiễn}
+\subsection{Nhận xét về Ý nghĩa Thực tiễn}
 % ---------------------------------------------------------------------
 
 Nhìn từ góc độ ứng dụng, framework được trình bày trong tutorial có ý nghĩa thực tiễn rõ ràng

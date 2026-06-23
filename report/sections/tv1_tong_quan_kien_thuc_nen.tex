@@ -39,7 +39,7 @@ Tutorial được trình bày tại ICML 2025 bởi Benjamin Eysenbach (Princeto
 University) và Amy Zhang (UT Austin), xoay quanh hai câu hỏi liên
 quan chặt chẽ:
 \begin{itemize}
-    \item Reinforcement Learning và Generative AI -- hai lĩnh vực tưởng
+    \item Học Tăng cường và AI Tạo sinh -- hai lĩnh vực tưởng
     như tách biệt -- liệu có chia sẻ cùng cấu trúc toán học không?
     \item Nếu có, chúng ta có thể khai thác điều đó để xây dựng các hệ
     thống AI mạnh mẽ hơn như thế nào?
@@ -47,7 +47,7 @@ quan chặt chẽ:
  
 \subsection{Động lực nghiên cứu}
  
-\subsubsection{Giới hạn của Imitation Learning}
+\subsubsection{Giới hạn của Học Bắt chước}
  
 Như đã trình bày, phần lớn AI hiện đại được huấn luyện bằng cách tối
 đa hóa khả năng tái tạo hành vi của con người. Cách tiếp cận này hiệu
@@ -56,41 +56,41 @@ dữ liệu. Tuy nhiên, nó gặp khó khăn cơ bản khi bài toán đòi h�
 sáng tạo vượt ngoài dữ liệu, hoặc khi chưa có ai giải được bài toán
 đó trước đây.
  
-Một hệ quả đáng lo ngại hơn nữa là hiện tượng \textit{model collapse}:
+Một hệ quả đáng lo ngại hơn nữa là hiện tượng \textit{sụp đổ mô hình}:
 khi AI được huấn luyện đệ quy trên dữ liệu do chính AI sinh ra, chất
 lượng suy giảm theo cấp số nhân \cite{shumailov2024ai}.
  
-\subsubsection{Giới hạn của Reward Engineering}
+\subsubsection{Giới hạn của Thiết kế Hàm Thưởng}
  
-Nền tảng của Reinforcement Learning là tín hiệu phần thưởng (reward).
-Tuy nhiên, hầu hết bài toán thực tế rất khó thiết kế reward function
-phù hợp -- đây là mâu thuẫn cốt lõi: RL hứa hẹn tìm ra giải pháp
-tốt hơn con người, nhưng chính reward function lại đòi hỏi con người
+Nền tảng của Học Tăng cường là tín hiệu phần thưởng (reward).
+Tuy nhiên, hầu hết bài toán thực tế rất khó thiết kế hàm thưởng
+phù hợp -- đây là mâu thuẫn cốt lõi: Học Tăng cường hứa hẹn tìm ra giải pháp
+tốt hơn con người, nhưng chính hàm thưởng lại đòi hỏi con người
 phải hiểu rõ vấn đề mới có thể thiết kế được.
  
 Với bài toán dọn phòng robot, người thiết kế phải tự hỏi: nhặt một
 chiếc áo được bao nhiêu điểm? Xếp sách ngay ngắn được bao nhiêu? Nếu
 thiết kế sai, robot có thể học cách ``gian lận'' thay vì thực sự dọn
-dẹp -- một hiện tượng được gọi là \textit{reward hacking}.
+dẹp -- một hiện tượng được gọi là \textit{khai thác phần thưởng}.
  
 \subsubsection{Sự hội tụ của hai lĩnh vực}
  
-Trong nhiều thập kỷ, RL và Generative AI phát triển song song nhưng
+Trong nhiều thập kỷ, Học Tăng cường và AI Tạo sinh phát triển song song nhưng
 tương đối độc lập. Gần đây, giới nghiên cứu nhận ra rằng hai lĩnh vực
 này đang giải quyết cùng một bài toán từ hai góc nhìn khác nhau, và
 khai thác điểm chung này mở ra ba hướng giao thoa chính:
  
 \begin{table}[H]
     \centering
-    \caption{Ba hướng giao thoa giữa Generative AI và RL.}
+    \caption{Ba hướng giao thoa giữa AI Tạo sinh và Học Tăng cường.}
     \label{tab:convergence}
     \begin{tabular}{ll}
         \toprule
         \textbf{Hướng} & \textbf{Ý nghĩa} \\
         \midrule
-        GenAI $\to$ RL   & Dùng generative models làm thành phần trong RL \\
-        RL $\to$ GenAI   & Nhìn tương tác RL như một generative process \\
-        RL để train GenAI & Dùng RL để cải thiện cách huấn luyện generative models \\
+        AI Tạo sinh $\to$ Học Tăng cường   & Dùng mô hình tạo sinh làm thành phần trong Học Tăng cường \\
+        Học Tăng cường $\to$ AI Tạo sinh   & Nhìn tương tác Học Tăng cường như một quá trình tạo sinh \\
+        Học Tăng cường để huấn luyện AI Tạo sinh & Dùng Học Tăng cường để cải thiện cách huấn luyện mô hình tạo sinh \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -99,54 +99,53 @@ khai thác điểm chung này mở ra ba hướng giao thoa chính:
  
 \subsubsection{Ứng dụng thực tiễn}
  
-Sự kết hợp giữa Generative AI và RL có nhiều ứng dụng thực tiễn quan
+Sự kết hợp giữa AI Tạo sinh và Học Tăng cường có nhiều ứng dụng thực tiễn quan
 trọng \cite{chi2023diffusion} \cite{ouyang2022instructgpt}:
  
-\textbf{Robotics:} Diffusion policies đã đạt kết quả tốt nhất trong
-nhiều tác vụ điều khiển robot. Kết hợp với RL, robot có thể vượt qua
-giới hạn của dữ liệu demonstration, tự học cách thực hiện các hành vi
+\textbf{Robot học:} Diffusion policies đã đạt kết quả tốt nhất trong
+nhiều tác vụ điều khiển robot. Kết hợp với Học Tăng cường, robot có thể vượt qua
+giới hạn của dữ liệu minh họa, tự học cách thực hiện các hành vi
 chưa từng được quan sát.
  
-\textbf{Behavioral Foundation Models:} Tương tự như GPT là foundation
-model cho ngôn ngữ, các Behavioral Foundation Model -- được học thông
-qua RL không có reward -- có thể đóng vai trò foundation model cho
+\textbf{Mô hình Nền tảng Hành vi:} Tương tự như GPT là mô hình nền tảng cho ngôn ngữ, các Mô hình Nền tảng Hành vi -- được học thông
+qua Học Tăng cường không có phần thưởng -- có thể đóng vai trò mô hình nền tảng cho
 hành động, một model dùng được cho nhiều tác vụ robot khác nhau mà
 không cần huấn luyện lại.
  
-\textbf{RLHF và AI alignment:} Reinforcement Learning from Human
-Feedback (RLHF) -- kỹ thuật cốt lõi làm cho ChatGPT ``nghe lời'' --
-là ứng dụng trực tiếp của RL để fine-tune generative models. Hiểu
-sâu mối liên hệ này giúp thiết kế các phương pháp alignment tốt hơn.
+\textbf{Học Tăng cường từ Phản hồi Con người và Căn chỉnh AI:} Học Tăng cường từ Phản hồi Con người
+(RLHF) -- kỹ thuật cốt lõi làm cho ChatGPT ``nghe lời'' --
+là ứng dụng trực tiếp của Học Tăng cường để tinh chỉnh mô hình tạo sinh. Hiểu
+sâu mối liên hệ này giúp thiết kế các phương pháp căn chỉnh tốt hơn.
  
 \textbf{Khoa học và khám phá:} AlphaFold dự đoán cấu trúc protein,
-AlphaProof giải bài thi toán Olympic -- các hệ thống này đều dùng RL
+AlphaProof giải bài thi toán Olympic -- các hệ thống này đều dùng Học Tăng cường
 để tìm giải pháp mà không có dữ liệu tương ứng từ trước.
  
-\subsubsection{Generalization -- bài toán còn bỏ ngỏ}
+\subsubsection{Tổng quát hóa -- bài toán còn bỏ ngỏ}
  
 Tutorial đặt ra một câu hỏi quan trọng về tương lai: điều gì làm cho
-generative image models và language models trở nên ấn tượng không phải
-là chúng ghi nhớ dữ liệu đã thấy, mà là chúng \textit{generalize} --
+mô hình tạo sinh hình ảnh và mô hình ngôn ngữ trở nên ấn tượng không phải
+là chúng ghi nhớ dữ liệu đã thấy, mà là chúng \textit{tổng quát hóa} --
 tạo ra output đúng trên những input chưa bao giờ thấy trong training.
  
-Trong khi đó, RL agents ngày nay phần lớn vẫn chỉ ghi nhớ thay vì
-generalize. Tutorial đặt câu hỏi: tương tự như một generative image
-model có thể tạo ra ảnh sống động sau khi chỉ thấy một phần nhỏ các
-ảnh có thể, liệu ta có thể xây dựng RL agents có thể giải quyết các
+Trong khi đó, các tác nhân Học Tăng cường ngày nay phần lớn vẫn chỉ ghi nhớ thay vì
+tổng quát hóa. Tutorial đặt câu hỏi: tương tự như một mô hình tạo sinh hình ảnh
+có thể tạo ra ảnh sống động sau khi chỉ thấy một phần nhỏ các
+ảnh có thể, liệu ta có thể xây dựng các tác nhân Học Tăng cường có thể giải quyết các
 bài toán mới sau khi chỉ practice trên một phần nhỏ không gian bài
-toán đó? Đây chính là \textit{generalization frontier} mà kết hợp
-Generative AI và RL hướng tới.
+toán đó? Đây chính là \textit{biên giới tổng quát hóa} mà kết hợp
+AI Tạo sinh và Học Tăng cường hướng tới.
  
 \subsection{Cấu trúc báo cáo}
  
 Báo cáo được tổ chức thành các phần chính như sau:
 \begin{itemize}
-    \item \textbf{Phần 2} trình bày kiến thức nền về Reinforcement
-    Learning và Generative Models, các khái niệm cơ sở cần thiết để
+    \item \textbf{Phần 2} trình bày kiến thức nền về Học Tăng cường
+    và Mô hình Tạo sinh, các khái niệm cơ sở cần thiết để
     hiểu nội dung tutorial.
     \item \textbf{Phần 3} trình bày nội dung chính của tutorial, bao
-    gồm Phần I (Generative Models trong RL), Phần II (Tương tác như
-    một Generative Model), Phần III (Học Likelihoods) và Phần IV (Data
+    gồm Phần I (Mô hình Tạo sinh trong Học Tăng cường), Phần II (Tương tác như
+    một Mô hình Tạo sinh), Phần III (Học Hàm Khả năng) và Phần IV (Dữ liệu
     Tự Sinh).
     \item \textbf{Phần 4} mô tả thực nghiệm và kết quả demo nhóm thực
     hiện.
@@ -158,23 +157,23 @@ Báo cáo được tổ chức thành các phần chính như sau:
 \section{Kiến thức nền}
 % =====================================================================
  
-\subsection{Reinforcement Learning}
+\subsection{Học Tăng cường}
 
 % ---------------------------------------------------------------------
-\subsubsection{Vòng lặp Agent--Environment: Bức tranh tổng thể}
+\subsubsection{Vòng lặp Tác nhân--Môi trường: Bức tranh tổng thể}
 % ---------------------------------------------------------------------
 
-Trước khi đi vào công thức toán học, hãy hình dung RL hoạt động như
-thế nào theo trực giác. Trong RL, một \textbf{agent} (ví dụ: robot,
+Trước khi đi vào công thức toán học, hãy hình dung Học Tăng cường hoạt động như
+thế nào theo trực giác. Trong Học Tăng cường, một \textbf{tác nhân} (ví dụ: robot,
 chương trình chơi game, hệ thống điều khiển) liên tục tương tác với
 một \textbf{môi trường} (\textit{environment}) theo vòng lặp lặp đi
 lặp lại:
 
 \begin{enumerate}
-    \item Agent quan sát \textbf{trạng thái hiện tại} $s_t$ của môi
+    \item Tác nhân quan sát \textbf{trạng thái hiện tại} $s_t$ của môi
     trường (ví dụ: hình ảnh màn hình game, vị trí các khớp robot).
-    \item Agent chọn một \textbf{hành động} $a_t$ dựa trên
-    \textit{policy} (chiến lược) của mình (ví dụ: nhảy, đi thẳng,
+    \item Tác nhân chọn một \textbf{hành động} $a_t$ dựa trên
+    \textit{chính sách} (chiến lược) của mình (ví dụ: nhảy, đi thẳng,
     xoay trái).
     \item Môi trường chuyển sang \textbf{trạng thái mới} $s_{t+1}$
     theo xác suất $p(s_{t+1} \mid s_t, a_t)$, đồng thời phát ra
@@ -191,7 +190,7 @@ lặp lại:
                     fill=white},
         arr/.style={-{Latex[length=2.5mm]}, thick}
     ]
-        \node[box] (agent) at (0, 0)   {Agent\\$\pi(a \mid s)$};
+        \node[box] (agent) at (0, 0)   {Tác nhân\\$\pi(a \mid s)$};
         \node[box] (env)   at (6, 0)   {Môi trường\\$p(s' \mid s, a)$};
 
         % action: agent -> env (top arc)
@@ -203,26 +202,26 @@ lặp lại:
             node[midway, below]{trạng thái $s_{t+1}$, phần thưởng $r_t$}
             (agent.south);
     \end{tikzpicture}
-    \caption{Vòng lặp agent--environment trong RL. Agent gửi hành động
+    \caption{Vòng lặp tác nhân--môi trường trong Học Tăng cường. Tác nhân gửi hành động
     cho môi trường; môi trường phản hồi trạng thái mới và phần thưởng.
-    Mục tiêu agent là học policy $\pi$ tối đa hóa tổng phần thưởng
+    Mục tiêu tác nhân là học chính sách $\pi$ tối đa hóa tổng phần thưởng
     tích lũy.}
     \label{fig:rl-loop}
 \end{figure}
 
-Điểm khác biệt căn bản so với Supervised Learning là: \textbf{không
-có ``đáp án đúng'' nào được cung cấp sẵn}. Agent phải tự khám phá
+Điểm khác biệt căn bản so với Học Có Giám sát là: \textbf{không
+có ``đáp án đúng'' nào được cung cấp sẵn}. Tác nhân phải tự khám phá
 thông qua thử-và-sai, và tín hiệu học duy nhất là phần thưởng thưa
-thớt từ môi trường. Điều này đồng thời là điểm mạnh (agent có thể
+thớt từ môi trường. Điều này đồng thời là điểm mạnh (tác nhân có thể
 tìm ra chiến lược vượt trội hơn bất kỳ dữ liệu huấn luyện nào) và là
-thách thức chính của RL.
+thách thức chính của Học Tăng cường.
 
 % ---------------------------------------------------------------------
-\subsubsection{Định nghĩa bài toán RL: Markov Decision Process}
+\subsubsection{Định nghĩa bài toán Học Tăng cường: Quá trình Quyết định Markov}
 % ---------------------------------------------------------------------
  
-Bài toán RL được hình thức hóa bằng khung
-\textbf{Markov Decision Process (MDP)}, bao gồm năm thành phần:
+Bài toán Học Tăng cường được hình thức hóa bằng khung
+\textbf{Quá trình Quyết định Markov (MDP)}, bao gồm năm thành phần:
  
 \begin{equation}
     \text{MDP} = (\mathcal{S},\; \mathcal{A},\; p,\; r,\; \gamma)
@@ -231,7 +230,7 @@ Bài toán RL được hình thức hóa bằng khung
  
 \begin{table}[H]
     \centering
-    \caption{Các thành phần của MDP, minh họa qua game Tetris.}
+    \caption{Các thành phần của Quá trình Quyết định Markov, minh họa qua game Tetris.}
     \label{tab:mdp}
     \begin{tabular}{lll}
         \toprule
@@ -239,7 +238,7 @@ Bài toán RL được hình thức hóa bằng khung
         \midrule
         $\mathcal{S}$ & Không gian trạng thái & Mọi cấu hình bảng có thể \\
         $\mathcal{A}$ & Không gian hành động & \{trái, phải, xoay, thả\} \\
-        $p(s'\mid s,a)$ & Dynamics (hàm chuyển trạng thái) & Xác suất khối rơi vào ô nào \\
+        $p(s'\mid s,a)$ & Hàm chuyển trạng thái & Xác suất khối rơi vào ô nào \\
         $r(s,a)$ & Hàm phần thưởng & $+1$ mỗi dòng xóa được \\
         $\gamma \in [0,1)$ & Hệ số chiết khấu & Thường từ $0.9$ đến $0.999$ \\
         \bottomrule
@@ -250,25 +249,25 @@ Giả định \textbf{Markov} là nền tảng quan trọng của khung này: tr
 thái hiện tại $s_t$ chứa đủ thông tin để quyết định hành động tiếp
 theo, không cần nhớ toàn bộ lịch sử. Nói cách khác, ``quá khứ'' chỉ
 ảnh hưởng đến tương lai thông qua trạng thái hiện tại. Nhờ tính Markov,
-ta có thể dùng các phương trình đệ quy (Bellman equations) để tính
+ta có thể dùng các phương trình đệ quy (phương trình Bellman) để tính
 toán hiệu quả thay vì phải xét toàn bộ lịch sử.
  
-\subsubsection{Policy và Mục tiêu RL}
+\subsubsection{Chính sách và Mục tiêu Học Tăng cường}
  
-\textbf{Policy} $\pi$ là chiến lược ra quyết định của agent -- một
+\textbf{Chính sách} $\pi$ là chiến lược ra quyết định của tác nhân -- một
 hàm ánh xạ từ trạng thái sang hành động (hoặc phân phối trên hành
 động):
 \[
-    \pi(a \mid s) = \text{xác suất chọn action } a \text{ khi ở state }
+    \pi(a \mid s) = \text{xác suất chọn hành động } a \text{ khi ở trạng thái }
     s
 \]
 
-Ví dụ: policy của người chơi Tetris giỏi sẽ gán xác suất cao cho
+Ví dụ: chính sách của người chơi Tetris giỏi sẽ gán xác suất cao cho
 hành động ``xoay'' khi nhìn thấy khối L ở vị trí nhất định.
 
-Một \textbf{trajectory} (quỹ đạo) $\tau = (s_0, a_0, s_1, a_1, \ldots)$
+Một \textbf{quỹ đạo} $\tau = (s_0, a_0, s_1, a_1, \ldots)$
 là chuỗi trạng thái và hành động theo thời gian -- về bản chất là một
-``ván chơi'' hoàn chỉnh. \textbf{Discounted return} $R(\tau)$ là
+``ván chơi'' hoàn chỉnh. \textbf{Lợi tức chiết khấu} $R(\tau)$ là
 tổng phần thưởng có chiết khấu theo thời gian:
  
 \begin{equation}
@@ -281,8 +280,8 @@ phần thưởng hội tụ (không vô hạn), đồng thời phản ánh nguy�
 tế học rằng phần thưởng gần hơn có giá trị hơn (giống như tiền ngày
 hôm nay có giá trị hơn tiền ngày mai).
  
-\textbf{Mục tiêu RL} là tìm policy $\pi$ tối đa hóa expected return --
-tức phần thưởng tích lũy kỳ vọng trên tất cả các trajectory có thể
+\textbf{Mục tiêu Học Tăng cường} là tìm chính sách $\pi$ tối đa hóa lợi tức kỳ vọng --
+tức phần thưởng tích lũy kỳ vọng trên tất cả các quỹ đạo có thể
 xảy ra:
  
 \begin{equation}
@@ -292,46 +291,46 @@ xảy ra:
     \label{eq:rl_objective}
 \end{equation}
 
-Ký hiệu $\tau \sim \pi$ nghĩa là trajectory được sinh ra bởi chính
-policy $\pi$ tương tác với môi trường: tại mỗi bước $t$, agent chọn
+Ký hiệu $\tau \sim \pi$ nghĩa là quỹ đạo được sinh ra bởi chính
+chính sách $\pi$ tương tác với môi trường: tại mỗi bước $t$, tác nhân chọn
 $a_t \sim \pi(\cdot \mid s_t)$, môi trường phản hồi
 $s_{t+1} \sim p(\cdot \mid s_t, a_t)$.
  
-\subsubsection{So sánh RL và Supervised Learning}
+\subsubsection{So sánh Học Tăng cường và Học Có Giám sát}
  
-Sự khác biệt căn bản giữa RL và Supervised Learning (SL) nằm ở nguồn
+Sự khác biệt căn bản giữa Học Tăng cường (HTc) và Học Có Giám sát (HGs) nằm ở nguồn
 gốc dữ liệu:
  
 \begin{equation}
-    \text{SL:} \quad \max_\theta \; \mathbb{E}_{(s,a) \sim \mathcal{D}}
+    \text{HGs:} \quad \max_\theta \; \mathbb{E}_{(s,a) \sim \mathcal{D}}
     \bigl[\log \pi_\theta(a \mid s)\bigr]
     \label{eq:sl_obj}
 \end{equation}
 \begin{equation}
-    \text{RL:} \quad \max_\theta \; \mathbb{E}_{\tau \sim \pi_\theta}
+    \text{HTc:} \quad \max_\theta \; \mathbb{E}_{\tau \sim \pi_\theta}
     \bigl[R(\tau)\bigr]
     \label{eq:rl_obj_compare}
 \end{equation}
  
-Trong SL, dữ liệu đến từ dataset cố định $\mathcal{D}$ và không phụ
-thuộc vào tham số đang học. Trong RL, trajectory được sinh ra bởi
-chính policy $\pi_\theta$ đang được tối ưu -- khi $\theta$ thay đổi,
+Trong HGs, dữ liệu đến từ tập dữ liệu cố định $\mathcal{D}$ và không phụ
+thuộc vào tham số đang học. Trong HTc, quỹ đạo được sinh ra bởi
+chính chính sách $\pi_\theta$ đang được tối ưu -- khi $\theta$ thay đổi,
 cả phân phối hành động lẫn phân phối trạng thái được ghé thăm đều thay
-đổi theo. Đây chính là điểm mạnh (agent có thể khám phá) nhưng cũng
-là thách thức chính (dữ liệu \textit{non-stationary}) của RL.
+đổi theo. Đây chính là điểm mạnh (tác nhân có thể khám phá) nhưng cũng
+là thách thức chính (dữ liệu \textit{không dừng}) của Học Tăng cường.
  
-Ví dụ trực quan: nếu dùng SL để học chơi Tetris trên dataset từ người
-chơi mới bắt đầu, model sẽ không thể giỏi hơn người đó. Nhưng với RL,
-agent tự tạo dữ liệu thông qua tương tác và có thể tìm ra chiến lược
-tốt hơn bất kỳ dữ liệu nào trong dataset \cite{eysenbach2025generativerl}.
+Ví dụ trực quan: nếu dùng HGs để học chơi Tetris trên tập dữ liệu từ người
+chơi mới bắt đầu, model sẽ không thể giỏi hơn người đó. Nhưng với HTc,
+tác nhân tự tạo dữ liệu thông qua tương tác và có thể tìm ra chiến lược
+tốt hơn bất kỳ dữ liệu nào trong tập dữ liệu \cite{eysenbach2025generativerl}.
  
-\subsubsection{Value Functions và Bellman Equations}
+\subsubsection{Hàm Giá trị và Phương trình Bellman}
  
 Để tối ưu $J(\pi)$, cần biết ``từ trạng thái này, hành động nào dẫn
-đến return cao nhất?'' -- đây là vai trò của \textbf{value functions}.
+đến lợi tức cao nhất?'' -- đây là vai trò của \textbf{hàm giá trị}.
  
-\textbf{Q-function} $Q^\pi(s, a)$ cho biết return kỳ vọng khi bắt đầu
-từ cặp $(s, a)$ và sau đó theo policy $\pi$:
+\textbf{Hàm Q} $Q^\pi(s, a)$ cho biết lợi tức kỳ vọng khi bắt đầu
+từ cặp $(s, a)$ và sau đó theo chính sách $\pi$:
  
 \begin{equation}
     Q^\pi(s, a) = \mathbb{E}_\pi \left[ \sum_{t=0}^{\infty} \gamma^t
@@ -341,11 +340,11 @@ từ cặp $(s, a)$ và sau đó theo policy $\pi$:
 
 Diễn giải đơn giản: $Q^\pi(s, a)$ trả lời câu hỏi ``Nếu tôi đang ở
 trạng thái $s$, thực hiện hành động $a$, rồi từ đó trở đi luôn theo
-policy $\pi$, tôi kỳ vọng nhận được bao nhiêu phần thưởng tổng
+chính sách $\pi$, tôi kỳ vọng nhận được bao nhiêu phần thưởng tổng
 cộng?''
  
-Q-function thỏa \textbf{phương trình Bellman} -- quan hệ đệ quy cơ bản
-của RL. Phương trình này phát biểu rằng giá trị hiện tại bằng phần
+Hàm Q thỏa \textbf{phương trình Bellman} -- quan hệ đệ quy cơ bản
+của Học Tăng cường. Phương trình này phát biểu rằng giá trị hiện tại bằng phần
 thưởng ngay lập tức cộng với giá trị tương lai được chiết khấu:
  
 \begin{equation}
@@ -356,16 +355,16 @@ thưởng ngay lập tức cộng với giá trị tương lai được chiết 
 \end{equation}
  
 Phương trình Bellman quan trọng vì nó biến bài toán tối ưu hóa vô hạn
-chiều thành bài toán có thể giải lặp đi lặp lại (dynamic programming).
-Q-function xuất hiện xuyên suốt tutorial -- trong diffusion policies
-(dùng $Q$ để chọn hành động), trong temporal contrastive learning
-($Q \approx$ log likelihood ratio), và trong zero-shot RL (tính $Q$
+chiều thành bài toán có thể giải lặp đi lặp lại (quy hoạch động).
+Hàm Q xuất hiện xuyên suốt tutorial -- trong chính sách khuếch tán
+(dùng $Q$ để chọn hành động), trong học tương phản thời gian
+($Q \approx$ tỉ lệ log-likelihood), và trong Học Tăng cường không cần huấn luyện lại (tính $Q$
 từ biểu diễn học được).
  
-\subsubsection{Policy Gradient}
+\subsubsection{Gradient Chính sách}
  
 Để tối đa hóa $J(\pi_\theta)$, ta lấy gradient theo tham số $\theta$
-và thực hiện gradient ascent. Định lý Policy Gradient cho kết quả:
+và thực hiện leo dốc gradient. Định lý Gradient Chính sách cho kết quả:
  
 \begin{equation}
     \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta}
@@ -374,41 +373,41 @@ và thực hiện gradient ascent. Định lý Policy Gradient cho kết quả:
     \label{eq:policy_gradient}
 \end{equation}
 
-Trực giác của policy gradient rất tự nhiên: số hạng
+Trực giác của gradient chính sách rất tự nhiên: số hạng
 $\nabla_\theta \log \pi_\theta(a \mid s)$ đẩy tham số theo hướng tăng
 xác suất của hành động $a$ tại trạng thái $s$; nhân với $R(\tau)$
-nghĩa là ta tăng xác suất của những hành động đã dẫn đến return cao,
-và giảm xác suất của những hành động dẫn đến return thấp.
+nghĩa là ta tăng xác suất của những hành động đã dẫn đến lợi tức cao,
+và giảm xác suất của những hành động dẫn đến lợi tức thấp.
  
 Số hạng $\nabla_\theta \log \pi_\theta(a \mid s)$ được gọi là
-\textbf{score function} của policy. Đây là cầu nối kỹ thuật quan trọng
-nhất giữa RL và generative modeling: trong score-based diffusion
-models, đại lượng tương tự $\nabla_x \log p(x)$ được dùng để hướng
-dẫn quá trình sinh mẫu. Hai bài toán -- tối ưu policy và sinh mẫu từ
-generative model -- đều có thể được giải qua cùng một công cụ toán
-học: \textbf{theo dõi gradient của log-probability}.
+\textbf{hàm điểm số} của chính sách. Đây là cầu nối kỹ thuật quan trọng
+nhất giữa Học Tăng cường và mô hình tạo sinh: trong các mô hình khuếch tán dựa trên điểm số,
+đại lượng tương tự $\nabla_x \log p(x)$ được dùng để hướng
+dẫn quá trình sinh mẫu. Hai bài toán -- tối ưu chính sách và sinh mẫu từ
+mô hình tạo sinh -- đều có thể được giải qua cùng một công cụ toán
+học: \textbf{theo dõi gradient của log-xác suất}.
 
 % ---------------------------------------------------------------------
-\subsection{Generative Models}
+\subsection{Mô hình Tạo sinh}
 % ---------------------------------------------------------------------
  
 \subsubsection{Tổng quan và Phân loại}
  
-\textbf{Generative model} là mô hình có khả năng (1) tạo ra mẫu mới
-từ một phân phối học được, và (2) ước lượng likelihood (xác suất) của
-các mẫu đã cho. Khác với discriminative models (phân loại đầu vào),
-generative models học phân phối xác suất $p(x)$ của dữ liệu và có thể
+\textbf{Mô hình tạo sinh} là mô hình có khả năng (1) tạo ra mẫu mới
+từ một phân phối học được, và (2) ước lượng hàm khả năng (xác suất) của
+các mẫu đã cho. Khác với các mô hình phân biệt (phân loại đầu vào),
+mô hình tạo sinh học phân phối xác suất $p(x)$ của dữ liệu và có thể
 sinh ra mẫu mới $x \sim p(x)$.
 
-Ý tưởng chung của các generative models mạnh nhất hiện nay là thực
+Ý tưởng chung của các mô hình tạo sinh mạnh nhất hiện nay là thực
 hiện \textbf{tính toán lặp đi lặp lại} để tạo ra mẫu:
 \begin{itemize}
-    \item \textbf{VAE} và normalizing flow biến đổi vector nhiễu qua
+    \item \textbf{VAE} và luồng chuẩn hóa biến đổi vector nhiễu qua
     nhiều lớp mạng neural.
-    \item \textbf{Diffusion model} lặp đi lặp lại quá trình khử nhiễu
+    \item \textbf{Mô hình khuếch tán} lặp đi lặp lại quá trình khử nhiễu
     qua hàng trăm bước.
     \item \textbf{Transformer} sinh token từng bước một theo thứ tự.
-    \item \textbf{Flow matching model} tích phân một vector field để
+    \item \textbf{Mô hình khớp luồng} tích phân một trường vector để
     biến đổi phân phối.
 \end{itemize}
 
@@ -416,19 +415,19 @@ hiện \textbf{tính toán lặp đi lặp lại} để tạo ra mẫu:
 nguyên lý sâu xa: các phân phối phức tạp rất khó nắm bắt trong một
 bước duy nhất, nhưng lại có thể được xây dựng dần dần qua nhiều bước
 đơn giản hơn. Tutorial chỉ ra rằng \textbf{đây chính là điểm tương
-đồng với RL}: một RL agent cũng tạo ra kết quả thông qua nhiều bước
+đồng với Học Tăng cường}: một tác nhân Học Tăng cường cũng tạo ra kết quả thông qua nhiều bước
 tương tác với môi trường.
 
-\subsubsection{Variational Autoencoder (VAE)}
+\subsubsection{Bộ Mã hóa Biến phân (VAE)}
 
-\textbf{VAE} là một trong những generative model đầu tiên học được
+\textbf{VAE} là một trong những mô hình tạo sinh đầu tiên học được
 không gian tiềm ẩn (latent space) ý nghĩa. VAE gồm hai thành phần:
-encoder $q_\phi(z \mid x)$ nén dữ liệu $x$ vào vector tiềm ẩn $z$,
-và decoder $p_\theta(x \mid z)$ tái tạo dữ liệu từ $z$. Quá trình
+bộ mã hóa $q_\phi(z \mid x)$ nén dữ liệu $x$ vào vector tiềm ẩn $z$,
+và bộ giải mã $p_\theta(x \mid z)$ tái tạo dữ liệu từ $z$. Quá trình
 sinh mẫu mới đơn giản là lấy mẫu $z \sim \mathcal{N}(0, I)$ rồi
-cho qua decoder.
+cho qua bộ giải mã.
 
-VAE được huấn luyện bằng cách tối đa hóa ELBO (Evidence Lower BOund):
+VAE được huấn luyện bằng cách tối đa hóa ELBO (Cận dưới Bằng chứng):
 \begin{equation}
     \mathcal{L}_{\text{VAE}} = \mathbb{E}_{q_\phi(z|x)}
     [\log p_\theta(x \mid z)]
@@ -436,44 +435,44 @@ VAE được huấn luyện bằng cách tối đa hóa ELBO (Evidence Lower BOu
     \label{eq:vae_elbo}
 \end{equation}
 
-Số hạng đầu khuyến khích decoder tái tạo tốt; số hạng KL
-regularize không gian tiềm ẩn về phân phối Gaussian chuẩn.
+Số hạng đầu khuyến khích bộ giải mã tái tạo tốt; số hạng KL
+chính quy hóa không gian tiềm ẩn về phân phối Gaussian chuẩn.
 
-\textbf{Kết nối với RL:} Trong skill learning (Phần IV của tutorial),
-biến tiềm ẩn $z$ của VAE tương đồng chính xác với ``skill label'' $z$
--- một biến điều kiện quyết định loại hành vi agent thực hiện. Cả hai
+\textbf{Kết nối với Học Tăng cường:} Trong học kỹ năng (Phần IV của tutorial),
+biến tiềm ẩn $z$ của VAE tương đồng chính xác với ``nhãn kỹ năng'' $z$
+-- một biến điều kiện quyết định loại hành vi tác nhân thực hiện. Cả hai
 đều nén thông tin về một tập hành vi phức tạp vào một không gian nhỏ
 hơn có thể tìm kiếm được.
 
-\subsubsection{Generative Adversarial Network (GAN)}
+\subsubsection{Mạng Đối kháng Tạo sinh (GAN)}
 
 \textbf{GAN} gồm hai mạng thi đấu với nhau theo dạng trò chơi
-minimax: \textit{generator} $G$ cố gắng sinh mẫu giống thật,
-\textit{discriminator} $D$ cố gắng phân biệt mẫu thật với mẫu giả:
+minimax: \textit{bộ tạo sinh} $G$ cố gắng sinh mẫu giống thật,
+\textit{bộ phân biệt} $D$ cố gắng phân biệt mẫu thật với mẫu giả:
 \begin{equation}
     \min_G \max_D \; \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)]
     + \mathbb{E}_{z \sim \mathcal{N}(0,I)}[\log(1 - D(G(z)))]
     \label{eq:gan}
 \end{equation}
 
-Khi đạt cân bằng Nash, generator học được phân phối dữ liệu thật.
+Khi đạt cân bằng Nash, bộ tạo sinh học được phân phối dữ liệu thật.
 
-\textbf{Kết nối với RL:} Discriminator của GAN có thể được tái sử dụng
-trực tiếp làm \textbf{reward signal} cho RL. Nếu discriminator học
+\textbf{Kết nối với Học Tăng cường:} Bộ phân biệt của GAN có thể được tái sử dụng
+trực tiếp làm \textbf{tín hiệu phần thưởng} cho Học Tăng cường. Nếu bộ phân biệt học
 được ``mẫu này trông như thật không'', ta có thể dùng $\log D(x)$ làm
-reward để dạy agent thực hiện hành vi trông tự nhiên -- đây là một
-trong những cách phá vỡ ``abstraction barrier'' giữa generative model
-và RL algorithm mà tutorial nhấn mạnh.
+phần thưởng để dạy tác nhân thực hiện hành vi trông tự nhiên -- đây là một
+trong những cách phá vỡ ``rào cản trừu tượng hóa'' giữa mô hình tạo sinh
+và thuật toán Học Tăng cường mà tutorial nhấn mạnh.
 
-\subsubsection{Diffusion Models}
+\subsubsection{Mô hình Khuếch tán}
  
-Diffusion model là họ generative model hiện đại nhất, đứng sau các
+Mô hình khuếch tán là họ mô hình tạo sinh hiện đại nhất, đứng sau các
 hệ thống tạo ảnh mạnh nhất hiện nay như Stable Diffusion và DALL-E.
 Ý tưởng cốt lõi: \textbf{học cách đảo ngược một quá trình phá hủy}.
 
-\paragraph{Quá trình forward (thêm nhiễu).}
+\paragraph{Quá trình tiến (thêm nhiễu).}
 
-Bắt đầu từ dữ liệu sạch $x_0$, ta dần dần thêm Gaussian noise qua
+Bắt đầu từ dữ liệu sạch $x_0$, ta dần dần thêm nhiễu Gaussian qua
 $T$ bước để thu được chuỗi $x_1, x_2, \ldots, x_T$, trong đó $x_T$
 gần với nhiễu trắng hoàn toàn:
 \[
@@ -487,36 +486,36 @@ Nhờ tính chất của Gaussian, ta có thể tính thẳng $x_t$ từ $x_0$:
     \bar{\alpha}_t = \prod_{s=1}^t (1-\beta_s)
 \]
 
-\paragraph{Quá trình reverse (khử nhiễu).}
+\paragraph{Quá trình ngược (khử nhiễu).}
 
 Mô hình học cách đảo ngược quá trình trên -- từ $x_T$ nhiễu, dần
 dần tái tạo dữ liệu sạch $x_0$ qua nhiều bước. Đây là bước khó vì
 cần ước lượng $p(x_{t-1} \mid x_t)$. Kỹ thuật mấu chốt là học
-\textbf{score function}:
+\textbf{hàm điểm số}:
 \[
     s_\theta(x_t, t) \approx \nabla_{x_t} \log p_t(x_t)
 \]
-Score function $\nabla_{x_t} \log p_t(x_t)$ là gradient của
-log-probability theo $x_t$ -- nó chỉ hướng ``đi về phía vùng mật độ
+Hàm điểm số $\nabla_{x_t} \log p_t(x_t)$ là gradient của
+log-xác suất theo $x_t$ -- nó chỉ hướng ``đi về phía vùng mật độ
 xác suất cao hơn'' trong không gian dữ liệu tại bước thời gian $t$.
 
-\textbf{Kết nối với RL:} Score function của diffusion model
-$\nabla_x \log p_t(x)$ và score function của policy gradient
+\textbf{Kết nối với Học Tăng cường:} Hàm điểm số của mô hình khuếch tán
+$\nabla_x \log p_t(x)$ và hàm điểm số của gradient chính sách
 $\nabla_\theta \log \pi_\theta(a \mid s)$ là cùng một cấu trúc toán
-học -- gradient của log-probability theo biến cần tối ưu. Đây là lý
-do diffusion model và policy gradient có thể được tích hợp tự nhiên
+học -- gradient của log-xác suất theo biến cần tối ưu. Đây là lý
+do mô hình khuếch tán và gradient chính sách có thể được tích hợp tự nhiên
 vào nhau, như được minh họa qua DDPO và Diffusion-DICE ở Phần III.
 
-Trong RL, diffusion model được dùng làm \textbf{diffusion policy}:
-thay vì policy Gaussian đơn giản chỉ biểu diễn một mode, agent dùng
-một diffusion model để biểu diễn phân phối hành động phức tạp, đa
-mode -- quan trọng khi dataset chứa nhiều chiến lược khác nhau.
+Trong Học Tăng cường, mô hình khuếch tán được dùng làm \textbf{chính sách khuếch tán}:
+thay vì chính sách Gaussian đơn giản chỉ biểu diễn một đỉnh, tác nhân dùng
+một mô hình khuếch tán để biểu diễn phân phối hành động phức tạp, đa
+đỉnh -- quan trọng khi tập dữ liệu chứa nhiều chiến lược khác nhau.
 
-\subsubsection{Flow Matching Models}
+\subsubsection{Mô hình Khớp Luồng}
  
-Flow matching là một hướng tiếp cận thay thế cho diffusion, học cách
+Khớp luồng là một hướng tiếp cận thay thế cho khuếch tán, học cách
 biến đổi trực tiếp một phân phối đơn giản (thường là Gaussian) thành
-phân phối dữ liệu thông qua một \textbf{vector field} $v_\theta(x, t)$
+phân phối dữ liệu thông qua một \textbf{trường vector} $v_\theta(x, t)$
 có thể học được. Quá trình biến đổi được mô tả bởi phương trình vi
 phân thường (ODE):
 \begin{equation}
@@ -527,47 +526,47 @@ phân thường (ODE):
 
 Ý tưởng trực quan: ta ``vẽ'' một đường đi trơn trong không gian xác
 suất, từ điểm xuất phát (nhiễu Gaussian) đến điểm đích (dữ liệu thật).
-Vector field $v_\theta$ chỉ hướng và tốc độ di chuyển tại mỗi điểm.
+Trường vector $v_\theta$ chỉ hướng và tốc độ di chuyển tại mỗi điểm.
 
-\paragraph{Ưu điểm so với diffusion.}
+\paragraph{Ưu điểm so với khuếch tán.}
 
-Diffusion model dùng schedule nhiễu cố định với hàng trăm bước nhỏ.
-Flow matching học đường đi \textbf{thẳng hơn} trong không gian xác
+Mô hình khuếch tán dùng lịch trình nhiễu cố định với hàng trăm bước nhỏ.
+Khớp luồng học đường đi \textbf{thẳng hơn} trong không gian xác
 suất, cho phép sinh mẫu với ít bước hơn (đôi khi chỉ 1 bước ODE).
-Về lý thuyết, flow matching tối ưu hóa trực tiếp likelihood của
-trajectory thay vì phải thông qua các bước gián tiếp.
+Về lý thuyết, khớp luồng tối ưu hóa trực tiếp hàm khả năng của
+quỹ đạo thay vì phải thông qua các bước gián tiếp.
 
-\textbf{Kết nối với RL:} Trong tutorial, Temporal Difference Flows
-\cite{farebrother2025tdflows} áp dụng flow matching để ước lượng
-\textit{likelihood của trạng thái tương lai} -- tức successor measure
--- kết hợp với cấu trúc Bellman để tận dụng dữ liệu off-policy. Đây
-là ví dụ điển hình về việc khai thác đặc thù của một generative model
-family để giải quyết bài toán RL.
+\textbf{Kết nối với Học Tăng cường:} Trong tutorial, Luồng Hiệu chỉnh Thời gian
+\cite{farebrother2025tdflows} áp dụng khớp luồng để ước lượng
+\textit{hàm khả năng của trạng thái tương lai} -- tức thước đo kế tiếp
+-- kết hợp với cấu trúc Bellman để tận dụng dữ liệu ngoài chính sách. Đây
+là ví dụ điển hình về việc khai thác đặc thù của một họ mô hình tạo sinh
+để giải quyết bài toán Học Tăng cường.
  
-\subsubsection{Transformer và Autoregressive Models}
+\subsubsection{Transformer và Mô hình Tự Hồi quy}
  
 Transformer là kiến trúc mạng neural dựa trên cơ chế
-\textit{self-attention}, hiện đang chi phối phần lớn AI hiện đại (GPT,
-BERT, ViT). Trước khi giải thích ứng dụng trong RL, cần hiểu hai khái
+\textit{tự chú ý}, hiện đang chi phối phần lớn AI hiện đại (GPT,
+BERT, ViT). Trước khi giải thích ứng dụng trong Học Tăng cường, cần hiểu hai khái
 niệm cốt lõi:
 
-\paragraph{Self-attention.}
+\paragraph{Tự chú ý.}
 
-Với một chuỗi token $(x_1, \ldots, x_n)$, self-attention tính
+Với một chuỗi token $(x_1, \ldots, x_n)$, tự chú ý tính
 \textbf{mức độ liên quan} giữa mỗi cặp token và tổng hợp thông tin
 theo mức độ đó:
 \[
     \text{Attention}(Q, K, V) = \text{softmax}\!\left(
     \frac{QK^\top}{\sqrt{d_k}}\right) V
 \]
-trong đó $Q$ (query), $K$ (key), $V$ (value) là các biến đổi tuyến
-tính của input. Cơ chế này cho phép mỗi token ``chú ý'' đến những
+trong đó $Q$ (truy vấn), $K$ (khóa), $V$ (giá trị) là các biến đổi tuyến
+tính của đầu vào. Cơ chế này cho phép mỗi token ``chú ý'' đến những
 token liên quan nhất, bất kể chúng cách nhau bao xa trong chuỗi --
 điều mà RNN và LSTM gặp khó khăn.
 
-\paragraph{Mô hình autoregressive.}
+\paragraph{Mô hình tự hồi quy.}
 
-Mô hình autoregressive sinh chuỗi token từng bước một, trong đó mỗi
+Mô hình tự hồi quy sinh chuỗi token từng bước một, trong đó mỗi
 token được sinh có điều kiện trên toàn bộ các token đã sinh trước đó:
 \[
     p(x_1, x_2, \ldots, x_T) = \prod_{t=1}^{T} p(x_t \mid x_1, \ldots,
@@ -576,28 +575,28 @@ token được sinh có điều kiện trên toàn bộ các token đã sinh tr�
 Đây là nguyên tắc hoạt động của GPT: sinh token tiếp theo dựa trên
 tất cả token trước đó.
 
-\paragraph{Decision Transformer: autoregressive model làm policy.}
+\paragraph{Transformer Quyết định: mô hình tự hồi quy làm chính sách.}
 
-\textbf{Decision Transformer} \cite{chen2021decision} áp dụng trực
-tiếp kiến trúc này cho RL: thay vì học value function hay thực hiện
-Bellman backup, mô hình coi một trajectory RL -- chuỗi
+\textbf{Transformer Quyết định} \cite{chen2021decision} áp dụng trực
+tiếp kiến trúc này cho Học Tăng cường: thay vì học hàm giá trị hay thực hiện
+cập nhật Bellman, mô hình coi một quỹ đạo Học Tăng cường -- chuỗi
 $(R_0, s_0, a_0, R_1, s_1, a_1, \ldots)$ -- như một chuỗi token và
-học sinh hành động có điều kiện trên \textit{return-to-go} (tổng
-phần thưởng kỳ vọng từ bước hiện tại trở đi) và lịch sử trajectory.
+học sinh hành động có điều kiện trên \textit{lợi tức-còn-lại} (tổng
+phần thưởng kỳ vọng từ bước hiện tại trở đi) và lịch sử quỹ đạo.
 
-Ý tưởng then chốt: nếu ta conditioned model trên ``return mục tiêu
+Ý tưởng then chốt: nếu ta điều kiện hóa mô hình trên ``lợi tức mục tiêu
 cao'' (ví dụ: 100 điểm), model sẽ sinh ra những hành động từng được
-quan sát trong các trajectory có return cao. Đây là ví dụ điển hình
-của việc dùng generative model làm policy trong RL.
+quan sát trong các quỹ đạo có lợi tức cao. Đây là ví dụ điển hình
+của việc dùng mô hình tạo sinh làm chính sách trong Học Tăng cường.
 
 % ---------------------------------------------------------------------
-\subsection{Successor Measure}
+\subsection{Thước đo Kế tiếp}
 % ---------------------------------------------------------------------
  
-\textbf{Successor measure} (hay discounted state occupancy measure)
+\textbf{Thước đo kế tiếp} (hay thước đo chiếm dụng trạng thái chiết khấu)
 $p^\pi(s_f)$ là một trong những khái niệm xuyên suốt toàn bộ tutorial.
-Nó được định nghĩa là xác suất mà agent đến được trạng thái $s_f$ tại
-một thời điểm nào đó trong tương lai khi theo policy $\pi$:
+Nó được định nghĩa là xác suất mà tác nhân đến được trạng thái $s_f$ tại
+một thời điểm nào đó trong tương lai khi theo chính sách $\pi$:
  
 \begin{equation}
     p^\pi(s_f) \triangleq (1-\gamma) \, \mathbb{E}_\pi \left[
@@ -613,17 +612,17 @@ hành động $a$.
  
 \subsubsection{Ý nghĩa trực quan và ví dụ minh họa}
  
-Successor measure trả lời câu hỏi: ``Nếu agent bắt đầu từ trạng thái
-$s$ và theo policy $\pi$, nó có bao nhiêu khả năng ghé thăm trạng thái
+Thước đo kế tiếp trả lời câu hỏi: ``Nếu tác nhân bắt đầu từ trạng thái
+$s$ và theo chính sách $\pi$, nó có bao nhiêu khả năng ghé thăm trạng thái
 $s_f$ trong tương lai?'' Khái niệm này \textbf{tổng quát hóa
-Q-function}: trong khi Q-function tính \textit{một số} (tổng phần
-thưởng kỳ vọng), successor measure tính \textit{một phân phối đầy đủ}
+hàm Q}: trong khi hàm Q tính \textit{một số} (tổng phần
+thưởng kỳ vọng), thước đo kế tiếp tính \textit{một phân phối đầy đủ}
 trên các trạng thái tương lai.
 
 \paragraph{Ví dụ minh họa bằng mê cung $3 \times 3$.}
 
 Hãy tưởng tượng robot đứng tại ô $(1,1)$ trong mê cung $3\times 3$,
-với policy ``luôn đi thẳng về phía đông''. Successor measure
+với chính sách ``luôn đi thẳng về phía đông''. Thước đo kế tiếp
 $p^\pi(s_f \mid (1,1), \text{đi đông})$ với $\gamma = 0.9$ sẽ trông
 như sau (giá trị xấp xỉ):
 
@@ -638,17 +637,17 @@ như sau (giá trị xấp xỉ):
 \end{tabular}
 \end{center}
 
-Khác với Q-function chỉ cho biết ``tổng reward kỳ vọng là bao nhiêu'',
-successor measure cho biết \textit{agent sẽ ở đâu} -- thông tin phong
-phú hơn. Lợi ích then chốt: nếu reward thay đổi (ví dụ: bây giờ ô
+Khác với hàm Q chỉ cho biết ``tổng reward kỳ vọng là bao nhiêu'',
+thước đo kế tiếp cho biết \textit{tác nhân sẽ ở đâu} -- thông tin phong
+phú hơn. Lợi ích then chốt: nếu phần thưởng thay đổi (ví dụ: bây giờ ô
 $(1,3)$ có thưởng thay vì ô $(1,2)$), ta chỉ cần tính lại tích phân
-trên successor measure đã học, \textbf{không cần train lại từ đầu}.
+trên thước đo kế tiếp đã học, \textbf{không cần train lại từ đầu}.
 
-\subsubsection{Liên hệ với Q-function}
+\subsubsection{Liên hệ với Hàm Q}
  
-Kết nối giữa successor measure và Q-function rất trực tiếp. Nếu có
-successor measure $p^\pi(s_f \mid s, a)$ và tập trạng thái có nhãn
-thưởng $r(s_f)$, ta có thể tính Q-function bằng:
+Kết nối giữa thước đo kế tiếp và hàm Q rất trực tiếp. Nếu có
+thước đo kế tiếp $p^\pi(s_f \mid s, a)$ và tập trạng thái có nhãn
+thưởng $r(s_f)$, ta có thể tính hàm Q bằng:
  
 \begin{equation}
     Q^\pi(s, a) = \mathbb{E}_{s_f \sim p^\pi(\cdot|s,a)} \left[
@@ -656,15 +655,15 @@ thưởng $r(s_f)$, ta có thể tính Q-function bằng:
     \label{eq:q_from_succ}
 \end{equation}
  
-Điều này có ý nghĩa lớn: nếu học được successor measure một lần, ta có
-thể tính Q-function cho \textbf{bất kỳ reward function nào} mà không
-cần huấn luyện lại -- đây là nền tảng cho zero-shot RL được trình bày
+Điều này có ý nghĩa lớn: nếu học được thước đo kế tiếp một lần, ta có
+thể tính hàm Q cho \textbf{bất kỳ hàm thưởng nào} mà không
+cần huấn luyện lại -- đây là nền tảng cho Học Tăng cường không cần huấn luyện lại được trình bày
 trong Phần III.
  
 \subsubsection{Tính toán qua Bellman}
  
-Successor measure thỏa mãn một phương trình Bellman tương tự
-Q-function:
+Thước đo kế tiếp thỏa mãn một phương trình Bellman tương tự
+hàm Q:
  
 \begin{equation}
     p^\pi(s_f \mid s, a) = (1-\gamma) \, p(s' = s_f \mid s, a)
@@ -678,63 +677,62 @@ Diễn giải: xác suất đến $s_f$ từ $(s,a)$ bằng xác suất đến $
 \textit{sau nhiều bước} thông qua trạng thái trung gian $s'$ (số hạng
 sau).
 
-Tính chất này cho phép ước lượng successor measure từ dữ liệu
-off-policy bằng Temporal Difference learning, tương tự như cách ta ước
-lượng Q-function. Đây là lý do successor measure có thể được học hiệu
+Tính chất này cho phép ước lượng thước đo kế tiếp từ dữ liệu
+ngoài chính sách bằng học hiệu chỉnh thời gian, tương tự như cách ta ước
+lượng hàm Q. Đây là lý do thước đo kế tiếp có thể được học hiệu
 quả từ dữ liệu tương tác.
  
 \subsubsection{Vị trí trong Tutorial}
  
-Successor measure xuất hiện ở nhiều phần khác nhau của tutorial với
+Thước đo kế tiếp xuất hiện ở nhiều phần khác nhau của tutorial với
 các vai trò đa dạng. Trong Phần II, nó mô tả phân phối trạng thái đích
-của goal-reaching problem. Trong Phần III, nó là likelihood của
-``interactive generative model'' cần được ước lượng. Trong zero-shot
-RL, các biểu diễn forward-backward học cách phân tích successor
-measure để cho phép tính policy tối ưu cho bất kỳ reward function nào
+của bài toán đạt đích. Trong Phần III, nó là hàm khả năng của
+``mô hình tạo sinh tương tác'' cần được ước lượng. Trong Học Tăng cường không cần huấn luyện lại,
+các biểu diễn tiến-lùi học cách phân tích thước đo kế tiếp để cho phép tính chính sách tối ưu cho bất kỳ hàm thưởng nào
 chỉ trong vài bước tính toán.
  
 % ---------------------------------------------------------------------
-\subsection{Bảng đối chiếu RL và Generative Modeling}
+\subsection{Bảng đối chiếu Học Tăng cường và Mô hình Tạo sinh}
 % ---------------------------------------------------------------------
  
 Một trong những đóng góp quan trọng nhất của tutorial là chỉ ra sự
-tương đương toán học giữa RL và Generative Modeling. Bảng~\ref{tab:rl_genai}
+tương đương toán học giữa Học Tăng cường và Mô hình Tạo sinh. Bảng~\ref{tab:rl_genai}
 tổng hợp các khái niệm tương ứng giữa hai lĩnh vực. Mỗi hàng trong
 bảng thể hiện một cặp khái niệm đóng \textit{cùng một vai trò toán
 học} trong hai lĩnh vực khác nhau -- hiểu bảng này giúp giải thích
 tại sao kỹ thuật từ lĩnh vực này có thể áp dụng cho lĩnh vực kia.
 
 Một số cặp chưa quen thuộc sẽ được giải thích trong Phần III:
-\textit{occupancy measure} $d^\pi(s,a)$ là phân phối tần suất
-state-action mà policy ghé thăm (tổng quát hóa successor measure sang
-không gian state-action); \textit{likelihood ratio} là tỉ số
-$p^\pi(s_f \mid s,a) / p(s_f)$ đo mức độ policy tăng xác suất đến
-$s_f$ so với baseline.
+\textit{thước đo chiếm dụng} $d^\pi(s,a)$ là phân phối tần suất
+trạng thái-hành động mà chính sách ghé thăm (tổng quát hóa thước đo kế tiếp sang
+không gian trạng thái-hành động); \textit{tỉ lệ hàm khả năng} là tỉ số
+$p^\pi(s_f \mid s,a) / p(s_f)$ đo mức độ chính sách tăng xác suất đến
+$s_f$ so với đường cơ sở.
  
 \begin{table}[H]
     \centering
-    \caption{Các khái niệm tương đương giữa RL và Generative Modeling.}
+    \caption{Các khái niệm tương đương giữa Học Tăng cường và Mô hình Tạo sinh.}
     \label{tab:rl_genai}
     \begin{tabular}{lll}
         \toprule
-        \textbf{Reinforcement Learning} & \textbf{Generative Modeling} &
+        \textbf{Học Tăng cường} & \textbf{Mô hình Tạo sinh} &
         \textbf{Ý nghĩa chung} \\
         \midrule
-        Policy $\pi(a \mid s)$ & Generative model $p(x)$ & Phân phối
+        Chính sách $\pi(a \mid s)$ & Mô hình tạo sinh $p(x)$ & Phân phối
         cần học \\
-        Score function $\nabla_\theta \log \pi(a \mid s)$ & Score
+        Hàm điểm số $\nabla_\theta \log \pi(a \mid s)$ & Hàm điểm số
         $\nabla_x \log p(x)$ & Gradient của log-xác suất \\
-        Return $R(\tau)$ & Log-likelihood $\log p(x)$ & Tín hiệu học \\
-        Trajectory $\tau$ & Latent variable $z$ & Biến tiềm ẩn \\
-        Policy gradient & Score function estimator & Cách tối ưu phân
+        Lợi tức $R(\tau)$ & Log-hàm khả năng $\log p(x)$ & Tín hiệu học \\
+        Quỹ đạo $\tau$ & Biến tiềm ẩn $z$ & Biến tiềm ẩn \\
+        Gradient chính sách & Ước lượng hàm điểm số & Cách tối ưu phân
         phối \\
-        Q-function $Q(s,a)$ & Likelihood ratio
+        Hàm Q $Q(s,a)$ & Tỉ lệ hàm khả năng
         $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương
         lai \\
-        Occupancy measure $d^\pi(s,a)$ & Data distribution $p(x)$ &
-        Phân phối muốn matching \\
-        Bellman equation & Markov property & Cấu trúc đệ quy \\
-        Skill label $z$ & Latent code $z$ trong VAE & Điều khiển hành
+        Thước đo chiếm dụng $d^\pi(s,a)$ & Phân phối dữ liệu $p(x)$ &
+        Phân phối muốn khớp \\
+        Phương trình Bellman & Tính chất Markov & Cấu trúc đệ quy \\
+        Nhãn kỹ năng $z$ & Mã tiềm ẩn $z$ trong VAE & Điều khiển hành
         vi \\
         \bottomrule
     \end{tabular}
@@ -744,3 +742,87 @@ Hiểu bảng này giúp đọc phần nội dung chính dễ hơn đáng kể: 
 tutorial dùng kỹ thuật từ một lĩnh vực để giải quyết bài toán của
 lĩnh vực kia, đều có thể truy về một cặp tương đương trong
 bảng~\ref{tab:rl_genai}.
+
+% =====================================================================
+\subsection{Bảng Thuật ngữ}
+\label{sub:glossary}
+% =====================================================================
+
+Bảng dưới đây tổng hợp các thuật ngữ chuyên ngành tiếng Anh được sử dụng trong báo cáo kèm theo giải thích bằng tiếng Việt.
+
+\begin{center}
+\begin{longtable}{p{5cm} p{4.5cm} p{4.5cm}}
+    \caption{Bảng thuật ngữ Anh--Việt.} \label{tab:glossary} \\
+    \toprule
+    \textbf{Thuật ngữ tiếng Anh} & \textbf{Dịch tiếng Việt} & \textbf{Ghi chú} \\
+    \midrule
+    \endfirsthead % <-- Sửa thành lệnh này (Không có \begin và có dấu \)
+
+    % Định nghĩa tiêu đề cho các trang sau (khi bảng bị ngắt sang trang mới)
+    \multicolumn{3}{c}{{\bfseries \tablename\ \thetable{} -- Tiếp theo từ trang trước}} \\
+    \midrule
+    \textbf{Thuật ngữ tiếng Anh} & \textbf{Dịch tiếng Việt} & \textbf{Ghi chú} \\
+    \midrule
+    \endhead % <-- Sửa thành lệnh này 
+
+    % Định nghĩa phần chân bảng khi chưa hết bảng
+    \midrule
+    \multicolumn{3}{r}{{Còn tiếp ở trang sau...}} \\
+    \endfoot % <-- Sửa thành lệnh này
+
+    % Định nghĩa chân bảng ở trang cuối cùng
+    \bottomrule
+    \endlastfoot % <-- Sửa thành lệnh này
+
+    % ================= DỮ LIỆU BẢNG GIỮ NGUYÊN HOÀN TOÀN TỪ ĐÂY =================
+    Reinforcement Learning (RL) & Học Tăng cường & Nhánh học máy học qua tương tác \\
+    Generative AI / Generative Model & AI Tạo sinh / Mô hình Tạo sinh & Mô hình có thể sinh mẫu mới \\
+    Imitation Learning & Học Bắt chước & Học từ dữ liệu hành vi chuyên gia \\
+    Reward Engineering & Thiết kế Hàm Thưởng & Xây dựng tín hiệu phần thưởng cho RL \\
+    Reward Hacking & Khai thác Phần thưởng & Tối ưu proxy thay vì mục tiêu thật \\
+    Policy & Chính sách & Quy tắc ra quyết định của tác nhân \\
+    Policy Gradient & Gradient Chính sách & Phương pháp tối ưu chính sách \\
+    Score Function & Hàm Điểm số & Gradient của log-xác suất \\
+    Trajectory & Quỹ đạo & Chuỗi trạng thái--hành động--thưởng \\
+    Return / Discounted Return & Lợi tức / Lợi tức Chiết khấu & Tổng phần thưởng (có chiết khấu) \\
+    Value Function / Q-function & Hàm Giá trị / Hàm Q & Ước lượng lợi tức kỳ vọng \\
+    Bellman Equation & Phương trình Bellman & Quan hệ đệ quy của hàm giá trị \\
+    Markov Decision Process (MDP) & Quá trình Quyết định Markov & Khung hình thức hóa bài toán RL \\
+    Successor Measure & Thước đo Kế tiếp & Phân phối trạng thái tương lai \\
+    Occupancy Measure & Thước đo Chiếm dụng & Phân phối trạng thái--hành động \\
+    Diffusion Model & Mô hình Khuếch tán & Mô hình tạo sinh qua khử nhiễu \\
+    Flow Matching & Khớp Luồng & Mô hình tạo sinh qua trường vector \\
+    Transformer & Transformer & Kiến trúc dựa trên cơ chế tự chú ý \\
+    Self-Attention & Tự chú ý & Cơ chế tập trung giữa các token \\
+    Autoregressive Model & Mô hình Tự Hồi quy & Sinh token tuần tự từng bước \\
+    VAE (Variational Autoencoder) & Bộ Mã hóa Biến phân & Mô hình tạo sinh có không gian tiềm ẩn \\
+    GAN (Generative Adversarial Network) & Mạng Đối kháng Tạo sinh & Mô hình tạo sinh kiểu bộ tạo--bộ phân biệt \\
+    World Model & Mô hình Thế giới & Mô hình học hàm chuyển trạng thái \\
+    Model-Based RL & Học Tăng cường Dựa trên Mô hình & RL sử dụng mô hình thế giới \\
+    Offline RL & Học Tăng cường Ngoại tuyến & RL học từ tập dữ liệu cố định \\
+    Goal-Reaching & Đạt Đích & Bài toán đưa tác nhân đến trạng thái đích \\
+    Goal-Conditioned RL & Học Tăng cường Có Điều kiện Đích & RL với chính sách phụ thuộc mục tiêu \\
+    Behavioral Cloning (BC) & Sao chép Hành vi & Học trực tiếp phân phối hành động \\
+    GCBC & Sao chép Hành vi Có Điều kiện Đích & BC mở rộng với điều kiện mục tiêu \\
+    Dual RL & Học Tăng cường Song nguyên & RL qua bài toán đối ngẫu \\
+    DICE & DICE & Phương pháp khớp phân phối chiếm dụng \\
+    Distribution Matching & Khớp Phân phối & Đưa phân phối chính sách về đích \\
+    Density Ratio & Tỉ lệ Mật độ & Tỉ lệ giữa hai phân phối xác suất \\
+    Temporal Contrastive Learning & Học Tương phản Thời gian & Học phân biệt cặp thật/giả theo thời gian \\
+    Forward-Backward Representation & Biểu diễn Tiến-Lùi & Biểu diễn nhân tố hóa thước đo kế tiếp \\
+    Zero-shot RL & Học Tăng cường Không cần Huấn luyện lại & Suy ra chính sách không cần train thêm \\
+    Skill Learning & Học Kỹ năng & Học các hành vi có thể tái sử dụng \\
+    Empowerment & Trao quyền & Khả năng tác nhân tác động đến tương lai \\
+    Mutual Information & Thông tin Tương hỗ & Đo lường phụ thuộc giữa hai biến \\
+    Behavioral Foundation Model (BFM) & Mô hình Nền tảng Hành vi & Mô hình nền tảng cho không gian hành vi \\
+    Self-Supervised RL & Học Tăng cường Tự Giám sát & RL tự tạo phần thưởng nội tại \\
+    RLHF & Học Tăng cường từ Phản hồi Con người & Fine-tune mô hình theo ý muốn người dùng \\
+    Error Exploitation & Khai thác Lỗi & Chính sách khai thác sai số của critic \\
+    Out-of-Distribution (OOD) & Ngoài Phân phối & Dữ liệu nằm ngoài vùng huấn luyện \\
+    Denoising & Khử nhiễu & Quá trình loại bỏ nhiễu dần dần \\
+    Score-Based Diffusion & Khuếch tán Dựa trên Điểm số & Khuếch tán dùng hàm điểm số \\
+    In-Distribution & Trong Phân phối & Dữ liệu nằm trong vùng huấn luyện \\
+    Horizon Generalization & Tổng quát hóa Chân trời & Huấn luyện ngắn, suy ra horizon dài \\
+    Cross-Embodiment Transfer & Chuyển giao Xuyên Thể xác & Chuyển kỹ năng sang robot có hình dạng khác \\
+\end{longtable}
+\end{center}
