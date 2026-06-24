@@ -264,7 +264,7 @@ hành động ``xoay'' khi nhìn thấy khối L ở vị trí nhất định.
 
 Một \textbf{trajectory} $\tau = (s_0, a_0, s_1, a_1, \ldots)$
 là chuỗi trạng thái và hành động theo thời gian, về bản chất là một
-``ván chơi'' hoàn chỉnh. \textbf{Lợi tức chiết khấu} $R(\tau)$ là
+``ván chơi'' hoàn chỉnh. \textbf{Return chiết khấu} $R(\tau)$ là
 tổng phần thưởng có chiết khấu theo thời gian:
  
 \begin{equation}
@@ -277,7 +277,7 @@ phần thưởng hội tụ (không vô hạn), đồng thời phản ánh nguy�
 tế học rằng phần thưởng gần hơn có giá trị hơn (giống như tiền ngày
 hôm nay có giá trị hơn tiền ngày mai).
  
-\textbf{Mục tiêu Học Tăng cường} là tìm policy $\pi$ tối đa hóa lợi tức kỳ vọng, tức phần thưởng tích lũy kỳ vọng trên tất cả các trajectory có thể
+\textbf{Mục tiêu Học Tăng cường} là tìm policy $\pi$ tối đa hóa return kỳ vọng, tức phần thưởng tích lũy kỳ vọng trên tất cả các trajectory có thể
 xảy ra:
  
 \begin{equation}
@@ -323,9 +323,9 @@ tốt hơn bất kỳ dữ liệu nào trong tập dữ liệu \cite{eysenbach20
 \subsubsection{Hàm Giá trị và Phương trình Bellman}
  
 Để tối ưu $J(\pi)$, cần biết ``từ trạng thái này, hành động nào dẫn
-đến lợi tức cao nhất?''. Đây là vai trò của \textbf{hàm giá trị}.
+đến return cao nhất?''. Đây là vai trò của \textbf{hàm giá trị}.
  
-\textbf{Hàm Q} $Q^\pi(s, a)$ cho biết lợi tức kỳ vọng khi bắt đầu
+\textbf{Q-Function} $Q^\pi(s, a)$ cho biết return kỳ vọng khi bắt đầu
 từ cặp $(s, a)$ và sau đó theo policy $\pi$:
  
 \begin{equation}
@@ -339,7 +339,7 @@ trạng thái $s$, thực hiện hành động $a$, rồi từ đó trở đi lu
 policy $\pi$, tôi kỳ vọng nhận được bao nhiêu phần thưởng tổng
 cộng?''
  
-Hàm Q thỏa \textbf{phương trình Bellman} -- quan hệ đệ quy cơ bản
+Q-Function thỏa \textbf{phương trình Bellman} -- quan hệ đệ quy cơ bản
 của Học Tăng cường. Phương trình này phát biểu rằng giá trị hiện tại bằng phần
 thưởng ngay lập tức cộng với giá trị tương lai được chiết khấu:
  
@@ -352,7 +352,7 @@ thưởng ngay lập tức cộng với giá trị tương lai được chiết 
  
 Phương trình Bellman quan trọng vì nó biến bài toán tối ưu hóa vô hạn
 chiều thành bài toán có thể giải lặp đi lặp lại (quy hoạch động).
-Hàm Q xuất hiện xuyên suốt tutorial: trong diffusion policy
+Q-Function xuất hiện xuyên suốt tutorial: trong diffusion policy
 (dùng $Q$ để chọn hành động), trong học tương phản thời gian
 ($Q \approx$ tỉ lệ log-likelihood), và trong Học Tăng cường không cần huấn luyện lại (tính $Q$
 từ biểu diễn học được).
@@ -372,8 +372,8 @@ và thực hiện leo dốc gradient. Định lý Policy Gradient cho kết qu�
 Trực giác của policy gradient rất tự nhiên: số hạng
 $\nabla_\theta \log \pi_\theta(a \mid s)$ đẩy tham số theo hướng tăng
 xác suất của hành động $a$ tại trạng thái $s$; nhân với $R(\tau)$
-nghĩa là ta tăng xác suất của những hành động đã dẫn đến lợi tức cao,
-và giảm xác suất của những hành động dẫn đến lợi tức thấp.
+nghĩa là ta tăng xác suất của những hành động đã dẫn đến return cao,
+và giảm xác suất của những hành động dẫn đến return thấp.
  
 Số hạng $\nabla_\theta \log \pi_\theta(a \mid s)$ được gọi là
 \textbf{hàm điểm số} của policy. Đây là cầu nối kỹ thuật quan trọng
@@ -576,12 +576,12 @@ tất cả token trước đó.
 tiếp kiến trúc này cho Học Tăng cường: thay vì học hàm giá trị hay thực hiện
 cập nhật Bellman, mô hình coi một trajectory trong Học Tăng cường -- chuỗi
 $(R_0, s_0, a_0, R_1, s_1, a_1, \ldots)$ -- như một chuỗi token và
-học sinh hành động có điều kiện trên \textit{lợi tức-còn-lại} (tổng
+học sinh hành động có điều kiện trên \textit{return-còn-lại} (tổng
 phần thưởng kỳ vọng từ bước hiện tại trở đi) và lịch sử trajectory.
 
-Ý tưởng then chốt: nếu ta điều kiện hóa mô hình trên ``lợi tức mục tiêu
+Ý tưởng then chốt: nếu ta điều kiện hóa mô hình trên ``return mục tiêu
 cao'' (ví dụ: 100 điểm), model sẽ sinh ra những hành động từng được
-quan sát trong các trajectory có lợi tức cao. Đây là ví dụ điển hình
+quan sát trong các trajectory có return cao. Đây là ví dụ điển hình
 của việc dùng mô hình tạo sinh làm policy trong Học Tăng cường.
 
 % ---------------------------------------------------------------------
@@ -610,7 +610,7 @@ hành động $a$.
 Thước đo kế tiếp trả lời câu hỏi: ``Nếu tác nhân bắt đầu từ trạng thái
 $s$ và theo policy $\pi$, nó có bao nhiêu khả năng ghé thăm trạng thái
 $s_f$ trong tương lai?'' Khái niệm này \textbf{tổng quát hóa
-hàm Q}: trong khi hàm Q tính \textit{một số} (tổng phần
+Q-Function}: trong khi Q-Function tính \textit{một số} (tổng phần
 thưởng kỳ vọng), thước đo kế tiếp tính \textit{một phân phối đầy đủ}
 trên các trạng thái tương lai.
 
@@ -632,17 +632,17 @@ như sau (giá trị xấp xỉ):
 \end{tabular}
 \end{center}
 
-Khác với hàm Q chỉ cho biết ``tổng reward kỳ vọng là bao nhiêu'',
+Khác với Q-Function chỉ cho biết ``tổng reward kỳ vọng là bao nhiêu'',
 thước đo kế tiếp cho biết \textit{tác nhân sẽ ở đâu} -- thông tin phong
 phú hơn. Lợi ích then chốt: nếu phần thưởng thay đổi (ví dụ: bây giờ ô
 $(1,3)$ có thưởng thay vì ô $(1,2)$), ta chỉ cần tính lại tích phân
 trên thước đo kế tiếp đã học, \textbf{không cần train lại từ đầu}.
 
-\subsubsection{Liên hệ với Hàm Q}
+\subsubsection{Liên hệ với Q-Function}
  
-Kết nối giữa thước đo kế tiếp và hàm Q rất trực tiếp. Nếu có
+Kết nối giữa thước đo kế tiếp và Q-Function rất trực tiếp. Nếu có
 thước đo kế tiếp $p^\pi(s_f \mid s, a)$ và tập trạng thái có nhãn
-thưởng $r(s_f)$, ta có thể tính hàm Q bằng:
+thưởng $r(s_f)$, ta có thể tính Q-Function bằng:
  
 \begin{equation}
     Q^\pi(s, a) = \mathbb{E}_{s_f \sim p^\pi(\cdot|s,a)} \left[
@@ -651,14 +651,14 @@ thưởng $r(s_f)$, ta có thể tính hàm Q bằng:
 \end{equation}
  
 Điều này có ý nghĩa lớn: nếu học được thước đo kế tiếp một lần, ta có
-thể tính hàm Q cho \textbf{bất kỳ hàm thưởng nào} mà không
+thể tính Q-Function cho \textbf{bất kỳ hàm thưởng nào} mà không
 cần huấn luyện lại. Đây là nền tảng cho Học Tăng cường không cần huấn luyện lại được trình bày
 trong Phần III.
  
 \subsubsection{Tính toán qua Bellman}
  
 Thước đo kế tiếp thỏa mãn một phương trình Bellman tương tự
-hàm Q:
+Q-Function:
  
 \begin{equation}
     p^\pi(s_f \mid s, a) = (1-\gamma) \, p(s' = s_f \mid s, a)
@@ -674,7 +674,7 @@ sau).
 
 Tính chất này cho phép ước lượng thước đo kế tiếp từ dữ liệu
 off-policy bằng học hiệu chỉnh thời gian, tương tự như cách ta ước
-lượng hàm Q. Đây là lý do thước đo kế tiếp có thể được học hiệu
+lượng Q-Function. Đây là lý do thước đo kế tiếp có thể được học hiệu
 quả từ dữ liệu tương tác.
  
 \subsubsection{Vị trí trong Tutorial}
@@ -716,10 +716,10 @@ $s_f$ so với đường cơ sở.
         \midrule
         Policy $\pi(a \mid s)$ & Mô hình tạo sinh $p(x)$ & Phân phối cần học \\
         Hàm điểm số $\nabla_\theta \log \pi(a \mid s)$ & Hàm điểm số $\nabla_x \log p(x)$ & Gradient của log-xác suất \\
-        Lợi tức $R(\tau)$ & Log-hàm khả năng $\log p(x)$ & Tín hiệu học \\
+        Return $R(\tau)$ & Log-hàm khả năng $\log p(x)$ & Tín hiệu học \\
         Trajectory $\tau$ & Biến tiềm ẩn $z$ & Biến tiềm ẩn \\
         Policy Gradient & Ước lượng hàm điểm số & Cách tối ưu phân phối \\
-        Hàm Q $Q(s,a)$ & Tỉ lệ hàm khả năng $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương lai \\
+        Q-Function $Q(s,a)$ & Tỉ lệ hàm khả năng $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương lai \\
         Thước đo chiếm dụng $d^\pi(s,a)$ & Phân phối dữ liệu $p(x)$ & Phân phối muốn khớp \\
         Phương trình Bellman & Tính chất Markov & Cấu trúc đệ quy \\
         Nhãn kỹ năng $z$ & Mã tiềm ẩn $z$ trong VAE & Điều khiển hành vi \\

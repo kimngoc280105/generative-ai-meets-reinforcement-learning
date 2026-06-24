@@ -16,7 +16,7 @@ một khung nhìn thống nhất về mối quan hệ hai chiều giữa hai lĩ
 Đóng góp khoa học có thể được tóm gọn theo ba luận điểm cốt lõi.
 
 \textbf{Luận điểm 1: Generative models là công cụ mạnh cho RL.}
-Bằng cách thay thế các thành phần truyền thống của RL (mô hình thế giới, policy) bằng các mô hình sinh hiện đại như
+Bằng cách thay thế các thành phần truyền thống của RL (world model, policy) bằng các mô hình sinh hiện đại như
 diffusion model, transformer hay flow matching, hiệu năng của thuật toán RL có thể được cải thiện đáng kể mà
 không cần thiết kế lại toàn bộ kiến trúc thuật toán.
 Cụ thể, diffusion policy trong offline RL (ví dụ Diffusion-DICE~\cite{mao2024diffusiondice}) cho thấy rằng biểu diễn
@@ -38,7 +38,7 @@ gian hành vi của môi trường mà không cần dữ liệu curated hay rewa
 \subsubsection{Tính nhất quán và mạch lạc của Khung nghiên cứu}
 
 Điểm đáng chú ý là tutorial xây dựng được một luận điểm nhất quán từ đầu đến cuối.
-Bắt đầu từ quan sát đơn giản rằng hàm điểm số -- đối tượng trung tâm của generative modeling --
+Bắt đầu từ quan sát đơn giản rằng score function -- đối tượng trung tâm của generative modeling --
 xuất hiện trực tiếp trong policy gradient của RL, tutorial dần mở rộng mối liên hệ này qua nhiều lớp:
 từ reward-weighted regression, đến dual RL, đến thước đo kế tiếp, rồi đến temporal contrastive learning
 và cuối cùng là học tăng cường không cần huấn luyện lại.
@@ -153,9 +153,9 @@ có thể kết hợp với khả năng lập kế hoạch ngôn ngữ để x�
 
 Đối với các ứng dụng thực tế như robotics hay y tế, số lượng tương tác với môi trường bị giới hạn
 nghiêm ngặt.
-Các phương pháp model-based RL (Section 2.2) kết hợp với mô hình thế giới chất lượng cao (ví dụ diffusion-based
-mô hình thế giới) là hướng đi tự nhiên để giảm yêu cầu dữ liệu thực.
-Tuy nhiên, như tutorial đề cập, compounding error của mô hình thế giới vẫn là thách thức lớn cần
+Các phương pháp model-based RL (Section 2.2) kết hợp với world model chất lượng cao (ví dụ diffusion-based
+world model) là hướng đi tự nhiên để giảm yêu cầu dữ liệu thực.
+Tuy nhiên, như tutorial đề cập, compounding error của world model vẫn là thách thức lớn cần
 các kỹ thuật phát hiện và điều chỉnh hiệu quả hơn.
 
 \subsubsection{Học Tăng cường Không cần Phần thưởng ở Quy mô Lớn}
@@ -195,7 +195,7 @@ Framework dual RL và thước đo kế tiếp còn gợi ý các cách mới đ
 lập kế hoạch của LLM mà không phụ thuộc vào human annotation.
 
 Đối với \textbf{khoa học và kỹ thuật} (điều khiển lò phản ứng, thiết kế phân tử, tối ưu hóa
-quy trình công nghiệp), việc kết hợp mô hình thế giới chất lượng cao với thuật toán RL hiệu quả mẫu
+quy trình công nghiệp), việc kết hợp world model chất lượng cao với thuật toán RL hiệu quả mẫu
 mở ra khả năng học policy tốt với rất ít tương tác thực với hệ thống vật lý -- giảm thiểu
 chi phí và rủi ro trong quá trình thực nghiệm.
 
@@ -207,11 +207,11 @@ Tutorial \textit{Generative AI Meets Reinforcement Learning} của Eysenbach và
 trình bày một quan điểm thống nhất và có chiều sâu về mối quan hệ giữa hai lĩnh vực.
 Từ reward-weighted regression, diffusion policy, Diffusion-DICE đến temporal contrastive learning,
 dual RL, skill learning và học tăng cường không cần huấn luyện lại, mỗi chủ đề đều được gắn kết bởi một ngôn ngữ toán học
-chung: phân phối xác suất trên trajectory, hàm điểm số, và thước đo kế tiếp.
+chung: phân phối xác suất trên trajectory, score function, và thước đo kế tiếp.
 
 Báo cáo này đã tổng hợp và trình bày các nội dung chính của tutorial qua bốn phần:
 kiến thức nền về RL và generative models (Phần 2),
-ứng dụng generative models trong RL bao gồm mô hình thế giới, diffusion policy và DDPO (Phần 3),
+ứng dụng generative models trong RL bao gồm world model, diffusion policy và DDPO (Phần 3),
 tương tác như generative model -- goal-conditioned RL, dual RL, thước đo kế tiếp và skill learning (Phần 4),
 cùng với kết quả thực nghiệm minh họa (Phần 5).
 

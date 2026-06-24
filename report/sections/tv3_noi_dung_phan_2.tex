@@ -166,7 +166,7 @@ propagate thông tin qua thời gian.
 
 \textbf{Forward-Backward representation} sử dụng linear parametrization
 $f_\theta(s, a, s_f) = F_\theta(s,a)^\top B_\theta(s_f)$, cho phép
-tính hàm Q cho bất kỳ reward function nào chỉ bằng một tích vô
+tính Q-Function cho bất kỳ reward function nào chỉ bằng một tích vô
 hướng sau khi đã học representation -- nền tảng cho học tăng cường không cần huấn luyện lại.
 
 \textbf{TD InfoNCE} sử dụng log-linear parametrization
@@ -198,7 +198,7 @@ của trạng thái đích. Biểu diễn này có nhiều tính chất thú v�
     horizon ngắn, giải được task horizon dài.
 \end{itemize}
 
-hàm Q cũng có thể được ước lượng từ các biểu diễn này:
+Q-Function cũng có thể được ước lượng từ các biểu diễn này:
 \begin{equation}
     Q(s, a) \approx \frac{1}{k} \sum_{s_f, r} f_\theta(s, a, s_f)
     \cdot r(s_f)
@@ -222,7 +222,7 @@ khác nhau \cite{eysenbach2025generativerl}.
 
 Điểm then chốt là: các tỉ lệ mật độ $f_\theta(s, a, s_f)$ đã học có
 thể được tái sử dụng trực tiếp để giải quyết bài toán RL tổng quát.
-Cho một tập trạng thái có nhãn reward $\{(s_f, r(s_f))\}$, hàm Q
+Cho một tập trạng thái có nhãn reward $\{(s_f, r(s_f))\}$, Q-Function
 được ước lượng bằng:
 
 \begin{equation}
@@ -246,7 +246,7 @@ Với tham số hóa tuyến tính:
     \label{eq:linear_param}
 \end{equation}
 
-hàm Q trở thành hàm tuyến tính của representation:
+Q-Function trở thành hàm tuyến tính của representation:
 \begin{equation}
     Q(s, a) \approx \frac{1}{k} \sum_{s_f, r} F_\theta(s,a)^\top
     B_\theta(s_f) \cdot r = F_\theta(s,a)^\top \underbrace{\left(
@@ -257,7 +257,7 @@ hàm Q trở thành hàm tuyến tính của representation:
 Ký hiệu $z = \frac{1}{k} \sum_{s_f,r} B_\theta(s_f) \cdot r$ là
 vector đặc trưng của reward function. Tính chất quan trọng:
 \textbf{mỗi reward function được biểu diễn bởi một vector $z$ duy
-nhất}, và hàm Q chỉ là tích vô hướng $F_\theta(s,a)^\top z$.
+nhất}, và Q-Function chỉ là tích vô hướng $F_\theta(s,a)^\top z$.
 Điều này cho phép zero-shot generalization: khi có reward function
 mới, chỉ cần tính $z$ mới mà không cần cập nhật $F_\theta$
 \cite{eysenbach2025generativerl}.
@@ -292,7 +292,7 @@ log-linear có một số tính chất nổi bật:
 
 \paragraph{Tập hợp Affine của Successor Measures}
 
-Các biểu diễn Forward-Backward đã cho phép ước lượng hàm Q cho
+Các biểu diễn Forward-Backward đã cho phép ước lượng Q-Function cho
 bất kỳ reward function nào thông qua một tích vô hướng. Tuy nhiên, có
 thể tổng quát hóa thêm: tập hợp tất cả các successor measures có thể
 học được tạo thành một \textbf{affine set} và được mô hình hóa qua:
