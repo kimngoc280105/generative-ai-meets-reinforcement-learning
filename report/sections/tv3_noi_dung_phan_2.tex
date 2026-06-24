@@ -9,11 +9,11 @@
 % =====================================================================
 
 Phần II đã giới thiệu cách nhìn nhận tương tác như một quá trình
-generative và sử dụng góc nhìn này cho bài toán goal-reaching. Phần
+generative và sử dụng góc nhìn này cho bài toán đạt đích. Phần
 III mở rộng thêm: nếu tương tác là một generative model, thì chúng ta
 có thể \textbf{ước lượng likelihood} của các kết quả quan sát được
 không? Câu trả lời là có, và điều này cho phép giải quyết các bài toán
-RL tổng quát hơn nhiều so với goal-reaching đơn thuần.
+RL tổng quát hơn nhiều so với đạt đích đơn thuần.
 
 % ---------------------------------------------------------------------
 \subsubsection{Successor Measure}
@@ -21,7 +21,7 @@ RL tổng quát hơn nhiều so với goal-reaching đơn thuần.
 
 \paragraph{Định nghĩa Successor Measure}
 
-\textbf{Successor measure} (hay discounted state occupancy measure)
+\textbf{Thước đo kế tiếp} (hay thước đo chiếm dụng trạng thái chiết khấu)
 $p^\pi(s_f)$ được định nghĩa là xác suất agent đến được trạng thái
 $s_f$ tại một thời điểm nào đó trong tương lai:
 
@@ -39,7 +39,7 @@ trạng thái $s$ và thực hiện hành động $a$.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{images/successor_measure.png}
-    \caption{Successor measure (discounted state occupancy measure) là
+    \caption{Thước đo kế tiếp (thước đo chiếm dụng trạng thái chiết khấu) là
     phân phối các trạng thái tương lai mà agent có thể đến được. Phần
     III giới thiệu các kỹ thuật ước lượng phân phối này và sử dụng nó
     cho RL. Nguồn: \cite{eysenbach2025generativerl}.}
@@ -56,7 +56,7 @@ Một cách tiếp cận trực quan để ước lượng $p^\pi(s_f)$ là sử
 mô hình generative hiện đại như \textbf{flow-matching}, \textbf{GANs},
 hoặc \textbf{normalizing flows} để học phân phối của các trạng thái mà
 agent thực sự ghé thăm. Sau khi có mô hình mật độ, bài toán
-goal-reaching được giải quyết bằng cách tối đa hóa xác suất đến trạng
+đạt đích được giải quyết bằng cách tối đa hóa xác suất đến trạng
 thái mục tiêu $g$:
 
 \begin{equation}
@@ -106,7 +106,7 @@ examples). Classifier $f_\theta(s, a, s_f)$ được huấn luyện với loss:
 \end{equation}
 
 Tại điểm tối ưu: $f_\theta(s, a, s_f) = \frac{p^\pi(s_f \mid s,
-a)}{p(s_f)}$. Đây chính là \textbf{temporal contrastive learning}
+a)}{p(s_f)}$. Đây chính là \textbf{học tương phản thời gian}
 \cite{eysenbach2025generativerl}.
 
 \begin{figure}[H]
@@ -122,9 +122,9 @@ a)}{p(s_f)}$. Đây chính là \textbf{temporal contrastive learning}
 
 \paragraph{Temporal Difference Methods: Mở rộng sang Off-policy}
 
-Các phương pháp Monte Carlo ở trên ước lượng successor measure bằng
-cách quan sát trực tiếp nơi policy đến. Tuy nhiên, chúng không trả lời
-được câu hỏi: \textit{nếu policy thay đổi, agent sẽ visit những state
+Các phương pháp Monte Carlo ở trên ước lượng thước đo kế tiếp bằng
+cách quan sát trực tiếp nơi chính sách đến. Tuy nhiên, chúng không trả lời
+được câu hỏi: \textit{nếu chính sách thay đổi, agent sẽ visit những state
 nào mới?} Temporal difference (TD) methods giải quyết vấn đề này bằng
 cách ``ghép nối'' dữ liệu từ các experience khác nhau thông qua
 Bellman flow constraint \cite{eysenbach2025generativerl}:
@@ -137,13 +137,13 @@ Bellman flow constraint \cite{eysenbach2025generativerl}:
 \end{equation}
 
 Identity này cho phép viết lại contrastive loss dưới dạng chỉ phụ
-thuộc vào các transition $(s, a, s')$ và policy hiện tại -- không cần
+thuộc vào các transition $(s, a, s')$ và chính sách hiện tại -- không cần
 sample future states trực tiếp. Đây là nền tảng của một số phương
 pháp quan trọng:
 
 \begin{table}[H]
     \centering
-    \caption{So sánh các phương pháp ước lượng successor measure.}
+    \caption{So sánh các phương pháp ước lượng thước đo kế tiếp.}
     \label{tab:td_methods}
     \begin{tabular}{lll}
         \toprule
@@ -159,20 +159,20 @@ pháp quan trọng:
 Nguồn: \cite{eysenbach2025generativerl}.
 
 \textbf{C-learning} \cite{eysenbach2025generativerl} reformulate
-goal-reaching như bài toán phân loại đệ quy: thay vì học trực tiếp
+đạt đích như bài toán phân loại đệ quy: thay vì học trực tiếp
 $p^\pi(s_f \mid s, a)$, học classifier phân biệt các cặp $(s, s_f)$
 có quan hệ nhân quả với các cặp ngẫu nhiên, kết hợp TD updates để
 propagate thông tin qua thời gian.
 
 \textbf{Forward-Backward representation} sử dụng linear parametrization
 $f_\theta(s, a, s_f) = F_\theta(s,a)^\top B_\theta(s_f)$, cho phép
-tính Q-function cho bất kỳ reward function nào chỉ bằng một tích vô
-hướng sau khi đã học representation -- nền tảng cho zero-shot RL.
+tính hàm Q cho bất kỳ reward function nào chỉ bằng một tích vô
+hướng sau khi đã học representation -- nền tảng cho học tăng cường không cần huấn luyện lại.
 
 \textbf{TD InfoNCE} sử dụng log-linear parametrization
 $f_\theta(s, a, s_f) = e^{F_\theta(s,a)^\top B_\theta(s_f)}$ kết hợp
 với InfoNCE loss, cho phép scaling tốt hơn và có liên hệ chặt chẽ với
-temporal contrastive learning trong computer vision.
+học tương phản thời gian trong computer vision.
 
 \paragraph{Biểu diễn Tham số hóa}
 
@@ -194,11 +194,11 @@ của trạng thái đích. Biểu diễn này có nhiều tính chất thú v�
     hiện trong quá trình huấn luyện.
     \item \textbf{Triangle inequality}: biểu diễn học được thỏa mãn
     bất đẳng thức tam giác, cho phép lập kế hoạch qua nội suy.
-    \item \textbf{Horizon generalization}: huấn luyện trên task
+    \item \textbf{Tổng quát hóa chân trời}: huấn luyện trên task
     horizon ngắn, giải được task horizon dài.
 \end{itemize}
 
-Q-function cũng có thể được ước lượng từ các biểu diễn này:
+hàm Q cũng có thể được ước lượng từ các biểu diễn này:
 \begin{equation}
     Q(s, a) \approx \frac{1}{k} \sum_{s_f, r} f_\theta(s, a, s_f)
     \cdot r(s_f)
@@ -206,13 +206,13 @@ Q-function cũng có thể được ước lượng từ các biểu diễn này
 \end{equation}
 
 Điều này cho thấy một reward function bất kỳ có thể được biểu diễn
-như một vector $z$ duy nhất -- nền tảng cho zero-shot RL.
+như một vector $z$ duy nhất -- nền tảng cho học tăng cường không cần huấn luyện lại.
 
 % ---------------------------------------------------------------------
 \subsubsection{Học Tăng cường Tổng quát từ Tỉ lệ Mật độ}
 % ---------------------------------------------------------------------
 
-\paragraph{Từ Goal-reaching đến RL Tổng quát}
+\paragraph{Từ Đạt đích đến RL Tổng quát}
 
 Các phương pháp ở phần trước cho phép ước lượng xác suất agent đến
 một trạng thái đích $s_f$ cụ thể. Tuy nhiên, nhiều bài toán thực tế
@@ -220,9 +220,9 @@ không thể mô tả bằng một goal state duy nhất -- chúng ta có thể 
 tối đa hóa reward tổng quát, hoặc có nhiều trạng thái tốt với mức độ
 khác nhau \cite{eysenbach2025generativerl}.
 
-Điểm then chốt là: các density ratio $f_\theta(s, a, s_f)$ đã học có
+Điểm then chốt là: các tỉ lệ mật độ $f_\theta(s, a, s_f)$ đã học có
 thể được tái sử dụng trực tiếp để giải quyết bài toán RL tổng quát.
-Cho một tập trạng thái có nhãn reward $\{(s_f, r(s_f))\}$, Q-function
+Cho một tập trạng thái có nhãn reward $\{(s_f, r(s_f))\}$, hàm Q
 được ước lượng bằng:
 
 \begin{equation}
@@ -246,7 +246,7 @@ Với tham số hóa tuyến tính:
     \label{eq:linear_param}
 \end{equation}
 
-Q-function trở thành hàm tuyến tính của representation:
+hàm Q trở thành hàm tuyến tính của representation:
 \begin{equation}
     Q(s, a) \approx \frac{1}{k} \sum_{s_f, r} F_\theta(s,a)^\top
     B_\theta(s_f) \cdot r = F_\theta(s,a)^\top \underbrace{\left(
@@ -257,7 +257,7 @@ Q-function trở thành hàm tuyến tính của representation:
 Ký hiệu $z = \frac{1}{k} \sum_{s_f,r} B_\theta(s_f) \cdot r$ là
 vector đặc trưng của reward function. Tính chất quan trọng:
 \textbf{mỗi reward function được biểu diễn bởi một vector $z$ duy
-nhất}, và Q-function chỉ là tích vô hướng $F_\theta(s,a)^\top z$.
+nhất}, và hàm Q chỉ là tích vô hướng $F_\theta(s,a)^\top z$.
 Điều này cho phép zero-shot generalization: khi có reward function
 mới, chỉ cần tính $z$ mới mà không cần cập nhật $F_\theta$
 \cite{eysenbach2025generativerl}.
@@ -280,8 +280,8 @@ log-linear có một số tính chất nổi bật:
     \item \textbf{Triangle inequality}: biểu diễn học được thỏa mãn
     bất đẳng thức tam giác trong không gian metric, cho phép lập kế
     hoạch bằng nội suy giữa các biểu diễn.
-    \item \textbf{Horizon generalization}: huấn luyện trên horizon
-    ngắn, suy ra được policy cho horizon dài hơn.
+    \item \textbf{Tổng quát hóa chân trời}: huấn luyện trên horizon
+    ngắn, suy ra được chính sách cho horizon dài hơn.
     \item \textbf{Emergent exploration}: chiến lược khám phá tự xuất
     hiện khi huấn luyện với một goal duy nhất.
 \end{itemize}
@@ -292,7 +292,7 @@ log-linear có một số tính chất nổi bật:
 
 \paragraph{Tập hợp Affine của Successor Measures}
 
-Các biểu diễn Forward-Backward đã cho phép ước lượng Q-function cho
+Các biểu diễn Forward-Backward đã cho phép ước lượng hàm Q cho
 bất kỳ reward function nào thông qua một tích vô hướng. Tuy nhiên, có
 thể tổng quát hóa thêm: tập hợp tất cả các successor measures có thể
 học được tạo thành một \textbf{affine set} và được mô hình hóa qua:
@@ -303,17 +303,17 @@ học được tạo thành một \textbf{affine set} và được mô hình hó
 \end{equation}
 
 trong đó $\Phi(s, a, s_f)$ là một \textbf{basis set} chung cho tất cả
-các policy, và $w^\pi$ là vector trọng số phụ thuộc vào policy cụ thể.
+các chính sách, và $w^\pi$ là vector trọng số phụ thuộc vào chính sách cụ thể.
 \textbf{Proto-Successor Measure (PSM)} là ý tưởng học chính các basis
 functions $\Phi$ này từ dữ liệu transitions offline; khi đó, với bất
-kỳ policy $\pi$ mới nào, chỉ cần tìm $w^\pi$ phù hợp mà không cần
+kỳ chính sách $\pi$ mới nào, chỉ cần tìm $w^\pi$ phù hợp mà không cần
 học lại biểu diễn từ đầu.
 
-\paragraph{Liên hệ với RLZero và Zero-shot RL}
+\paragraph{Liên hệ với RLZero và Học tăng cường không cần huấn luyện lại}
 
 PSM có một tính chất quan trọng: khi được huấn luyện trên dữ liệu
-offline từ nhiều policy khác nhau, PSM học được một \textbf{biểu diễn
-phổ quát của hành vi} -- không phụ thuộc vào policy hay reward function
+offline từ nhiều chính sách khác nhau, PSM học được một \textbf{biểu diễn
+phổ quát của hành vi} -- không phụ thuộc vào chính sách hay reward function
 cụ thể nào. Đây là \textbf{nền tảng kỹ thuật} trực tiếp cho
 RLZero \cite{sikchi2025rlzero}:
 
@@ -323,13 +323,13 @@ RLZero \cite{sikchi2025rlzero}:
     \item Khi nhận expert trajectory $\{s_1, \ldots, s_T\}$ (từ
     ngôn ngữ hay video), RLZero chỉ cần tính trung bình:
     $z_{\text{imit}} = \mathbb{E}_{\rho^E}[\phi(s)]$.
-    \item Điểm $z_{\text{imit}}$ tra vào PSM cho ra policy tối
+    \item Điểm $z_{\text{imit}}$ tra vào PSM cho ra chính sách tối
     ưu tức thì -- không cần gradient update, không cần interaction
     mới với môi trường.
 \end{enumerate}
 
 Nói cách khác, PSM cung cấp ``từ điển hành vi'' mà RLZero tra cứu để
-biến ngôn ngữ tự nhiên thành policy \cite{eysenbach2025generativerl}.
+biến ngôn ngữ tự nhiên thành chính sách \cite{eysenbach2025generativerl}.
 
 % ---------------------------------------------------------------------
 \subsubsection{RLZero: Học Tăng cường Không cần Huấn luyện lại từ Ngôn ngữ Tự nhiên}
@@ -337,7 +337,7 @@ biến ngôn ngữ tự nhiên thành policy \cite{eysenbach2025generativerl}.
 
 \paragraph{Vấn đề và Động lực}
 
-Dù các phương pháp zero-shot RL đã cho phép suy ra policy tối ưu cho
+Dù các phương pháp học tăng cường không cần huấn luyện lại đã cho phép suy ra chính sách tối ưu cho
 bất kỳ reward function nào, việc \textit{chỉ định} reward function vẫn
 là thách thức. Ngôn ngữ tự nhiên là kênh giao tiếp trực quan nhất
 giữa con người và AI, nhưng các phương pháp trước đây yêu cầu:
@@ -348,7 +348,7 @@ giữa con người và AI, nhưng các phương pháp trước đây yêu cầu
 \end{itemize}
 
 \textbf{RLZero} \cite{sikchi2025rlzero} giải quyết cả hai vấn đề trên,
-cho phép suy ra policy trực tiếp từ câu lệnh ngôn ngữ \textbf{mà không
+cho phép suy ra chính sách trực tiếp từ câu lệnh ngôn ngữ \textbf{mà không
 cần bất kỳ supervision trong domain nào}.
 
 \paragraph{Framework: Imagine -- Project -- Imitate}
@@ -360,7 +360,7 @@ RLZero gồm ba bước chính, minh họa trong Hình~\ref{fig:rlzero}:
     \includegraphics[width=0.85\textwidth]{images/rlzero_framework.png}
     \caption{Framework của RLZero gồm 3 bước: Imagine (tưởng tượng
     video từ ngôn ngữ), Project (chiếu về không gian quan sát của
-    agent), Imitate (suy ra policy zero-shot). Nguồn:
+    agent), Imitate (suy ra chính sách zero-shot). Nguồn:
     \cite{sikchi2025rlzero}.}
     \label{fig:rlzero}
 \end{figure}
@@ -401,7 +401,7 @@ cải thiện độ chính xác matching.
 
 Đây là bước cốt lõi của RLZero. Cho chuỗi trạng thái projected
 $\{s_1, s_2, \ldots, s_T\}$ như ``expert trajectory'', bài toán
-imitation learning được công thức hóa như distribution matching:
+imitation learning được công thức hóa như khớp phân phối:
 
 \begin{equation}
     z_{\text{imit}} = \arg\min_z \mathcal{D}(\rho^{\pi_z}(s),
@@ -410,7 +410,7 @@ imitation learning được công thức hóa như distribution matching:
 \end{equation}
 
 trong đó $\rho^E$ là phân phối trạng thái của expert trajectory và
-$\rho^{\pi_z}$ là phân phối trạng thái của policy $\pi_z$.
+$\rho^{\pi_z}$ là phân phối trạng thái của chính sách $\pi_z$.
 
 \textbf{Theorem 1} \cite{sikchi2025rlzero} chứng minh rằng với KL
 divergence, $z_{\text{imit}}$ có thể tính được dưới dạng closed-form
@@ -451,7 +451,7 @@ Nguồn: \cite{sikchi2025rlzero}.
 
 RLZero đạt win rate \textbf{83.2\%} so với baseline tốt nhất
 (Image-language IQL: 51.2\%), đồng thời chỉ cần \textbf{khoảng 25 giây}
-\cite{sikchi2025rlzero} để tạo ra policy zero-shot mà không cần bất kỳ
+\cite{sikchi2025rlzero} để tạo ra chính sách zero-shot mà không cần bất kỳ
 gradient update hay tương tác mới nào với môi trường.
 
 \paragraph{Cross-Embodiment Transfer}
@@ -486,7 +486,7 @@ gradient updates hay tương tác với môi trường.
 Kết quả thực nghiệm trên 25 tasks trong DeepMind Control Suite cho
 thấy win rate 83.2\% so với baseline tốt nhất (Image-language IQL:
 51.2\%), với thời gian inference chỉ khoảng 25 giây -- không cần
-training thêm. Với cross-embodiment transfer từ 10 video YouTube, RLZero
+training thêm. Với chuyển giao xuyên thể xác từ 10 video YouTube, RLZero
 đạt 80\% win rate trên môi trường Stickman khi bắt chước video người thật.
 
 Bài báo thừa nhận hai hạn chế chính. Thứ nhất, chất lượng pipeline
@@ -513,11 +513,11 @@ không giải quyết được, nhưng RL lại có bộ công cụ phù hợp.
 
 Cách phổ biến nhất để nghĩ về exploration là theo nghĩa
 \textbf{coverage} -- agent cần khám phá càng nhiều trạng thái càng
-tốt. Sử dụng lens của occupancy measures, mục tiêu này có thể được
-hình thức hóa: thay vì học occupancy measure gán xác suất cao cho
-các trajectory có reward cao (như trong RL thông thường), chúng ta
-muốn học occupancy measure gán xác suất cho \textbf{tất cả} các
-trajectory:
+tốt. Sử dụng lens của thước đo chiếm dụng, mục tiêu này có thể được
+hình thức hóa: thay vì học thước đo chiếm dụng gán xác suất cao cho
+các quỹ đạo có reward cao (như trong RL thông thường), chúng ta
+muốn học thước đo chiếm dụng gán xác suất cho \textbf{tất cả} các
+quỹ đạo:
 
 \[
 \text{RL thông thường: } \rho^\pi(s) \text{ tập trung vào vùng
@@ -541,9 +541,9 @@ dụng từ quá trình khám phá?
 
 \paragraph{Định nghĩa và Ý nghĩa}
 
-\textbf{Empowerment} \cite{eysenbach2025generativerl} là một framework để
+\textbf{Trao quyền} \cite{eysenbach2025generativerl} là một framework để
 định lượng ``khả năng làm nhiều thứ'' của agent tại một trạng thái
-nhất định. Empowerment được đo bằng mutual information giữa hành động
+nhất định. Trao quyền được đo bằng thông tin tương hỗ giữa hành động
 và trạng thái tương lai:
 
 \begin{equation}
@@ -564,20 +564,20 @@ trình~\eqref{eq:empowerment} có thể được hiểu theo hai cách tương
     phép suy ra hành động đã thực hiện.
 \end{itemize}
 
-Empowerment cao tương ứng với việc agent đứng ở vị trí có
-\textit{nhiều lựa chọn}: đứng ở ngã tư có empowerment cao hơn đứng ở
-ngõ cụt. Agent học cách tự điều hướng đến các vị trí có empowerment
+Trao quyền cao tương ứng với việc agent đứng ở vị trí có
+\textit{nhiều lựa chọn}: đứng ở ngã tư có trao quyền cao hơn đứng ở
+ngõ cụt. Agent học cách tự điều hướng đến các vị trí có trao quyền
 cao, tích lũy khả năng hành động cho tương lai. Khái niệm này cũng
-được mở rộng sang setting \textbf{multi-agent}: thay vì tự empowerment
-bản thân, AI agent có thể học cách empowerment con người, hỗ trợ con
+được mở rộng sang setting \textbf{multi-agent}: thay vì tự trao quyền
+bản thân, AI agent có thể học cách trao quyền con người, hỗ trợ con
 người có nhiều lựa chọn và khả năng hành động hơn.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.78\textwidth]{images/empowerment.png}
-    \caption{Empowerment được đo bằng mutual information giữa hành động
-    và trạng thái tương lai. Vị trí ngã tư có empowerment cao (nhiều
-    phương án tác động đến tương lai) so với ngõ cụt (empowerment thấp).
+    \caption{Trao quyền được đo bằng thông tin tương hỗ giữa hành động
+    và trạng thái tương lai. Vị trí ngã tư có trao quyền cao (nhiều
+    phương án tác động đến tương lai) so với ngõ cụt (trao quyền thấp).
     Nguồn: \cite{eysenbach2025generativerl}.}
     \label{fig:empowerment}
 \end{figure}
@@ -588,15 +588,15 @@ người có nhiều lựa chọn và khả năng hành động hơn.
 
 \paragraph{Mục tiêu}
 
-Pure exploration hay empowerment maximization đơn thuần không đủ để
+Pure exploration hay maximization trao quyền đơn thuần không đủ để
 trang bị cho agent các kỹ năng cụ thể. Giải pháp là học
 \textbf{skills} -- các temporal abstraction có thể tái sử dụng để
 giải quyết downstream tasks. Đây còn được gọi là
 \textbf{self-supervised reinforcement learning}: agent tự tạo ra reward
 của mình thông qua intrinsic motivation.
 
-Mục tiêu toán học là tối đa hóa \textbf{mutual information} giữa skill
-label $z$ và trajectory $\tau$:
+Mục tiêu toán học là tối đa hóa \textbf{thông tin tương hỗ} giữa skill
+label $z$ và quỹ đạo $\tau$:
 
 \begin{equation}
     \max_\pi I^\pi(z; \tau) = \max_\pi \left[ \mathcal{H}[\tau] -
@@ -606,11 +606,11 @@ label $z$ và trajectory $\tau$:
 
 Phương trình~\eqref{eq:skill_mi} gồm hai số hạng với ý nghĩa đối lập:
 \begin{itemize}
-    \item $\mathcal{H}[\tau]$: entropy biên của trajectory -- muốn
+    \item $\mathcal{H}[\tau]$: entropy biên của quỹ đạo -- muốn
     \textbf{tối đa hóa}, tức là tổng thể hành vi phải đa dạng (mỗi
     skill làm một hành vi khác nhau).
     \item $\mathcal{H}[\tau \mid z]$: entropy có điều kiện của
-    trajectory khi biết skill -- muốn \textbf{tối thiểu hóa}, tức là
+    quỹ đạo khi biết skill -- muốn \textbf{tối thiểu hóa}, tức là
     với mỗi skill $z$ cụ thể, hành vi phải nhất quán và dễ đoán.
 \end{itemize}
 
@@ -619,16 +619,16 @@ Phương trình~\eqref{eq:skill_mi} gồm hai số hạng với ý nghĩa đối
 Để tối đa hóa~\eqref{eq:skill_mi}, cần có một classifier $q(z \mid s)$
 đoán skill từ trạng thái. Thuật toán alternates giữa hai bước:
 
-\textbf{Policy optimization:} với classifier $q$ cố định, bài toán
+\textbf{Tối ưu chính sách:} với classifier $q$ cố định, bài toán
 tương đương RL với reward:
 \begin{equation}
     r_t = \log q(z \mid s_t)
     \label{eq:skill_reward}
 \end{equation}
 Reward cao khi classifier đoán đúng skill từ trạng thái hiện tại --
-khuyến khích policy làm hành vi rõ ràng, dễ nhận biết.
+khuyến khích chính sách làm hành vi rõ ràng, dễ nhận biết.
 
-\textbf{Posterior optimization:} với policy $\pi$ cố định, cập nhật
+\textbf{Tối ưu posterior:} với chính sách $\pi$ cố định, cập nhật
 $q(z \mid s)$ bằng maximum likelihood trên dữ liệu $(s, z)$.
 
 \paragraph{Thuật toán Cụ thể: DIAYN và VISR}
@@ -638,7 +638,7 @@ Framework trên được hiện thực hóa trong hai thuật toán tiêu biểu
 
 \textbf{DIAYN -- Diversity is All You Need}
 \cite{eysenbach2025generativerl} là cài đặt trực tiếp của mục tiêu mutual
-information trên, sử dụng SAC (Soft Actor-Critic) cho bước policy
+information trên, sử dụng SAC (Soft Actor-Critic) cho bước chính sách
 optimization và một mạng discriminator đơn giản làm $q(z \mid s)$.
 DIAYN huấn luyện hoàn toàn không có reward bên ngoài, chỉ dùng
 intrinsic reward $r_t = \log q(z \mid s_t) - \log p(z)$. Kết quả là
@@ -646,21 +646,21 @@ agent tự học được các kỹ năng đa dạng (chạy, nhảy, cân bằn
 không cần bất kỳ reward engineering nào từ người dùng.
 
 \textbf{VISR -- Variational Intrinsic Successor Representations}
-\cite{eysenbach2025generativerl} kết hợp skill learning với successor
+\cite{eysenbach2025generativerl} kết hợp học kỹ năng với successor
 representations: thay vì discriminator phân biệt skill từ trạng thái
 tức thì $s_t$, VISR học phân biệt skill từ toàn bộ successor
 feature -- tức là ``tất cả các trạng thái mà agent sẽ ghé thăm trong
 tương lai''. Điều này giúp skill có tính \textbf{temporal consistency}
-rõ ràng hơn và có thể được tái sử dụng trực tiếp trong zero-shot RL
+rõ ràng hơn và có thể được tái sử dụng trực tiếp trong học tăng cường không cần huấn luyện lại
 thông qua forward-backward representations.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.82\textwidth]{images/skill_learning_diayn.png}
     \caption{Minh họa Skill Learning (DIAYN): agent học các skill đa dạng
-    (chạy, nhảy, cân bằng) bằng cách tối đa hóa mutual information giữa
-    skill label $z$ và trajectory $\tau$. Discriminator $q(z|s)$ học nhận
-    biết skill từ trạng thái, tạo ra intrinsic reward cho policy. Nguồn:
+    (chạy, nhảy, cân bằng) bằng cách tối đa hóa thông tin tương hỗ giữa
+    skill label $z$ và quỹ đạo $\tau$. Discriminator $q(z|s)$ học nhận
+    biết skill từ trạng thái, tạo ra intrinsic reward cho chính sách. Nguồn:
     \cite{eysenbach2025generativerl}.}
     \label{fig:skill_learning}
 \end{figure}
@@ -673,25 +673,25 @@ downstream tasks:
     \item \textbf{Enumeration}: liệt kê tất cả skills và chọn skill
     có reward cao nhất.
     \item \textbf{Posterior inference}: dùng $q(z \mid \tau)$ để suy
-    ra skill phù hợp từ trajectory mẫu.
+    ra skill phù hợp từ quỹ đạo mẫu.
     \item \textbf{Hierarchical RL}: coi skills là high-level actions,
     xây dựng MDP mới với horizon ngắn hơn.
 \end{enumerate}
 
 \paragraph{Góc nhìn Nén (Compression)}
 
-Một cách nhìn tổng quát về skill learning là qua lăng kính
+Một cách nhìn tổng quát về học kỹ năng là qua lăng kính
 \textbf{nén thông tin}:
 \begin{itemize}
     \item Học có giám sát: nén $Y$ cho $X$ (labels cho inputs).
     \item Học không giám sát (VAE, LLM): nén tập dữ liệu $X$.
-    \item \textbf{Self-supervised RL}: nén một \textbf{MDP} -- không
+    \item \textbf{Học tăng cường tự giám sát}: nén một \textbf{MDP} -- không
     phải dữ liệu có sẵn, mà là toàn bộ không gian hành vi của môi
     trường.
 \end{itemize}
 
 Sản phẩm của quá trình nén này là một \textbf{Behavioral Foundation
-Model (BFM)} -- một policy có thể được ``prompt'' để thực hiện nhiều
+Model (BFM)} -- một chính sách có thể được ``prompt'' để thực hiện nhiều
 hành vi khác nhau, tương tự như cách LLM được prompt để thực hiện
 nhiều tác vụ ngôn ngữ. Điểm khác biệt quan trọng: trong khi LLM được
 huấn luyện trên dữ liệu curated từ internet, BFM được huấn luyện trên

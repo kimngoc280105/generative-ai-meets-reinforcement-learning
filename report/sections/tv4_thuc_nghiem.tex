@@ -5,7 +5,7 @@
 % =====================================================================
 
 Để kiểm chứng trực quan cơ chế hoạt động của thuật toán Diffusion-DICE và làm rõ
-nguyên lý chống chịu lỗi ngoại suy (error exploitation), chúng tôi đã tự cài đặt
+nguyên lý chống chịu lỗi ngoại suy (khai thác lỗi), chúng tôi đã tự cài đặt
 từ đầu bài toán mô phỏng \textbf{2D Bandit Toy Case} bằng Python, lấy cảm hứng
 và tái hiện kịch bản toy case được trình bày trong bài báo gốc Diffusion-DICE
 \cite{mao2024diffusiondice} và tutorial ICML 2025 \cite{eysenbach2025generativerl}.
@@ -24,7 +24,7 @@ vành khăn (annular region):
     1.5 \leq \|a\|_2 \leq 2.5
 \]
 Vùng bên trong ($\|a\|_2 < 1.5$) hoàn toàn không có dữ liệu, đây là vùng
-Out-of-Distribution (OOD). Hàm phần thưởng thực tế $R(a)$ đạt cực đại tại hai
+Ngoài Phân phối (OOD). Hàm phần thưởng thực tế $R(a)$ đạt cực đại tại hai
 điểm trên đường tròn ngoài ($\|a\|_2 = 2.5$) ở $\theta = 0$ và $\theta = \pi$:
 \[
     R(a) = \exp\!\left(-\frac{(\|a\|_2 - 2.5)^2}{0.5}\right)
@@ -133,7 +133,7 @@ Chúng tôi thực hiện khảo sát hệ số dẫn đường $\eta \in \{0.0,
 0.8, 1.0, 1.2, 1.5, 2.0\}$ trên Annular Dataset để phân tích định lượng ảnh
 hưởng của $\eta$ đến hai chỉ số:
 \begin{enumerate}
-    \item \textbf{In-Distribution (ID) Ratio}: Tỉ lệ hành động sinh ra nằm trong
+    \item \textbf{Trong Phân phối (ID) Ratio}: Tỉ lệ hành động sinh ra nằm trong
     vùng an toàn $1.4 \leq \|a\|_2 \leq 2.6$.
     \item \textbf{Average True Reward}: Phần thưởng thực tế $R(a)$ trung bình
     của các hành động sinh ra.
