@@ -8,15 +8,15 @@
 \subsection{Giới thiệu bài toán}
  
 Năm 1770, Wolfgang von Kempelen giới thiệu với châu Âu một cỗ máy
-biết chơi cờ mang tên ``Mechanical Turk'' -- một thiết bị tinh vi với
+biết chơi cờ mang tên ``Mechanical Turk''. Đây là một thiết bị tinh vi với
 hàng chục bánh răng và đòn bẩy. Nó đánh bại Napoleon, Benjamin
 Franklin và vô số đối thủ khác. Hóa ra, toàn bộ bộ máy chỉ là vỏ
 bọc, bên trong có một kỳ thủ thật ngồi điều khiển mọi nước đi qua hệ
 thống gương phản chiếu.
  
 Câu chuyện này phản ánh chính xác trạng thái của AI ngày nay. Phần
-lớn các hệ thống AI hiện đại -- từ GPT-4, Gemini cho đến Stable
-Diffusion -- đều được xây dựng trên nguyên tắc \textbf{maximum
+lớn các hệ thống AI hiện đại, từ GPT-4, Gemini cho đến Stable
+Diffusion đều được xây dựng trên nguyên tắc \textbf{maximum
 likelihood imitation}: mô hình học cách tái tạo hành vi của con người
 bằng cách tối đa hóa xác suất sinh ra dữ liệu giống dữ liệu huấn
 luyện. Phương pháp này rất mạnh, nhưng chứa đựng một giới hạn nền
@@ -39,8 +39,8 @@ Tutorial được trình bày tại ICML 2025 bởi Benjamin Eysenbach (Princeto
 University) và Amy Zhang (UT Austin), xoay quanh hai câu hỏi liên
 quan chặt chẽ:
 \begin{itemize}
-    \item Học Tăng cường và AI Tạo sinh -- hai lĩnh vực tưởng
-    như tách biệt -- liệu có chia sẻ cùng cấu trúc toán học không?
+    \item Học Tăng cường và AI Tạo sinh: hai lĩnh vực tưởng
+    như tách biệt này liệu có chia sẻ cùng cấu trúc toán học không?
     \item Nếu có, chúng ta có thể khai thác điều đó để xây dựng các hệ
     thống AI mạnh mẽ hơn như thế nào?
 \end{itemize}
@@ -64,14 +64,14 @@ lượng suy giảm theo cấp số nhân \cite{shumailov2024ai}.
  
 Nền tảng của Học Tăng cường là tín hiệu phần thưởng (reward).
 Tuy nhiên, hầu hết bài toán thực tế rất khó thiết kế hàm thưởng
-phù hợp -- đây là mâu thuẫn cốt lõi: Học Tăng cường hứa hẹn tìm ra giải pháp
+phù hợp. Đây là mâu thuẫn cốt lõi: Học Tăng cường hứa hẹn tìm ra giải pháp
 tốt hơn con người, nhưng chính hàm thưởng lại đòi hỏi con người
 phải hiểu rõ vấn đề mới có thể thiết kế được.
  
 Với bài toán dọn phòng robot, người thiết kế phải tự hỏi: nhặt một
 chiếc áo được bao nhiêu điểm? Xếp sách ngay ngắn được bao nhiêu? Nếu
 thiết kế sai, robot có thể học cách ``gian lận'' thay vì thực sự dọn
-dẹp -- một hiện tượng được gọi là \textit{khai thác phần thưởng}.
+dẹp. Đây là một hiện tượng được gọi là \textit{khai thác phần thưởng}.
  
 \subsubsection{Sự hội tụ của hai lĩnh vực}
  
@@ -84,15 +84,17 @@ khai thác điểm chung này mở ra ba hướng giao thoa chính:
     \centering
     \caption{Ba hướng giao thoa giữa AI Tạo sinh và Học Tăng cường.}
     \label{tab:convergence}
-    \begin{tabular}{ll}
+    \small
+    \begin{tabular}{p{0.30\textwidth} p{0.62\textwidth}}
         \toprule
         \textbf{Hướng} & \textbf{Ý nghĩa} \\
         \midrule
-        AI Tạo sinh $\to$ Học Tăng cường   & Dùng mô hình tạo sinh làm thành phần trong Học Tăng cường \\
-        Học Tăng cường $\to$ AI Tạo sinh   & Nhìn tương tác Học Tăng cường như một quá trình tạo sinh \\
+        AI Tạo sinh $\to$ Học Tăng cường & Dùng mô hình tạo sinh làm thành phần trong Học Tăng cường \\
+        Học Tăng cường $\to$ AI Tạo sinh & Nhìn tương tác Học Tăng cường như một quá trình tạo sinh \\
         Học Tăng cường để huấn luyện AI Tạo sinh & Dùng Học Tăng cường để cải thiện cách huấn luyện mô hình tạo sinh \\
         \bottomrule
     \end{tabular}
+    \normalsize
 \end{table}
  
 \subsection{Tầm quan trọng và tính thời sự}
@@ -107,10 +109,7 @@ nhiều tác vụ điều khiển robot. Kết hợp với Học Tăng cường,
 giới hạn của dữ liệu minh họa, tự học cách thực hiện các hành vi
 chưa từng được quan sát.
  
-\textbf{Mô hình Nền tảng Hành vi:} Tương tự như GPT là mô hình nền tảng cho ngôn ngữ, các Mô hình Nền tảng Hành vi -- được học thông
-qua Học Tăng cường không có phần thưởng -- có thể đóng vai trò mô hình nền tảng cho
-hành động, một model dùng được cho nhiều tác vụ robot khác nhau mà
-không cần huấn luyện lại.
+\textbf{Mô hình Nền tảng Hành vi:} Tương tự như GPT là mô hình nền tảng cho ngôn ngữ, các Mô hình Nền tảng Hành vi (được học thông qua Học Tăng cường không có phần thưởng) có thể đóng vai trò mô hình nền tảng cho hành động, một model dùng được cho nhiều tác vụ robot khác nhau mà không cần huấn luyện lại.
  
 \textbf{Học Tăng cường từ Phản hồi Con người và Căn chỉnh AI:} Học Tăng cường từ Phản hồi Con người
 (RLHF) -- kỹ thuật cốt lõi làm cho ChatGPT ``nghe lời'' --
@@ -118,15 +117,13 @@ là ứng dụng trực tiếp của Học Tăng cường để tinh chỉnh mô
 sâu mối liên hệ này giúp thiết kế các phương pháp căn chỉnh tốt hơn.
  
 \textbf{Khoa học và khám phá:} AlphaFold dự đoán cấu trúc protein,
-AlphaProof giải bài thi toán Olympic -- các hệ thống này đều dùng Học Tăng cường
-để tìm giải pháp mà không có dữ liệu tương ứng từ trước.
+AlphaProof giải bài thi toán Olympicl. Các hệ thống này đều dùng Học Tăng cường để tìm giải pháp mà không có dữ liệu tương ứng từ trước.
  
 \subsubsection{Tổng quát hóa -- bài toán còn bỏ ngỏ}
  
 Tutorial đặt ra một câu hỏi quan trọng về tương lai: điều gì làm cho
 mô hình tạo sinh hình ảnh và mô hình ngôn ngữ trở nên ấn tượng không phải
-là chúng ghi nhớ dữ liệu đã thấy, mà là chúng \textit{tổng quát hóa} --
-tạo ra output đúng trên những input chưa bao giờ thấy trong training.
+là chúng ghi nhớ dữ liệu đã thấy, mà là chúng \textit{tổng quát hóa}, tức tạo ra output đúng trên những input chưa bao giờ thấy trong training.
  
 Trong khi đó, các tác nhân Học Tăng cường ngày nay phần lớn vẫn chỉ ghi nhớ thay vì
 tổng quát hóa. Tutorial đặt câu hỏi: tương tự như một mô hình tạo sinh hình ảnh
@@ -254,7 +251,7 @@ toán hiệu quả thay vì phải xét toàn bộ lịch sử.
  
 \subsubsection{Chính sách và Mục tiêu Học Tăng cường}
  
-\textbf{Chính sách} $\pi$ là chiến lược ra quyết định của tác nhân -- một
+\textbf{Chính sách} $\pi$ là chiến lược ra quyết định của tác nhân, hay một
 hàm ánh xạ từ trạng thái sang hành động (hoặc phân phối trên hành
 động):
 \[
@@ -266,7 +263,7 @@ Ví dụ: chính sách của người chơi Tetris giỏi sẽ gán xác suất 
 hành động ``xoay'' khi nhìn thấy khối L ở vị trí nhất định.
 
 Một \textbf{quỹ đạo} $\tau = (s_0, a_0, s_1, a_1, \ldots)$
-là chuỗi trạng thái và hành động theo thời gian -- về bản chất là một
+là chuỗi trạng thái và hành động theo thời gian, về bản chất là một
 ``ván chơi'' hoàn chỉnh. \textbf{Lợi tức chiết khấu} $R(\tau)$ là
 tổng phần thưởng có chiết khấu theo thời gian:
  
@@ -280,8 +277,7 @@ phần thưởng hội tụ (không vô hạn), đồng thời phản ánh nguy�
 tế học rằng phần thưởng gần hơn có giá trị hơn (giống như tiền ngày
 hôm nay có giá trị hơn tiền ngày mai).
  
-\textbf{Mục tiêu Học Tăng cường} là tìm chính sách $\pi$ tối đa hóa lợi tức kỳ vọng --
-tức phần thưởng tích lũy kỳ vọng trên tất cả các quỹ đạo có thể
+\textbf{Mục tiêu Học Tăng cường} là tìm chính sách $\pi$ tối đa hóa lợi tức kỳ vọng, tức phần thưởng tích lũy kỳ vọng trên tất cả các quỹ đạo có thể
 xảy ra:
  
 \begin{equation}
@@ -314,7 +310,7 @@ gốc dữ liệu:
  
 Trong HGs, dữ liệu đến từ tập dữ liệu cố định $\mathcal{D}$ và không phụ
 thuộc vào tham số đang học. Trong HTc, quỹ đạo được sinh ra bởi
-chính chính sách $\pi_\theta$ đang được tối ưu -- khi $\theta$ thay đổi,
+chính chính sách $\pi_\theta$ đang được tối ưu: khi $\theta$ thay đổi,
 cả phân phối hành động lẫn phân phối trạng thái được ghé thăm đều thay
 đổi theo. Đây chính là điểm mạnh (tác nhân có thể khám phá) nhưng cũng
 là thách thức chính (dữ liệu \textit{không dừng}) của Học Tăng cường.
@@ -327,7 +323,7 @@ tốt hơn bất kỳ dữ liệu nào trong tập dữ liệu \cite{eysenbach20
 \subsubsection{Hàm Giá trị và Phương trình Bellman}
  
 Để tối ưu $J(\pi)$, cần biết ``từ trạng thái này, hành động nào dẫn
-đến lợi tức cao nhất?'' -- đây là vai trò của \textbf{hàm giá trị}.
+đến lợi tức cao nhất?''. Đây là vai trò của \textbf{hàm giá trị}.
  
 \textbf{Hàm Q} $Q^\pi(s, a)$ cho biết lợi tức kỳ vọng khi bắt đầu
 từ cặp $(s, a)$ và sau đó theo chính sách $\pi$:
@@ -356,7 +352,7 @@ thưởng ngay lập tức cộng với giá trị tương lai được chiết 
  
 Phương trình Bellman quan trọng vì nó biến bài toán tối ưu hóa vô hạn
 chiều thành bài toán có thể giải lặp đi lặp lại (quy hoạch động).
-Hàm Q xuất hiện xuyên suốt tutorial -- trong chính sách khuếch tán
+Hàm Q xuất hiện xuyên suốt tutorial: trong chính sách khuếch tán
 (dùng $Q$ để chọn hành động), trong học tương phản thời gian
 ($Q \approx$ tỉ lệ log-likelihood), và trong Học Tăng cường không cần huấn luyện lại (tính $Q$
 từ biểu diễn học được).
@@ -383,8 +379,8 @@ Số hạng $\nabla_\theta \log \pi_\theta(a \mid s)$ được gọi là
 \textbf{hàm điểm số} của chính sách. Đây là cầu nối kỹ thuật quan trọng
 nhất giữa Học Tăng cường và mô hình tạo sinh: trong các mô hình khuếch tán dựa trên điểm số,
 đại lượng tương tự $\nabla_x \log p(x)$ được dùng để hướng
-dẫn quá trình sinh mẫu. Hai bài toán -- tối ưu chính sách và sinh mẫu từ
-mô hình tạo sinh -- đều có thể được giải qua cùng một công cụ toán
+dẫn quá trình sinh mẫu. Hai bài toán tối ưu chính sách và sinh mẫu từ
+mô hình tạo sinh đều có thể được giải qua cùng một công cụ toán
 học: \textbf{theo dõi gradient của log-xác suất}.
 
 % ---------------------------------------------------------------------
@@ -411,7 +407,7 @@ hiện \textbf{tính toán lặp đi lặp lại} để tạo ra mẫu:
     biến đổi phân phối.
 \end{itemize}
 
-Đặc điểm ``nhiều bước'' này không phải ngẫu nhiên -- nó phản ánh một
+Đặc điểm ``nhiều bước'' này không phải ngẫu nhiên, nó phản ánh một
 nguyên lý sâu xa: các phân phối phức tạp rất khó nắm bắt trong một
 bước duy nhất, nhưng lại có thể được xây dựng dần dần qua nhiều bước
 đơn giản hơn. Tutorial chỉ ra rằng \textbf{đây chính là điểm tương
@@ -460,7 +456,7 @@ Khi đạt cân bằng Nash, bộ tạo sinh học được phân phối dữ li
 \textbf{Kết nối với Học Tăng cường:} Bộ phân biệt của GAN có thể được tái sử dụng
 trực tiếp làm \textbf{tín hiệu phần thưởng} cho Học Tăng cường. Nếu bộ phân biệt học
 được ``mẫu này trông như thật không'', ta có thể dùng $\log D(x)$ làm
-phần thưởng để dạy tác nhân thực hiện hành vi trông tự nhiên -- đây là một
+phần thưởng để dạy tác nhân thực hiện hành vi trông tự nhiên. Đây là một
 trong những cách phá vỡ ``rào cản trừu tượng hóa'' giữa mô hình tạo sinh
 và thuật toán Học Tăng cường mà tutorial nhấn mạnh.
 
@@ -488,7 +484,7 @@ Nhờ tính chất của Gaussian, ta có thể tính thẳng $x_t$ từ $x_0$:
 
 \paragraph{Quá trình ngược (khử nhiễu).}
 
-Mô hình học cách đảo ngược quá trình trên -- từ $x_T$ nhiễu, dần
+Mô hình học cách đảo ngược quá trình trên, từ $x_T$ nhiễu, dần
 dần tái tạo dữ liệu sạch $x_0$ qua nhiều bước. Đây là bước khó vì
 cần ước lượng $p(x_{t-1} \mid x_t)$. Kỹ thuật mấu chốt là học
 \textbf{hàm điểm số}:
@@ -496,7 +492,7 @@ cần ước lượng $p(x_{t-1} \mid x_t)$. Kỹ thuật mấu chốt là học
     s_\theta(x_t, t) \approx \nabla_{x_t} \log p_t(x_t)
 \]
 Hàm điểm số $\nabla_{x_t} \log p_t(x_t)$ là gradient của
-log-xác suất theo $x_t$ -- nó chỉ hướng ``đi về phía vùng mật độ
+log-xác suất theo $x_t$, nó chỉ hướng ``đi về phía vùng mật độ
 xác suất cao hơn'' trong không gian dữ liệu tại bước thời gian $t$.
 
 \textbf{Kết nối với Học Tăng cường:} Hàm điểm số của mô hình khuếch tán
@@ -509,7 +505,7 @@ vào nhau, như được minh họa qua DDPO và Diffusion-DICE ở Phần III.
 Trong Học Tăng cường, mô hình khuếch tán được dùng làm \textbf{chính sách khuếch tán}:
 thay vì chính sách Gaussian đơn giản chỉ biểu diễn một đỉnh, tác nhân dùng
 một mô hình khuếch tán để biểu diễn phân phối hành động phức tạp, đa
-đỉnh -- quan trọng khi tập dữ liệu chứa nhiều chiến lược khác nhau.
+đỉnh, điều này quan trọng khi tập dữ liệu chứa nhiều chiến lược khác nhau.
 
 \subsubsection{Mô hình Khớp Luồng}
  
@@ -538,8 +534,7 @@ quỹ đạo thay vì phải thông qua các bước gián tiếp.
 
 \textbf{Kết nối với Học Tăng cường:} Trong tutorial, Luồng Hiệu chỉnh Thời gian
 \cite{farebrother2025tdflows} áp dụng khớp luồng để ước lượng
-\textit{hàm khả năng của trạng thái tương lai} -- tức thước đo kế tiếp
--- kết hợp với cấu trúc Bellman để tận dụng dữ liệu ngoài chính sách. Đây
+\textit{hàm khả năng của trạng thái tương lai},tức thước đo kế tiếp, kết hợp với cấu trúc Bellman để tận dụng dữ liệu ngoài chính sách. Đây
 là ví dụ điển hình về việc khai thác đặc thù của một họ mô hình tạo sinh
 để giải quyết bài toán Học Tăng cường.
  
@@ -657,7 +652,7 @@ thưởng $r(s_f)$, ta có thể tính hàm Q bằng:
  
 Điều này có ý nghĩa lớn: nếu học được thước đo kế tiếp một lần, ta có
 thể tính hàm Q cho \textbf{bất kỳ hàm thưởng nào} mà không
-cần huấn luyện lại -- đây là nền tảng cho Học Tăng cường không cần huấn luyện lại được trình bày
+cần huấn luyện lại. Đây là nền tảng cho Học Tăng cường không cần huấn luyện lại được trình bày
 trong Phần III.
  
 \subsubsection{Tính toán qua Bellman}
@@ -699,7 +694,7 @@ Một trong những đóng góp quan trọng nhất của tutorial là chỉ ra 
 tương đương toán học giữa Học Tăng cường và Mô hình Tạo sinh. Bảng~\ref{tab:rl_genai}
 tổng hợp các khái niệm tương ứng giữa hai lĩnh vực. Mỗi hàng trong
 bảng thể hiện một cặp khái niệm đóng \textit{cùng một vai trò toán
-học} trong hai lĩnh vực khác nhau -- hiểu bảng này giúp giải thích
+học} trong hai lĩnh vực khác nhau. Hiểu bảng này giúp giải thích
 tại sao kỹ thuật từ lĩnh vực này có thể áp dụng cho lĩnh vực kia.
 
 Một số cặp chưa quen thuộc sẽ được giải thích trong Phần III:
@@ -713,29 +708,24 @@ $s_f$ so với đường cơ sở.
     \centering
     \caption{Các khái niệm tương đương giữa Học Tăng cường và Mô hình Tạo sinh.}
     \label{tab:rl_genai}
-    \begin{tabular}{lll}
+    \small
+    \begin{tabular}{p{0.32\textwidth} p{0.32\textwidth} p{0.32\textwidth}}
         \toprule
         \textbf{Học Tăng cường} & \textbf{Mô hình Tạo sinh} &
         \textbf{Ý nghĩa chung} \\
         \midrule
-        Chính sách $\pi(a \mid s)$ & Mô hình tạo sinh $p(x)$ & Phân phối
-        cần học \\
-        Hàm điểm số $\nabla_\theta \log \pi(a \mid s)$ & Hàm điểm số
-        $\nabla_x \log p(x)$ & Gradient của log-xác suất \\
+        Chính sách $\pi(a \mid s)$ & Mô hình tạo sinh $p(x)$ & Phân phối cần học \\
+        Hàm điểm số $\nabla_\theta \log \pi(a \mid s)$ & Hàm điểm số $\nabla_x \log p(x)$ & Gradient của log-xác suất \\
         Lợi tức $R(\tau)$ & Log-hàm khả năng $\log p(x)$ & Tín hiệu học \\
         Quỹ đạo $\tau$ & Biến tiềm ẩn $z$ & Biến tiềm ẩn \\
-        Gradient chính sách & Ước lượng hàm điểm số & Cách tối ưu phân
-        phối \\
-        Hàm Q $Q(s,a)$ & Tỉ lệ hàm khả năng
-        $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương
-        lai \\
-        Thước đo chiếm dụng $d^\pi(s,a)$ & Phân phối dữ liệu $p(x)$ &
-        Phân phối muốn khớp \\
+        Gradient chính sách & Ước lượng hàm điểm số & Cách tối ưu phân phối \\
+        Hàm Q $Q(s,a)$ & Tỉ lệ hàm khả năng $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương lai \\
+        Thước đo chiếm dụng $d^\pi(s,a)$ & Phân phối dữ liệu $p(x)$ & Phân phối muốn khớp \\
         Phương trình Bellman & Tính chất Markov & Cấu trúc đệ quy \\
-        Nhãn kỹ năng $z$ & Mã tiềm ẩn $z$ trong VAE & Điều khiển hành
-        vi \\
+        Nhãn kỹ năng $z$ & Mã tiềm ẩn $z$ trong VAE & Điều khiển hành vi \\
         \bottomrule
     \end{tabular}
+    \normalsize
 \end{table}
  
 Hiểu bảng này giúp đọc phần nội dung chính dễ hơn đáng kể: mỗi khi
