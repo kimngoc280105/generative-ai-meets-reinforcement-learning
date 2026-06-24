@@ -123,8 +123,8 @@ a)}{p(s_f)}$. Đây chính là \textbf{học tương phản thời gian}
 \paragraph{Temporal Difference Methods: Mở rộng sang Off-policy}
 
 Các phương pháp Monte Carlo ở trên ước lượng thước đo kế tiếp bằng
-cách quan sát trực tiếp nơi chính sách đến. Tuy nhiên, chúng không trả lời
-được câu hỏi: \textit{nếu chính sách thay đổi, agent sẽ visit những state
+cách quan sát trực tiếp nơi policy đến. Tuy nhiên, chúng không trả lời
+được câu hỏi: \textit{nếu policy thay đổi, agent sẽ visit những state
 nào mới?} Temporal difference (TD) methods giải quyết vấn đề này bằng
 cách ``ghép nối'' dữ liệu từ các experience khác nhau thông qua
 Bellman flow constraint \cite{eysenbach2025generativerl}:
@@ -137,7 +137,7 @@ Bellman flow constraint \cite{eysenbach2025generativerl}:
 \end{equation}
 
 Identity này cho phép viết lại contrastive loss dưới dạng chỉ phụ
-thuộc vào các transition $(s, a, s')$ và chính sách hiện tại -- không cần
+thuộc vào các transition $(s, a, s')$ và policy hiện tại -- không cần
 sample future states trực tiếp. Đây là nền tảng của một số phương
 pháp quan trọng:
 
@@ -281,7 +281,7 @@ log-linear có một số tính chất nổi bật:
     bất đẳng thức tam giác trong không gian metric, cho phép lập kế
     hoạch bằng nội suy giữa các biểu diễn.
     \item \textbf{Tổng quát hóa chân trời}: huấn luyện trên horizon
-    ngắn, suy ra được chính sách cho horizon dài hơn.
+    ngắn, suy ra được policy cho horizon dài hơn.
     \item \textbf{Emergent exploration}: chiến lược khám phá tự xuất
     hiện khi huấn luyện với một goal duy nhất.
 \end{itemize}
@@ -303,17 +303,17 @@ học được tạo thành một \textbf{affine set} và được mô hình hó
 \end{equation}
 
 trong đó $\Phi(s, a, s_f)$ là một \textbf{basis set} chung cho tất cả
-các chính sách, và $w^\pi$ là vector trọng số phụ thuộc vào chính sách cụ thể.
+các policy, và $w^\pi$ là vector trọng số phụ thuộc vào policy cụ thể.
 \textbf{Proto-Successor Measure (PSM)} là ý tưởng học chính các basis
 functions $\Phi$ này từ dữ liệu transitions offline; khi đó, với bất
-kỳ chính sách $\pi$ mới nào, chỉ cần tìm $w^\pi$ phù hợp mà không cần
+kỳ policy $\pi$ mới nào, chỉ cần tìm $w^\pi$ phù hợp mà không cần
 học lại biểu diễn từ đầu.
 
 \paragraph{Liên hệ với RLZero và Học tăng cường không cần huấn luyện lại}
 
 PSM có một tính chất quan trọng: khi được huấn luyện trên dữ liệu
-offline từ nhiều chính sách khác nhau, PSM học được một \textbf{biểu diễn
-phổ quát của hành vi} -- không phụ thuộc vào chính sách hay reward function
+offline từ nhiều policy khác nhau, PSM học được một \textbf{biểu diễn
+phổ quát của hành vi} -- không phụ thuộc vào policy hay reward function
 cụ thể nào. Đây là \textbf{nền tảng kỹ thuật} trực tiếp cho
 RLZero \cite{sikchi2025rlzero}:
 
@@ -323,13 +323,13 @@ RLZero \cite{sikchi2025rlzero}:
     \item Khi nhận expert trajectory $\{s_1, \ldots, s_T\}$ (từ
     ngôn ngữ hay video), RLZero chỉ cần tính trung bình:
     $z_{\text{imit}} = \mathbb{E}_{\rho^E}[\phi(s)]$.
-    \item Điểm $z_{\text{imit}}$ tra vào PSM cho ra chính sách tối
+    \item Điểm $z_{\text{imit}}$ tra vào PSM cho ra policy tối
     ưu tức thì -- không cần gradient update, không cần interaction
     mới với môi trường.
 \end{enumerate}
 
 Nói cách khác, PSM cung cấp ``từ điển hành vi'' mà RLZero tra cứu để
-biến ngôn ngữ tự nhiên thành chính sách \cite{eysenbach2025generativerl}.
+biến ngôn ngữ tự nhiên thành policy \cite{eysenbach2025generativerl}.
 
 % ---------------------------------------------------------------------
 \subsubsection{RLZero: Học Tăng cường Không cần Huấn luyện lại từ Ngôn ngữ Tự nhiên}
@@ -337,7 +337,7 @@ biến ngôn ngữ tự nhiên thành chính sách \cite{eysenbach2025generative
 
 \paragraph{Vấn đề và Động lực}
 
-Dù các phương pháp học tăng cường không cần huấn luyện lại đã cho phép suy ra chính sách tối ưu cho
+Dù các phương pháp học tăng cường không cần huấn luyện lại đã cho phép suy ra policy tối ưu cho
 bất kỳ reward function nào, việc \textit{chỉ định} reward function vẫn
 là thách thức. Ngôn ngữ tự nhiên là kênh giao tiếp trực quan nhất
 giữa con người và AI, nhưng các phương pháp trước đây yêu cầu:
@@ -348,7 +348,7 @@ giữa con người và AI, nhưng các phương pháp trước đây yêu cầu
 \end{itemize}
 
 \textbf{RLZero} \cite{sikchi2025rlzero} giải quyết cả hai vấn đề trên,
-cho phép suy ra chính sách trực tiếp từ câu lệnh ngôn ngữ \textbf{mà không
+cho phép suy ra policy trực tiếp từ câu lệnh ngôn ngữ \textbf{mà không
 cần bất kỳ supervision trong domain nào}.
 
 \paragraph{Framework: Imagine -- Project -- Imitate}
@@ -360,7 +360,7 @@ RLZero gồm ba bước chính, minh họa trong Hình~\ref{fig:rlzero}:
     \includegraphics[width=0.85\textwidth]{images/rlzero_framework.png}
     \caption{Framework của RLZero gồm 3 bước: Imagine (tưởng tượng
     video từ ngôn ngữ), Project (chiếu về không gian quan sát của
-    agent), Imitate (suy ra chính sách zero-shot). Nguồn:
+    agent), Imitate (suy ra policy zero-shot). Nguồn:
     \cite{sikchi2025rlzero}.}
     \label{fig:rlzero}
 \end{figure}
@@ -410,7 +410,7 @@ imitation learning được công thức hóa như khớp phân phối:
 \end{equation}
 
 trong đó $\rho^E$ là phân phối trạng thái của expert trajectory và
-$\rho^{\pi_z}$ là phân phối trạng thái của chính sách $\pi_z$.
+$\rho^{\pi_z}$ là phân phối trạng thái của policy $\pi_z$.
 
 \textbf{Theorem 1} \cite{sikchi2025rlzero} chứng minh rằng với KL
 divergence, $z_{\text{imit}}$ có thể tính được dưới dạng closed-form
@@ -451,7 +451,7 @@ Nguồn: \cite{sikchi2025rlzero}.
 
 RLZero đạt win rate \textbf{83.2\%} so với baseline tốt nhất
 (Image-language IQL: 51.2\%), đồng thời chỉ cần \textbf{khoảng 25 giây}
-\cite{sikchi2025rlzero} để tạo ra chính sách zero-shot mà không cần bất kỳ
+\cite{sikchi2025rlzero} để tạo ra policy zero-shot mà không cần bất kỳ
 gradient update hay tương tác mới nào với môi trường.
 
 \paragraph{Cross-Embodiment Transfer}
@@ -515,9 +515,9 @@ Cách phổ biến nhất để nghĩ về exploration là theo nghĩa
 \textbf{coverage} -- agent cần khám phá càng nhiều trạng thái càng
 tốt. Sử dụng lens của thước đo chiếm dụng, mục tiêu này có thể được
 hình thức hóa: thay vì học thước đo chiếm dụng gán xác suất cao cho
-các quỹ đạo có reward cao (như trong RL thông thường), chúng ta
+các trajectory có reward cao (như trong RL thông thường), chúng ta
 muốn học thước đo chiếm dụng gán xác suất cho \textbf{tất cả} các
-quỹ đạo:
+trajectory:
 
 \[
 \text{RL thông thường: } \rho^\pi(s) \text{ tập trung vào vùng
@@ -596,7 +596,7 @@ giải quyết downstream tasks. Đây còn được gọi là
 của mình thông qua intrinsic motivation.
 
 Mục tiêu toán học là tối đa hóa \textbf{thông tin tương hỗ} giữa skill
-label $z$ và quỹ đạo $\tau$:
+label $z$ và trajectory $\tau$:
 
 \begin{equation}
     \max_\pi I^\pi(z; \tau) = \max_\pi \left[ \mathcal{H}[\tau] -
@@ -606,11 +606,11 @@ label $z$ và quỹ đạo $\tau$:
 
 Phương trình~\eqref{eq:skill_mi} gồm hai số hạng với ý nghĩa đối lập:
 \begin{itemize}
-    \item $\mathcal{H}[\tau]$: entropy biên của quỹ đạo -- muốn
+    \item $\mathcal{H}[\tau]$: entropy biên của trajectory -- muốn
     \textbf{tối đa hóa}, tức là tổng thể hành vi phải đa dạng (mỗi
     skill làm một hành vi khác nhau).
     \item $\mathcal{H}[\tau \mid z]$: entropy có điều kiện của
-    quỹ đạo khi biết skill -- muốn \textbf{tối thiểu hóa}, tức là
+    trajectory khi biết skill -- muốn \textbf{tối thiểu hóa}, tức là
     với mỗi skill $z$ cụ thể, hành vi phải nhất quán và dễ đoán.
 \end{itemize}
 
@@ -619,16 +619,16 @@ Phương trình~\eqref{eq:skill_mi} gồm hai số hạng với ý nghĩa đối
 Để tối đa hóa~\eqref{eq:skill_mi}, cần có một classifier $q(z \mid s)$
 đoán skill từ trạng thái. Thuật toán alternates giữa hai bước:
 
-\textbf{Tối ưu chính sách:} với classifier $q$ cố định, bài toán
+\textbf{Policy optimization:} với classifier $q$ cố định, bài toán
 tương đương RL với reward:
 \begin{equation}
     r_t = \log q(z \mid s_t)
     \label{eq:skill_reward}
 \end{equation}
 Reward cao khi classifier đoán đúng skill từ trạng thái hiện tại --
-khuyến khích chính sách làm hành vi rõ ràng, dễ nhận biết.
+khuyến khích policy làm hành vi rõ ràng, dễ nhận biết.
 
-\textbf{Tối ưu posterior:} với chính sách $\pi$ cố định, cập nhật
+\textbf{Tối ưu posterior:} với policy $\pi$ cố định, cập nhật
 $q(z \mid s)$ bằng maximum likelihood trên dữ liệu $(s, z)$.
 
 \paragraph{Thuật toán Cụ thể: DIAYN và VISR}
@@ -638,7 +638,7 @@ Framework trên được hiện thực hóa trong hai thuật toán tiêu biểu
 
 \textbf{DIAYN -- Diversity is All You Need}
 \cite{eysenbach2025generativerl} là cài đặt trực tiếp của mục tiêu mutual
-information trên, sử dụng SAC (Soft Actor-Critic) cho bước chính sách
+information trên, sử dụng SAC (Soft Actor-Critic) cho bước policy
 optimization và một mạng discriminator đơn giản làm $q(z \mid s)$.
 DIAYN huấn luyện hoàn toàn không có reward bên ngoài, chỉ dùng
 intrinsic reward $r_t = \log q(z \mid s_t) - \log p(z)$. Kết quả là
@@ -659,8 +659,8 @@ thông qua forward-backward representations.
     \includegraphics[width=0.82\textwidth]{images/skill_learning_diayn.png}
     \caption{Minh họa Skill Learning (DIAYN): agent học các skill đa dạng
     (chạy, nhảy, cân bằng) bằng cách tối đa hóa thông tin tương hỗ giữa
-    skill label $z$ và quỹ đạo $\tau$. Discriminator $q(z|s)$ học nhận
-    biết skill từ trạng thái, tạo ra intrinsic reward cho chính sách. Nguồn:
+    skill label $z$ và trajectory $\tau$. Discriminator $q(z|s)$ học nhận
+    biết skill từ trạng thái, tạo ra intrinsic reward cho policy. Nguồn:
     \cite{eysenbach2025generativerl}.}
     \label{fig:skill_learning}
 \end{figure}
@@ -673,7 +673,7 @@ downstream tasks:
     \item \textbf{Enumeration}: liệt kê tất cả skills và chọn skill
     có reward cao nhất.
     \item \textbf{Posterior inference}: dùng $q(z \mid \tau)$ để suy
-    ra skill phù hợp từ quỹ đạo mẫu.
+    ra skill phù hợp từ trajectory mẫu.
     \item \textbf{Hierarchical RL}: coi skills là high-level actions,
     xây dựng MDP mới với horizon ngắn hơn.
 \end{enumerate}
@@ -691,7 +691,7 @@ Một cách nhìn tổng quát về học kỹ năng là qua lăng kính
 \end{itemize}
 
 Sản phẩm của quá trình nén này là một \textbf{Behavioral Foundation
-Model (BFM)} -- một chính sách có thể được ``prompt'' để thực hiện nhiều
+Model (BFM)} -- một policy có thể được ``prompt'' để thực hiện nhiều
 hành vi khác nhau, tương tự như cách LLM được prompt để thực hiện
 nhiều tác vụ ngôn ngữ. Điểm khác biệt quan trọng: trong khi LLM được
 huấn luyện trên dữ liệu curated từ internet, BFM được huấn luyện trên

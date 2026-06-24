@@ -170,7 +170,7 @@ lặp lại:
     \item Tác nhân quan sát \textbf{trạng thái hiện tại} $s_t$ của môi
     trường (ví dụ: hình ảnh màn hình game, vị trí các khớp robot).
     \item Tác nhân chọn một \textbf{hành động} $a_t$ dựa trên
-    \textit{chính sách} (chiến lược) của mình (ví dụ: nhảy, đi thẳng,
+    \textit{policy} (chiến lược) của mình (ví dụ: nhảy, đi thẳng,
     xoay trái).
     \item Môi trường chuyển sang \textbf{trạng thái mới} $s_{t+1}$
     theo xác suất $p(s_{t+1} \mid s_t, a_t)$, đồng thời phát ra
@@ -201,7 +201,7 @@ lặp lại:
     \end{tikzpicture}
     \caption{Vòng lặp tác nhân--môi trường trong Học Tăng cường. Tác nhân gửi hành động
     cho môi trường; môi trường phản hồi trạng thái mới và phần thưởng.
-    Mục tiêu tác nhân là học chính sách $\pi$ tối đa hóa tổng phần thưởng
+    Mục tiêu tác nhân là học policy $\pi$ tối đa hóa tổng phần thưởng
     tích lũy.}
     \label{fig:rl-loop}
 \end{figure}
@@ -249,9 +249,9 @@ theo, không cần nhớ toàn bộ lịch sử. Nói cách khác, ``quá khứ'
 ta có thể dùng các phương trình đệ quy (phương trình Bellman) để tính
 toán hiệu quả thay vì phải xét toàn bộ lịch sử.
  
-\subsubsection{Chính sách và Mục tiêu Học Tăng cường}
+\subsubsection{Policy và Mục tiêu Học Tăng cường}
  
-\textbf{Chính sách} $\pi$ là chiến lược ra quyết định của tác nhân, hay một
+\textbf{Policy} $\pi$ là chiến lược ra quyết định của tác nhân, hay một
 hàm ánh xạ từ trạng thái sang hành động (hoặc phân phối trên hành
 động):
 \[
@@ -259,10 +259,10 @@ hàm ánh xạ từ trạng thái sang hành động (hoặc phân phối trên 
     s
 \]
 
-Ví dụ: chính sách của người chơi Tetris giỏi sẽ gán xác suất cao cho
+Ví dụ: policy của người chơi Tetris giỏi sẽ gán xác suất cao cho
 hành động ``xoay'' khi nhìn thấy khối L ở vị trí nhất định.
 
-Một \textbf{quỹ đạo} $\tau = (s_0, a_0, s_1, a_1, \ldots)$
+Một \textbf{trajectory} $\tau = (s_0, a_0, s_1, a_1, \ldots)$
 là chuỗi trạng thái và hành động theo thời gian, về bản chất là một
 ``ván chơi'' hoàn chỉnh. \textbf{Lợi tức chiết khấu} $R(\tau)$ là
 tổng phần thưởng có chiết khấu theo thời gian:
@@ -277,7 +277,7 @@ phần thưởng hội tụ (không vô hạn), đồng thời phản ánh nguy�
 tế học rằng phần thưởng gần hơn có giá trị hơn (giống như tiền ngày
 hôm nay có giá trị hơn tiền ngày mai).
  
-\textbf{Mục tiêu Học Tăng cường} là tìm chính sách $\pi$ tối đa hóa lợi tức kỳ vọng, tức phần thưởng tích lũy kỳ vọng trên tất cả các quỹ đạo có thể
+\textbf{Mục tiêu Học Tăng cường} là tìm policy $\pi$ tối đa hóa lợi tức kỳ vọng, tức phần thưởng tích lũy kỳ vọng trên tất cả các trajectory có thể
 xảy ra:
  
 \begin{equation}
@@ -287,8 +287,8 @@ xảy ra:
     \label{eq:rl_objective}
 \end{equation}
 
-Ký hiệu $\tau \sim \pi$ nghĩa là quỹ đạo được sinh ra bởi chính
-chính sách $\pi$ tương tác với môi trường: tại mỗi bước $t$, tác nhân chọn
+Ký hiệu $\tau \sim \pi$ nghĩa là trajectory được sinh ra bởi chính
+policy $\pi$ tương tác với môi trường: tại mỗi bước $t$, tác nhân chọn
 $a_t \sim \pi(\cdot \mid s_t)$, môi trường phản hồi
 $s_{t+1} \sim p(\cdot \mid s_t, a_t)$.
  
@@ -309,8 +309,8 @@ gốc dữ liệu:
 \end{equation}
  
 Trong HGs, dữ liệu đến từ tập dữ liệu cố định $\mathcal{D}$ và không phụ
-thuộc vào tham số đang học. Trong HTc, quỹ đạo được sinh ra bởi
-chính chính sách $\pi_\theta$ đang được tối ưu: khi $\theta$ thay đổi,
+thuộc vào tham số đang học. Trong HTc, trajectory được sinh ra bởi
+chính policy $\pi_\theta$ đang được tối ưu: khi $\theta$ thay đổi,
 cả phân phối hành động lẫn phân phối trạng thái được ghé thăm đều thay
 đổi theo. Đây chính là điểm mạnh (tác nhân có thể khám phá) nhưng cũng
 là thách thức chính (dữ liệu \textit{không dừng}) của Học Tăng cường.
@@ -326,7 +326,7 @@ tốt hơn bất kỳ dữ liệu nào trong tập dữ liệu \cite{eysenbach20
 đến lợi tức cao nhất?''. Đây là vai trò của \textbf{hàm giá trị}.
  
 \textbf{Hàm Q} $Q^\pi(s, a)$ cho biết lợi tức kỳ vọng khi bắt đầu
-từ cặp $(s, a)$ và sau đó theo chính sách $\pi$:
+từ cặp $(s, a)$ và sau đó theo policy $\pi$:
  
 \begin{equation}
     Q^\pi(s, a) = \mathbb{E}_\pi \left[ \sum_{t=0}^{\infty} \gamma^t
@@ -336,7 +336,7 @@ từ cặp $(s, a)$ và sau đó theo chính sách $\pi$:
 
 Diễn giải đơn giản: $Q^\pi(s, a)$ trả lời câu hỏi ``Nếu tôi đang ở
 trạng thái $s$, thực hiện hành động $a$, rồi từ đó trở đi luôn theo
-chính sách $\pi$, tôi kỳ vọng nhận được bao nhiêu phần thưởng tổng
+policy $\pi$, tôi kỳ vọng nhận được bao nhiêu phần thưởng tổng
 cộng?''
  
 Hàm Q thỏa \textbf{phương trình Bellman} -- quan hệ đệ quy cơ bản
@@ -352,15 +352,15 @@ thưởng ngay lập tức cộng với giá trị tương lai được chiết 
  
 Phương trình Bellman quan trọng vì nó biến bài toán tối ưu hóa vô hạn
 chiều thành bài toán có thể giải lặp đi lặp lại (quy hoạch động).
-Hàm Q xuất hiện xuyên suốt tutorial: trong chính sách khuếch tán
+Hàm Q xuất hiện xuyên suốt tutorial: trong diffusion policy
 (dùng $Q$ để chọn hành động), trong học tương phản thời gian
 ($Q \approx$ tỉ lệ log-likelihood), và trong Học Tăng cường không cần huấn luyện lại (tính $Q$
 từ biểu diễn học được).
  
-\subsubsection{Gradient Chính sách}
+\subsubsection{Policy Gradient}
  
 Để tối đa hóa $J(\pi_\theta)$, ta lấy gradient theo tham số $\theta$
-và thực hiện leo dốc gradient. Định lý Gradient Chính sách cho kết quả:
+và thực hiện leo dốc gradient. Định lý Policy Gradient cho kết quả:
  
 \begin{equation}
     \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta}
@@ -369,17 +369,17 @@ và thực hiện leo dốc gradient. Định lý Gradient Chính sách cho kế
     \label{eq:policy_gradient}
 \end{equation}
 
-Trực giác của gradient chính sách rất tự nhiên: số hạng
+Trực giác của policy gradient rất tự nhiên: số hạng
 $\nabla_\theta \log \pi_\theta(a \mid s)$ đẩy tham số theo hướng tăng
 xác suất của hành động $a$ tại trạng thái $s$; nhân với $R(\tau)$
 nghĩa là ta tăng xác suất của những hành động đã dẫn đến lợi tức cao,
 và giảm xác suất của những hành động dẫn đến lợi tức thấp.
  
 Số hạng $\nabla_\theta \log \pi_\theta(a \mid s)$ được gọi là
-\textbf{hàm điểm số} của chính sách. Đây là cầu nối kỹ thuật quan trọng
+\textbf{hàm điểm số} của policy. Đây là cầu nối kỹ thuật quan trọng
 nhất giữa Học Tăng cường và mô hình tạo sinh: trong các mô hình khuếch tán dựa trên điểm số,
 đại lượng tương tự $\nabla_x \log p(x)$ được dùng để hướng
-dẫn quá trình sinh mẫu. Hai bài toán tối ưu chính sách và sinh mẫu từ
+dẫn quá trình sinh mẫu. Hai bài toán policy optimization và sinh mẫu từ
 mô hình tạo sinh đều có thể được giải qua cùng một công cụ toán
 học: \textbf{theo dõi gradient của log-xác suất}.
 
@@ -496,14 +496,14 @@ log-xác suất theo $x_t$, nó chỉ hướng ``đi về phía vùng mật đ�
 xác suất cao hơn'' trong không gian dữ liệu tại bước thời gian $t$.
 
 \textbf{Kết nối với Học Tăng cường:} Hàm điểm số của mô hình khuếch tán
-$\nabla_x \log p_t(x)$ và hàm điểm số của gradient chính sách
+$\nabla_x \log p_t(x)$ và hàm điểm số của policy gradient
 $\nabla_\theta \log \pi_\theta(a \mid s)$ là cùng một cấu trúc toán
 học -- gradient của log-xác suất theo biến cần tối ưu. Đây là lý
-do mô hình khuếch tán và gradient chính sách có thể được tích hợp tự nhiên
+do mô hình khuếch tán và policy gradient có thể được tích hợp tự nhiên
 vào nhau, như được minh họa qua DDPO và Diffusion-DICE ở Phần III.
 
-Trong Học Tăng cường, mô hình khuếch tán được dùng làm \textbf{chính sách khuếch tán}:
-thay vì chính sách Gaussian đơn giản chỉ biểu diễn một đỉnh, tác nhân dùng
+Trong Học Tăng cường, mô hình khuếch tán được dùng làm \textbf{diffusion policy}:
+thay vì Gaussian policy đơn giản chỉ biểu diễn một đỉnh, tác nhân dùng
 một mô hình khuếch tán để biểu diễn phân phối hành động phức tạp, đa
 đỉnh, điều này quan trọng khi tập dữ liệu chứa nhiều chiến lược khác nhau.
 
@@ -530,11 +530,11 @@ Mô hình khuếch tán dùng lịch trình nhiễu cố định với hàng tr�
 Khớp luồng học đường đi \textbf{thẳng hơn} trong không gian xác
 suất, cho phép sinh mẫu với ít bước hơn (đôi khi chỉ 1 bước ODE).
 Về lý thuyết, khớp luồng tối ưu hóa trực tiếp hàm khả năng của
-quỹ đạo thay vì phải thông qua các bước gián tiếp.
+trajectory thay vì phải thông qua các bước gián tiếp.
 
 \textbf{Kết nối với Học Tăng cường:} Trong tutorial, Luồng Hiệu chỉnh Thời gian
 \cite{farebrother2025tdflows} áp dụng khớp luồng để ước lượng
-\textit{hàm khả năng của trạng thái tương lai},tức thước đo kế tiếp, kết hợp với cấu trúc Bellman để tận dụng dữ liệu ngoài chính sách. Đây
+\textit{hàm khả năng của trạng thái tương lai},tức thước đo kế tiếp, kết hợp với cấu trúc Bellman để tận dụng off-policy data. Đây
 là ví dụ điển hình về việc khai thác đặc thù của một họ mô hình tạo sinh
 để giải quyết bài toán Học Tăng cường.
  
@@ -570,19 +570,19 @@ token được sinh có điều kiện trên toàn bộ các token đã sinh tr�
 Đây là nguyên tắc hoạt động của GPT: sinh token tiếp theo dựa trên
 tất cả token trước đó.
 
-\paragraph{Transformer Quyết định: mô hình tự hồi quy làm chính sách.}
+\paragraph{Transformer Quyết định: mô hình tự hồi quy làm policy.}
 
 \textbf{Transformer Quyết định} \cite{chen2021decision} áp dụng trực
 tiếp kiến trúc này cho Học Tăng cường: thay vì học hàm giá trị hay thực hiện
-cập nhật Bellman, mô hình coi một quỹ đạo Học Tăng cường -- chuỗi
+cập nhật Bellman, mô hình coi một trajectory trong Học Tăng cường -- chuỗi
 $(R_0, s_0, a_0, R_1, s_1, a_1, \ldots)$ -- như một chuỗi token và
 học sinh hành động có điều kiện trên \textit{lợi tức-còn-lại} (tổng
-phần thưởng kỳ vọng từ bước hiện tại trở đi) và lịch sử quỹ đạo.
+phần thưởng kỳ vọng từ bước hiện tại trở đi) và lịch sử trajectory.
 
 Ý tưởng then chốt: nếu ta điều kiện hóa mô hình trên ``lợi tức mục tiêu
 cao'' (ví dụ: 100 điểm), model sẽ sinh ra những hành động từng được
-quan sát trong các quỹ đạo có lợi tức cao. Đây là ví dụ điển hình
-của việc dùng mô hình tạo sinh làm chính sách trong Học Tăng cường.
+quan sát trong các trajectory có lợi tức cao. Đây là ví dụ điển hình
+của việc dùng mô hình tạo sinh làm policy trong Học Tăng cường.
 
 % ---------------------------------------------------------------------
 \subsection{Thước đo Kế tiếp}
@@ -591,7 +591,7 @@ của việc dùng mô hình tạo sinh làm chính sách trong Học Tăng cư�
 \textbf{Thước đo kế tiếp} (hay thước đo chiếm dụng trạng thái chiết khấu)
 $p^\pi(s_f)$ là một trong những khái niệm xuyên suốt toàn bộ tutorial.
 Nó được định nghĩa là xác suất mà tác nhân đến được trạng thái $s_f$ tại
-một thời điểm nào đó trong tương lai khi theo chính sách $\pi$:
+một thời điểm nào đó trong tương lai khi theo policy $\pi$:
  
 \begin{equation}
     p^\pi(s_f) \triangleq (1-\gamma) \, \mathbb{E}_\pi \left[
@@ -608,7 +608,7 @@ hành động $a$.
 \subsubsection{Ý nghĩa trực quan và ví dụ minh họa}
  
 Thước đo kế tiếp trả lời câu hỏi: ``Nếu tác nhân bắt đầu từ trạng thái
-$s$ và theo chính sách $\pi$, nó có bao nhiêu khả năng ghé thăm trạng thái
+$s$ và theo policy $\pi$, nó có bao nhiêu khả năng ghé thăm trạng thái
 $s_f$ trong tương lai?'' Khái niệm này \textbf{tổng quát hóa
 hàm Q}: trong khi hàm Q tính \textit{một số} (tổng phần
 thưởng kỳ vọng), thước đo kế tiếp tính \textit{một phân phối đầy đủ}
@@ -617,7 +617,7 @@ trên các trạng thái tương lai.
 \paragraph{Ví dụ minh họa bằng mê cung $3 \times 3$.}
 
 Hãy tưởng tượng robot đứng tại ô $(1,1)$ trong mê cung $3\times 3$,
-với chính sách ``luôn đi thẳng về phía đông''. Thước đo kế tiếp
+với policy ``luôn đi thẳng về phía đông''. Thước đo kế tiếp
 $p^\pi(s_f \mid (1,1), \text{đi đông})$ với $\gamma = 0.9$ sẽ trông
 như sau (giá trị xấp xỉ):
 
@@ -673,7 +673,7 @@ Diễn giải: xác suất đến $s_f$ từ $(s,a)$ bằng xác suất đến $
 sau).
 
 Tính chất này cho phép ước lượng thước đo kế tiếp từ dữ liệu
-ngoài chính sách bằng học hiệu chỉnh thời gian, tương tự như cách ta ước
+off-policy bằng học hiệu chỉnh thời gian, tương tự như cách ta ước
 lượng hàm Q. Đây là lý do thước đo kế tiếp có thể được học hiệu
 quả từ dữ liệu tương tác.
  
@@ -683,7 +683,7 @@ Thước đo kế tiếp xuất hiện ở nhiều phần khác nhau của tutor
 các vai trò đa dạng. Trong Phần II, nó mô tả phân phối trạng thái đích
 của bài toán đạt đích. Trong Phần III, nó là hàm khả năng của
 ``mô hình tạo sinh tương tác'' cần được ước lượng. Trong Học Tăng cường không cần huấn luyện lại,
-các biểu diễn tiến-lùi học cách phân tích thước đo kế tiếp để cho phép tính chính sách tối ưu cho bất kỳ hàm thưởng nào
+các biểu diễn tiến-lùi học cách phân tích thước đo kế tiếp để cho phép tính policy tối ưu cho bất kỳ hàm thưởng nào
 chỉ trong vài bước tính toán.
  
 % ---------------------------------------------------------------------
@@ -699,9 +699,9 @@ tại sao kỹ thuật từ lĩnh vực này có thể áp dụng cho lĩnh vự
 
 Một số cặp chưa quen thuộc sẽ được giải thích trong Phần III:
 \textit{thước đo chiếm dụng} $d^\pi(s,a)$ là phân phối tần suất
-trạng thái-hành động mà chính sách ghé thăm (tổng quát hóa thước đo kế tiếp sang
+trạng thái-hành động mà policy ghé thăm (tổng quát hóa thước đo kế tiếp sang
 không gian trạng thái-hành động); \textit{tỉ lệ hàm khả năng} là tỉ số
-$p^\pi(s_f \mid s,a) / p(s_f)$ đo mức độ chính sách tăng xác suất đến
+$p^\pi(s_f \mid s,a) / p(s_f)$ đo mức độ policy tăng xác suất đến
 $s_f$ so với đường cơ sở.
  
 \begin{table}[H]
@@ -714,11 +714,11 @@ $s_f$ so với đường cơ sở.
         \textbf{Học Tăng cường} & \textbf{Mô hình Tạo sinh} &
         \textbf{Ý nghĩa chung} \\
         \midrule
-        Chính sách $\pi(a \mid s)$ & Mô hình tạo sinh $p(x)$ & Phân phối cần học \\
+        Policy $\pi(a \mid s)$ & Mô hình tạo sinh $p(x)$ & Phân phối cần học \\
         Hàm điểm số $\nabla_\theta \log \pi(a \mid s)$ & Hàm điểm số $\nabla_x \log p(x)$ & Gradient của log-xác suất \\
         Lợi tức $R(\tau)$ & Log-hàm khả năng $\log p(x)$ & Tín hiệu học \\
-        Quỹ đạo $\tau$ & Biến tiềm ẩn $z$ & Biến tiềm ẩn \\
-        Gradient chính sách & Ước lượng hàm điểm số & Cách tối ưu phân phối \\
+        Trajectory $\tau$ & Biến tiềm ẩn $z$ & Biến tiềm ẩn \\
+        Policy Gradient & Ước lượng hàm điểm số & Cách tối ưu phân phối \\
         Hàm Q $Q(s,a)$ & Tỉ lệ hàm khả năng $\frac{p^\pi(s_f|s,a)}{p(s_f)}$ & Ước lượng xác suất tương lai \\
         Thước đo chiếm dụng $d^\pi(s,a)$ & Phân phối dữ liệu $p(x)$ & Phân phối muốn khớp \\
         Phương trình Bellman & Tính chất Markov & Cấu trúc đệ quy \\

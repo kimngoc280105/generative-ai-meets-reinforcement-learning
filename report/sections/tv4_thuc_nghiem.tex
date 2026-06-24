@@ -97,7 +97,7 @@ Chúng tôi cài đặt 3 phương pháp trên cùng một mô hình khuếch t�
 
     \item \textbf{IDQL} sinh mẫu tập trung tương đối tốt ở hai vùng phần thưởng cao ($\theta \approx 0$ và $\theta \approx \pi$). Do IDQL chỉ lọc chọn hành động từ các ứng viên được sinh sẵn bởi behavior model (vốn nằm trong support của dữ liệu $\mathcal{D}$), phương pháp này tránh được việc bị kéo sập hoàn toàn vào tâm OOD $(0,0)$, mặc dù critic bị lỗi ngoại suy overestimation tại đó. Dù vậy, vẫn xuất hiện một số ít điểm bị rò rỉ vào vùng tâm (khoảng 4--5 mẫu) do sự ngẫu nhiên của quá trình sinh ứng viên.
 
-    \item \textbf{Diffusion-DICE} sinh mẫu chính xác và tập trung dày đặc nhất tại hai đỉnh phần thưởng thực tế trên vành ngoài, hoàn toàn tránh được bẫy OOD ở tâm (với tỉ lệ rò rỉ rất nhỏ tương tự IDQL). Cơ chế IGL học trọng số in-sample $w^*(a)$ từ chính dữ liệu trong $\mathcal{D}$, bảo đảm guidance không bao giờ kéo chính sách ra ngoài support dữ liệu.
+    \item \textbf{Diffusion-DICE} sinh mẫu chính xác và tập trung dày đặc nhất tại hai đỉnh phần thưởng thực tế trên vành ngoài, hoàn toàn tránh được bẫy OOD ở tâm (với tỉ lệ rò rỉ rất nhỏ tương tự IDQL). Cơ chế IGL học trọng số in-sample $w^*(a)$ từ chính dữ liệu trong $\mathcal{D}$, bảo đảm guidance không bao giờ kéo policy ra ngoài support dữ liệu.
 \end{itemize}
 
 % =====================================================================
@@ -163,7 +163,7 @@ hưởng của $\eta$ đến hai chỉ số:
 Kết quả khảo sát này là bằng chứng định lượng xác nhận rằng sử dụng gradient
 trực tiếp của critic (như QGPO) là hướng tiếp cận không ổn định trong Offline
 RL. Cơ chế học chỉ dẫn in-sample dựa trên DICE là cần thiết để đồng thời đảm
-bảo hiệu năng và tính an toàn của chính sách.
+bảo hiệu năng và tính an toàn của policy.
 
 % =====================================================================
 \subsection{Mô tả Demo}
