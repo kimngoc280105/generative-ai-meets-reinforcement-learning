@@ -3,29 +3,11 @@
 
 \section{Nội dung chính của tutorial}
 
-Trước khi đi vào từng kỹ thuật, các công trình chính trong phần này được định vị theo vai trò mà chúng đảm nhiệm trong mạch lập luận của tutorial.
-Mỗi công trình không được trình bày như một mục literature review riêng, mà được dùng để giải quyết một nút thắt kỹ thuật cụ thể: học dynamics, biểu diễn policy, kiểm soát error exploitation, fine-tune diffusion model bằng reward, hoặc chuyển interaction thành distribution matching.
 
-\begin{center}
-\small
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.18}
-\begin{tabular}{p{0.28\textwidth}p{0.31\textwidth}p{0.31\textwidth}}
-\hline
-{\raggedright\textbf{Công trình / vai trò}\par} & {\raggedright\textbf{Kỹ thuật chính}\par} & {\raggedright\textbf{Điểm cần rút ra}\par} \\
-\hline
-{\raggedright\textbf{PILCO, PETS, Dreamer, Diffuser}\newline World model trong model-based RL\par} & {\raggedright Học dynamics bằng conditional likelihood hoặc trajectory model\par} & {\raggedright Giảm chi phí tương tác, nhưng chịu rủi ro rollout error và model exploitation\par} \\
-{\raggedright\textbf{Decision Transformer}\newline Sequence model as policy\par} & {\raggedright Conditioning policy trên return-to-go và trajectory history\par} & {\raggedright Minh họa generative policy trong offline RL, nhưng dễ học correlation thay vì causal effect\par} \\
-{\raggedright\textbf{Diffusion-DICE}\newline Diffusion policy trong offline RL\par} & {\raggedright Guide-then-select với density-ratio guidance và chọn candidate bằng $Q$\par} & {\raggedright Khai thác biểu diễn đa mode của diffusion mà giảm error exploitation\par} \\
-{\raggedright\textbf{DDPO}\newline RL fine-tuning cho diffusion model\par} & {\raggedright Xem denoising chain như finite-horizon MDP và tối ưu bằng policy gradient\par} & {\raggedright Cho thấy chiều ngược lại: RL có thể tối ưu chính generative model theo downstream reward\par} \\
-{\raggedright\textbf{GCBC, Dual RL, DICE, f-Policy Gradients}\newline Interaction as a generative process\par} & {\raggedright Goal conditioning, occupancy matching, density ratio và $f$-divergence gradient\par} & {\raggedright Thay reward engineering bằng distribution objective, nhưng vẫn phụ thuộc support và estimation stability\par} \\
-\hline
-\end{tabular}
-\end{center}
 
-\subsection{Generative Models in RL Engines}
+\subsection{Generative Models trong hệ thống RL}
 
-\subsubsection{SL Objective vs RL Objective}
+\subsubsection{So sánh mục tiêu học có giám sát và RL}
 
 Điểm xuất phát của phân tích là sự khác biệt giữa cách supervised learning và reinforcement learning tạo ra dữ liệu.
 Trong supervised learning, dataset được xem như cố định.
@@ -43,7 +25,7 @@ Nếu học một policy bằng imitation learning, dữ liệu gồm các cặp
 Objective này có bản chất là tái tạo hành vi quan sát được.
 Trong trường hợp policy Gaussian với phương sai cố định, maximum likelihood tương đương với việc giảm sai số bình phương giữa hành động dự đoán và hành động trong dataset.
 Vì vậy, chất lượng policy phụ thuộc trực tiếp vào chất lượng dữ liệu.
-Nếu dataset đến từ một chính sách yếu hoặc không bao phủ những hành vi tốt, supervised objective không tự tạo ra cơ chế để vượt ra khỏi giới hạn đó.
+Nếu dataset đến từ một policy yếu hoặc không bao phủ những hành vi tốt, supervised objective không tự tạo ra cơ chế để vượt ra khỏi giới hạn đó.
 
 Trong RL, mô hình không chỉ học từ dữ liệu có sẵn mà còn quyết định dữ liệu nào sẽ được sinh ra.
 Bài toán thường được hình thức hóa bằng một Markov Decision Process gồm state $s_t$, action $a_t$, dynamics $p(s_{t+1}\mid s_t,a_t)$, reward $r(s_t,a_t)$ và discount factor $\gamma$.
@@ -74,18 +56,18 @@ Do phân phối trajectory phụ thuộc vào policy, tối ưu RL đồng thờ
 Khác với supervised learning trên phân phối cố định, sai lệch của policy vì thế có thể làm thay đổi chính miền trạng thái dùng để đánh giá và cập nhật policy.
 Đặc điểm phân phối này tạo ra mối liên hệ trực tiếp với generative modeling, nhưng bổ sung một ràng buộc riêng của RL: phân phối sinh ra phải được đánh giá thông qua reward và dynamics của môi trường.
 
-\subsubsection{Generative Models as World Models}
+\subsubsection{Generative Models làm World Model}
 
-Vai trò trực tiếp nhất của generative models trong RL là world model.
+Vai trò trực tiếp nhất của generative models trong RL là World Model.
 Trong nhiều bài toán như robotics, điều khiển hệ thống vật lý, thiết kế phân tử hoặc tương tác với người dùng thật, thu thập dữ liệu bằng cách chạy policy trong môi trường có thể chậm, tốn kém hoặc nguy hiểm.
-Model-based RL giải quyết khó khăn này bằng cách học một mô hình dynamics:
+Model-based RL giải quyết khó khăn này bằng cách học một dynamics model:
 \begin{equation}
     p_\phi(s'\mid s,a)
     \approx
     p(s'\mid s,a).
     \label{eq:tv2-world-model}
 \end{equation}
-Nếu có dataset chuyển trạng thái $\mathcal{D}=\{(s,a,s')\}$, world model có thể được học bằng maximum likelihood trên các tuple $(s,a,s')$:
+Nếu có dataset chuyển trạng thái $\mathcal{D}=\{(s,a,s')\}$, World Model có thể được học bằng maximum likelihood trên các tuple $(s,a,s')$:
 \begin{equation}
     \max_\phi\;
     \mathbb{E}_{(s,a,s')\sim\mathcal{D}}
@@ -95,28 +77,28 @@ Nếu có dataset chuyển trạng thái $\mathcal{D}=\{(s,a,s')\}$, world model
     \label{eq:tv2-world-model-mle}
 \end{equation}
 Về mặt huấn luyện, đây là một bài toán conditional generative modeling: từ $(s,a)$, model sinh hoặc ước lượng distribution của state kế tiếp.
-Sau khi học được, world model có thể được dùng để rollout, đánh giá policy hoặc huấn luyện policy mà không cần tương tác trực tiếp với environment thật ở mọi bước.
+Sau khi học được, World Model có thể được dùng để rollout, đánh giá policy hoặc huấn luyện policy mà không cần tương tác trực tiếp với environment thật ở mọi bước.
 
 Các công trình model-based RL được đặt trong phần này như các ví dụ về những generative model families có thể thay vào cùng formulation, thay vì là đối tượng khảo sát thuật toán chi tiết.
 Các lựa chọn tiêu biểu gồm Gaussian process trong \textbf{PILCO}, ensemble Gaussian MLP trong \textbf{PETS}, latent state-space model trong \textbf{Dreamer}, diffusion model trên trajectory trong \textbf{Diffuser}, sequence model trong \textbf{Decision Transformer} và \textbf{Trajectory Transformer}, cùng flow-matching model trong \textbf{Temporal Difference Flows}~\cite{deisenroth2011pilco,chua2018pets,hafner2019dreamer,janner2022diffuser,chen2021decision,janner2021trajectory,farebrother2025tdflows}.
-Danh sách này cho thấy ``world model'' không chỉ định một architecture cụ thể: model family được lựa chọn quyết định cách biểu diễn uncertainty, high-dimensional observation, multimodality và độ dài của rollout, trong khi vai trò chung vẫn là xấp xỉ dynamics để hỗ trợ planning hoặc policy learning.
+Danh sách này cho thấy ``World Model'' không chỉ định một architecture cụ thể: model family được lựa chọn quyết định cách biểu diễn uncertainty, high-dimensional observation, multimodality và độ dài của rollout, trong khi vai trò chung vẫn là xấp xỉ dynamics để hỗ trợ planning hoặc policy learning.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{notes_fig3_world_model.png}
-    \caption{Pipeline model-based RL với world model: generative model được huấn luyện để học dynamics từ transition data, sau đó hỗ trợ học policy. Nguồn hình: Figure 3 trong \cite{eysenbach2025generativerl}.}
+    \caption{Pipeline model-based RL với World Model: generative model được huấn luyện để học dynamics từ transition data, sau đó hỗ trợ học policy. Nguồn hình: Figure 3 trong \cite{eysenbach2025generativerl}.}
     \label{fig:tv2-notes-fig3-world-model}
 \end{figure}
 
-World model đem lại lợi ích rõ ràng về chi phí tính toán: rollout trong neural model có thể chạy theo batch trên GPU, trong khi simulator thật hoặc hệ thống vật lý thật có thể rất đắt.
+World Model đem lại lợi ích rõ ràng về chi phí tính toán: rollout trong neural model có thể chạy theo batch trên GPU, trong khi simulator thật hoặc hệ thống vật lý thật có thể rất đắt.
 Lợi ích tính toán này chỉ có ý nghĩa khi sai số mô hình được kiểm soát trên rollout.
 Lỗi dự đoán một bước có thể tích lũy thành sai lệch lớn sau nhiều bước, và sai lệch đó còn nguy hiểm hơn khi policy học cách khai thác vùng mà model dự đoán quá lạc quan về reward hoặc dynamics.
-Do đó, world model không chỉ cần chính xác trung bình trên dataset ban đầu; hệ thống còn cần cơ chế đánh giá độ tin cậy của model và quyết định khi nào phải thu thập thêm dữ liệu từ environment.
-Hệ quả là độ chính xác one-step chưa đủ để đánh giá world model; độ tin cậy của model còn phụ thuộc vào sai số tích lũy trên rollout và vào phân phối trạng thái do policy đang tối ưu tạo ra.
+Do đó, World Model không chỉ cần chính xác trung bình trên dataset ban đầu; hệ thống còn cần cơ chế đánh giá độ tin cậy của model và quyết định khi nào phải thu thập thêm dữ liệu từ environment.
+Hệ quả là độ chính xác one-step chưa đủ để đánh giá World Model; độ tin cậy của model còn phụ thuộc vào sai số tích lũy trên rollout và vào phân phối trạng thái do policy đang tối ưu tạo ra.
 
-\subsubsection{Reward-Weighted Learning and the Score Function}
+\subsubsection{Reward-Weighted Learning và score function}
 
-Sau world model, câu hỏi nền tảng là dữ liệu trong RL đến từ đâu.
+Sau World Model, câu hỏi nền tảng là dữ liệu trong RL đến từ đâu.
 Trong supervised learning, dataset là input cố định tồn tại độc lập với model đang học.
 Ngược lại, trong RL, chính policy quyết định dữ liệu nào sẽ được thu thập; vì vậy, cải thiện policy và tạo dữ liệu mới là hai quá trình phụ thuộc lẫn nhau theo một vòng lặp không thể tách rời.
 Policy tốt cần trajectory tốt để học, nhưng trajectory tốt lại thường chỉ xuất hiện khi policy đã đủ tốt.
@@ -258,7 +240,7 @@ Kết quả này không phụ thuộc vào giả thiết policy Gaussian; transf
     \label{fig:tv2-score-bridge-tikz}
 \end{figure}
 
-\subsubsection{Generative Models as Policies}
+\subsubsection{Generative Models làm Policy}
 
 Khi policy được nhìn như phân phối có điều kiện $\pi_\theta(a\mid s)$, chính policy đã là một generative model sinh action từ state.
 Ở mức kỹ thuật, các policy distribution đơn giản được thay bằng những kiến trúc sinh mạnh hơn, đặc biệt là sequence models và diffusion models.
@@ -277,19 +259,19 @@ Vì vậy, vai trò của \textbf{Decision Transformer} trong phần này không
 Nút thắt kỹ thuật mà công trình này làm rõ là sự khác biệt giữa biểu diễn một phân phối hành động phức tạp và bảo đảm policy improvement khi dữ liệu chỉ đến từ offline trajectories.
 
 Diffusion policy mở rộng ý tưởng generative policy sang phân phối hành động đa mode.
-Trong offline RL, cùng một state có thể có nhiều action hợp lệ do dataset chứa nhiều chiến lược khác nhau.
+Trong Offline RL, cùng một state có thể có nhiều action hợp lệ do dataset chứa nhiều chiến lược khác nhau.
 Một Gaussian policy đơn mode có thể trung bình hóa các mode và sinh action không thuộc mode nào.
 Ngược lại, diffusion model có thể sinh action qua nhiều bước denoising và biểu diễn phân phối phức tạp hơn.
-Tuy nhiên, expressivity cao không tự bảo đảm policy improvement: khi diffusion policy được kết hợp với critic trong offline RL, các candidate ngoài support dữ liệu có thể nhận giá trị dự đoán sai.
+Tuy nhiên, expressivity cao không tự bảo đảm policy improvement: khi diffusion policy được kết hợp với critic trong Offline RL, các candidate ngoài support dữ liệu có thể nhận giá trị dự đoán sai.
 \textbf{Diffusion-DICE} tập trung vào chính tương tác giữa khả năng sinh đa mode và sai số ngoại suy của critic.
 
-\subsubsection{Case Study: Diffusion-DICE}
+\subsubsection{Case study: Diffusion-DICE}
 
-\textbf{Diffusion-DICE} là case study trung tâm cho diffusion policy trong offline RL~\cite{mao2024diffusiondice}.
+\textbf{Diffusion-DICE} là case study trung tâm cho diffusion policy trong Offline RL~\cite{mao2024diffusiondice}.
 Vấn đề kỹ thuật của phương pháp là tận dụng khả năng sinh action đa mode của diffusion model mà không để critic kéo policy ra khỏi support của dữ liệu.
 Trong diffusion policy, action sạch $a_0$ được sinh từ chuỗi denoising $a_T,\ldots,a_0$ có điều kiện trên state $s$.
 Mục tiêu không chỉ là bắt chước behavior policy trong dataset, mà là sinh action có giá trị cao theo reward hoặc Q-function.
-Nút thắt mà công trình này xử lý là một điểm yếu cụ thể của diffusion policy trong offline RL: model đủ mạnh để sinh nhiều candidate actions, nhưng critic học từ offline data có thể đánh giá sai các candidate nằm ngoài support.
+Nút thắt mà công trình này xử lý là một điểm yếu cụ thể của diffusion policy trong Offline RL: model đủ mạnh để sinh nhiều candidate actions, nhưng critic học từ offline data có thể đánh giá sai các candidate nằm ngoài support.
 Do đó, kỹ thuật cốt lõi không chỉ là thêm guidance vào diffusion sampling, mà là kiểm soát cách guidance được dùng để tránh error exploitation.
 
 Hai hướng tiếp cận chính là guide-based và select-based.
@@ -318,7 +300,7 @@ Guide-based methods học diffusion behavior policy rồi thêm guidance term đ
 \end{equation}
 Eq.~\eqref{eq:tv2-select-policy} mô tả cơ chế resampling của nhóm baseline select-based, chẳng hạn \textbf{IDQL}; đây chưa phải bước Select cuối cùng của Diffusion-DICE~\cite{hansenestruch2023idql}.
 Cả hai hướng đều phụ thuộc vào critic.
-Trong offline RL, critic chỉ được học từ dataset cố định; vì vậy critic có thể overestimate các action ngoài phân phối.
+Trong Offline RL, critic chỉ được học từ dataset cố định; vì vậy critic có thể overestimate các action ngoài phân phối.
 Nếu sampling hoặc guidance đưa action ra khỏi vùng dữ liệu, policy có thể khai thác lỗi critic thay vì tìm action thật sự tốt.
 Hiện tượng này được gọi là error exploitation.
 
@@ -376,7 +358,7 @@ Diffusion-DICE giảm rủi ro bằng cách kết hợp hai bước: guide để
     \label{fig:tv2-notes-fig7-diffusion-dice}
 \end{figure}
 
-\subsubsection{DDPO: Viewing Denoising as an MDP}
+\subsubsection{DDPO: xem denoising như MDP}
 
 Nếu Diffusion-DICE dùng diffusion model để xây policy cho RL, \textbf{DDPO} đi theo chiều ngược lại: dùng RL để fine-tune diffusion model theo downstream reward~\cite{black2024ddpo}.
 Động lực của DDPO là nhiều mục tiêu quan trọng trong image generative models không được mô tả tốt bằng maximum likelihood.
@@ -425,13 +407,13 @@ Bài báo gốc cho thấy formulation này có thể fine-tune image generative
 
 Trong mạch lập luận chung, DDPO hoàn thiện quan hệ hai chiều giữa hai lĩnh vực.
 Diffusion-DICE đưa diffusion model vào RL để biểu diễn policy phức tạp; ngược lại, DDPO đưa policy optimization vào diffusion model để điều chỉnh chính sampling process.
-Cả hai công trình đều sử dụng cấu trúc nhiều bước của diffusion, nhưng tối ưu hai đối tượng khác nhau: Diffusion-DICE tìm action có giá trị cao trong offline RL, còn DDPO tối ưu chất lượng sample cuối theo downstream reward.
+Cả hai công trình đều sử dụng cấu trúc nhiều bước của diffusion, nhưng tối ưu hai đối tượng khác nhau: Diffusion-DICE tìm action có giá trị cao trong Offline RL, còn DDPO tối ưu chất lượng sample cuối theo downstream reward.
 
-\subsection{Interaction as a Generative Model}
+\subsection{Interaction làm Generative Model}
 
-\subsubsection{Interaction as a Generative Process}
+\subsubsection{Cách policy và environment sinh dữ liệu}
 
-Góc nhìn thứ hai xem toàn bộ quá trình tương tác giữa policy và environment như một generative model.
+Góc nhìn thứ hai xem toàn bộ quá trình policy tương tác với environment như một generative model.
 Một diffusion model tạo ảnh bằng nhiều bước denoising.
 Tương tự, một RL agent tạo observation tương lai bằng nhiều bước tương tác: policy sinh action, environment sinh state kế tiếp, rồi quá trình lặp lại.
 Nếu $s_0$ là trạng thái ban đầu, quá trình
@@ -457,7 +439,7 @@ Part II khảo sát khả năng đặc tả một lớp bài toán RL bằng des
 \end{figure}
 
 Cách nhìn này không yêu cầu toàn bộ generation chain phải được biểu diễn bởi một mạng khả vi: policy, environment, tool và human feedback chỉ cần cùng xác định một distribution trên outcome.
-Bài toán điều khiển sau đó có thể được phát biểu dưới dạng thay đổi policy để tăng likelihood của các outcome mong muốn, với goal-reaching là trường hợp cụ thể được phân tích tiếp theo.
+Bài toán điều khiển sau đó có thể được phát biểu dưới dạng thay đổi policy để tăng likelihood của các outcome mong muốn, với Goal-reaching là trường hợp cụ thể được phân tích tiếp theo.
 
 \begin{figure}[H]
     \centering
@@ -481,13 +463,13 @@ Bài toán điều khiển sau đó có thể được phát biểu dưới dạ
         \draw[arr] (env1) -- (sf);
     \end{tikzpicture}
     }
-    \caption{Interaction generative process: observation tương lai được sinh bằng cách luân phiên lấy mẫu từ policy và environment.}
+    \caption{Quá trình sinh dữ liệu qua interaction: observation tương lai được sinh bằng cách luân phiên lấy mẫu từ policy và environment.}
     \label{fig:tv2-interaction-tikz}
 \end{figure}
 
-\subsubsection{Goal-Reaching and Occupancy Measures}
+\subsubsection{Goal-reaching và occupancy measure}
 
-Goal-reaching là thiết lập đơn giản nhất cho quan điểm interaction-as-generation.
+Goal-reaching là thiết lập đơn giản nhất cho góc nhìn xem interaction như quá trình sinh dữ liệu.
 Thay vì thiết kế reward thủ công nhiều thành phần, task được mô tả bằng một observation mong muốn $g$.
 Goal-reaching trước hết có thể được hiểu bằng trực giác indicator trong finite-state setting: agent nhận tín hiệu dương khi đạt goal và nhận tín hiệu bằng không ở các trạng thái khác.
 Để có formulation áp dụng được cho cả observation rời rạc lẫn liên tục, objective chính được viết qua xác suất transition tới goal:
@@ -512,7 +494,7 @@ Objective này tương đương một bài toán RL chuẩn với reward đượ
     \label{eq:tv2-goal-reward}
 \end{equation}
 Reward ở đây không phải reward thủ công theo nhiều rule, mà được định nghĩa từ xác suất đạt observation mong muốn.
-Điều này chuyển reward engineering sang bài toán likelihood của outcome.
+Điều này nghĩa là phần thiết kế reward được chuyển thành bài toán likelihood của outcome.
 
 Discounted state occupancy measure mô tả phân phối state tương lai do policy sinh ra:
 \begin{equation}
@@ -527,8 +509,8 @@ Discounted state occupancy measure mô tả phân phối state tương lai do po
     \right].
     \label{eq:tv2-state-occupancy}
 \end{equation}
-Nếu interaction là một generative model, $p^\pi(s_f)$ chính là phân phối sample mà model tạo ra.
-Goal-reaching khi đó trở thành bài toán điều chỉnh policy sao cho phân phối $p^\pi$ đặt xác suất cao lên goal hoặc goal distribution.
+Nếu quá trình interaction được xem như một generative model, $p^\pi(s_f)$ chính là phân phối sample mà model tạo ra.
+Goal-reaching khi đó trở thành bài toán điều chỉnh policy. Mục tiêu là làm cho phân phối $p^\pi$ đặt xác suất cao lên goal hoặc goal distribution.
 
 \begin{figure}[H]
     \centering
@@ -557,15 +539,15 @@ Goal-reaching khi đó trở thành bài toán điều chỉnh policy sao cho ph
     \label{fig:tv2-goal-reaching-tikz}
 \end{figure}
 
-Hạn chế của goal-reaching là không phải mọi tác vụ đều có thể được đặc tả bằng một trạng thái đích đơn lẻ.
+Hạn chế của Goal-reaching là không phải mọi tác vụ đều có thể được đặc tả bằng một goal observation đơn lẻ.
 Chẳng hạn, trạng thái ``căn phòng sạch'' có thể tương ứng với nhiều cấu hình quan sát hợp lệ, trong khi tiêu chí ``chuyến bay êm'' phụ thuộc vào các ràng buộc được duy trì trên toàn trajectory.
 Về mặt kỹ thuật, các ví dụ này đại diện cho tác vụ có nhiều outcome tương đương hoặc có trajectory constraints, do đó không thể quy về một goal observation duy nhất.
-Do đó, goal-reaching chỉ là một trường hợp đặc biệt của bài toán điều khiển phân phối outcome; các tác vụ tổng quát hơn đòi hỏi formulation trên trajectory distribution hoặc reward function đầy đủ.
+Do đó, Goal-reaching chỉ là một trường hợp đặc biệt của bài toán điều khiển outcome distribution; các tác vụ tổng quát hơn đòi hỏi formulation trên trajectory distribution hoặc reward function đầy đủ.
 
 \subsubsection{Goal-Conditioned Behavioral Cloning}
 
 \textbf{Goal-Conditioned Behavioral Cloning (GCBC)} khai thác cấu trúc trajectory để học policy hướng goal từ dữ liệu.
-Trong hệ thống các công trình của phần Interaction as a Generative Model, GCBC đóng vai trò baseline có tính supervised learning: nó tận dụng trajectory có sẵn bằng cách biến future observation thành goal label, trước khi các phương pháp Dual RL và DICE mở rộng sang occupancy-level distribution matching.
+Trong hệ thống các công trình của phần Interaction như một Generative Model, GCBC đóng vai trò baseline có tính supervised learning: nó tận dụng trajectory có sẵn bằng cách biến future observation thành goal label, trước khi các phương pháp Dual RL và DICE mở rộng sang occupancy-level distribution matching.
 Từ một trajectory trong dataset, ta chọn một future state $s_f$ làm goal, rồi huấn luyện policy sinh action hiện tại có điều kiện trên goal:
 \begin{equation}
     \max_\theta
@@ -578,7 +560,7 @@ Từ một trajectory trong dataset, ta chọn một future state $s_f$ làm goa
     \right].
     \label{eq:tv2-gcbc}
 \end{equation}
-\paragraph{Bayesian interpretation.}
+\paragraph{Diễn giải Bayesian.}
 Eq.~\eqref{eq:tv2-gcbc} có hình thức của behavioral cloning với biến điều kiện goal, nhưng Bayes rule cho thấy objective còn mã hóa xác suất đạt future state.
 Action được ưu tiên không chỉ vì nó xuất hiện trong dữ liệu, mà vì trong trajectory gốc nó nằm trên đường dẫn đến future state được chọn làm goal.
 Một cách viết bỏ qua các hằng số không phụ thuộc action là:
@@ -593,25 +575,25 @@ Một cách viết bỏ qua các hằng số không phụ thuộc action là:
 \end{equation}
 trong đó $\beta(a\mid s)$ là behavior policy, còn $p(s_f=g\mid s,a)$ là xác suất đạt future goal khi bắt đầu từ $(s,a)$ và tiếp tục theo policy đang xét.
 Term đầu khuyến khích action làm tăng khả năng đạt goal; term thứ hai regularize action về vùng hành vi trong dataset.
-GCBC do đó kết hợp tín hiệu goal-reaching với regularization về behavior support, thay vì chỉ sao chép marginal action distribution.
+GCBC do đó kết hợp tín hiệu Goal-reaching với regularization về behavior support, thay vì chỉ sao chép marginal action distribution.
 
-\paragraph{Masking interpretation.}
+\paragraph{Diễn giải masking.}
 Diễn giải trọng tâm thứ hai xem GCBC như một bài toán masked sequence modeling trên trajectory.
 Trong language modeling, masking che một phần token rồi học dự đoán token bị che.
 Trong trajectory modeling, có thể che action hoặc state rồi yêu cầu mô hình khôi phục phần thiếu.
 Với GCBC, state hiện tại và goal tương lai đóng vai trò context, còn action là phần cần dự đoán.
-Nếu mask action, mô hình hoạt động như policy; nếu mask future state, cùng kiến trúc hoạt động như world model.
+Nếu mask action, mô hình hoạt động như policy; nếu mask future state, cùng kiến trúc hoạt động như World Model.
 Sự thay đổi vai trò được quyết định bởi biến nào được quan sát và biến nào phải sinh, chứ không nhất thiết bởi một kiến trúc riêng cho từng chức năng.
 
 GCBC cho thấy một cách tận dụng offline trajectories bằng supervised learning, nhưng policy học được vẫn bị ràng buộc mạnh bởi behavior support và các future states đã xuất hiện trong dữ liệu.
-Để phân tích các phương pháp vượt ra ngoài việc clone trực tiếp hành vi, cần chuyển từ likelihood của action sang phân phối occupancy mà policy tạo ra.
-Ở mức on-policy, f-divergence gradient cung cấp một cầu nối tự nhiên giữa khớp phân phối goal và policy gradient; trong offline setting, yêu cầu học từ dataset cố định dẫn tới các formulation dual và DICE được trình bày tiếp theo~\cite{eysenbach2025generativerl}.
+Để phân tích các phương pháp vượt ra ngoài việc clone trực tiếp hành vi, cần chuyển từ likelihood của action sang occupancy measure mà policy tạo ra.
+Ở mức on-policy, f-divergence gradient cung cấp một cầu nối tự nhiên giữa goal distribution matching và policy gradient; trong Offline RL setting, yêu cầu học từ dataset cố định dẫn tới các formulation của Dual RL và DICE được trình bày tiếp theo~\cite{eysenbach2025generativerl}.
 
-\subsubsection{Dual RL and DICE}
+\subsubsection{Dual RL và DICE}
 
 Goal-reaching yêu cầu ước lượng xác suất đạt goal, nhưng density estimation trực tiếp trong không gian observation cao chiều thường khó.
 \textbf{Dual RL} giải quyết vấn đề này bằng cách làm việc với occupancy measure và distribution matching.
-Thay vì tối ưu trực tiếp trên policy, ta xét state-action occupancy $d^\pi(s,a)$ do policy tạo ra.
+Thay vì tối ưu trực tiếp trên policy, ta xét state-action occupancy measure $d^\pi(s,a)$ do policy tạo ra.
 Một objective regularized có dạng:
 \begin{equation}
     \max_\pi
@@ -624,7 +606,7 @@ Một objective regularized có dạng:
     \label{eq:tv2-regularized-occupancy}
 \end{equation}
 trong đó $d^O$ là phân phối tham chiếu và $D_f$ là $f$-divergence.
-Occupancy distribution không thể tùy ý; nó phải thỏa các Bellman-flow constraints do dynamics quy định.
+Occupancy measure không thể tùy ý; nó phải thỏa các Bellman-flow constraints do dynamics quy định.
 Một dạng ràng buộc Bellman-flow tương ứng với primal-Q trong notes là:
 \begin{equation}
     d(s,a)
@@ -660,7 +642,7 @@ trong đó $\mathcal{T}V(s,a)$ là Bellman target của $V$ và $f_p^*$ là bi�
 Ý nghĩa kỹ thuật là bài toán distribution matching có thể được học bằng loss trên dữ liệu logged, thay vì yêu cầu tương tác on-policy liên tục.
 
 \textbf{DICE methods} là họ phương pháp tiêu biểu cho ý tưởng này.
-Trong offline setting, DICE xét objective:
+Trong Offline RL setting, DICE xét objective:
 \begin{equation}
     \pi^*
     =
@@ -712,14 +694,14 @@ Một đại lượng trung tâm là stationary distribution ratio:
     \frac{d^*(s,a)}{d^D(s,a)}.
     \label{eq:tv2-density-ratio}
 \end{equation}
-Tỉ số này cho biết state-action pair trong dataset nên được nhấn mạnh hơn hay ít hơn để tiến đến occupancy tối ưu.
+Tỉ số này cho biết state-action pair trong dataset nên được nhấn mạnh hơn hay ít hơn để tiến đến optimal occupancy measure.
 Từ góc nhìn tổng hợp của nhóm, density ratio ở đây cũng cung cấp một cách diễn giải cho guidance trong Diffusion-DICE: cả hai đều mô tả sự dịch chuyển từ behavior distribution về phía optimal distribution, trong khi ràng buộc in-sample hạn chế error exploitation.
 Liên hệ này là phép đối chiếu giữa hai phần của tutorial, không phải một đồng nhất thức được lecture notes phát biểu trực tiếp~\cite{eysenbach2025generativerl,mao2024diffusiondice}.
 
-\subsubsection{f-Policy Gradients and State-MaxEnt RL}
+\subsubsection{f-Policy Gradients và State-MaxEnt RL}
 
 Dual formulation cho biết cách biểu diễn bài toán bằng occupancy measure và density ratio.
-Từ formulation này, câu hỏi trực tiếp hơn là: nếu goal được mô tả bởi một phân phối trạng thái đích $p_g(s)$, policy cần được cập nhật như thế nào để phân phối trạng thái mà agent tạo ra tiến gần tới phân phối này?
+Từ formulation này, câu hỏi trực tiếp hơn là: nếu goal được mô tả bằng goal distribution $p_g(s)$, policy cần được cập nhật như thế nào để state distribution do agent tạo ra tiến gần tới phân phối này?
 Gọi $p_\theta(s)$ là discounted state distribution sinh bởi policy $\pi_\theta$.
 Bài toán distribution matching được viết dưới dạng:
 \begin{equation}
@@ -776,16 +758,16 @@ Khi $D_f$ là $D_{\mathrm{KL}}(p_\theta\Vert p_g)$, việc cực tiểu hóa div
     \mathcal{H}\!\left(p_\theta(s)\right).
     \label{eq:tv2-state-maxent}
 \end{equation}
-Term thứ nhất đưa state distribution về các vùng có xác suất cao dưới goal distribution; term thứ hai cực đại hóa entropy của chính state occupancy.
+Term thứ nhất đưa state distribution về các vùng có xác suất cao dưới goal distribution; term thứ hai cực đại hóa entropy của chính state occupancy measure.
 Đây là điểm khác với MaxEnt RL thông dụng như soft Q-learning hoặc SAC, vốn regularize entropy của action policy.
 Một policy có action entropy cao vẫn có thể tạo ra state distribution hẹp nếu dynamics khiến nhiều action dẫn tới cùng một vùng trạng thái.
 Ngược lại, \textbf{state-MaxEnt RL} tác động trực tiếp lên độ phủ của các trạng thái được ghé thăm.
 Đặc biệt, nếu $p_g$ là phân phối đều trên state space, term $\log p_g(s)$ trở thành hằng số và objective còn lại là cực đại hóa $\mathcal{H}(p_\theta(s))$, tức khuyến khích agent khám phá rộng trong môi trường.
 Diễn giải này là nội dung được nhấn mạnh trong phần f-Policy Gradients và state-MaxEnt RL của slide tutorial~\cite{eysenbach2025generativerl}.
 
-\subsubsection{Offline Goal-Conditioned RL and Technical Synthesis}
+\subsubsection{Offline Goal-Conditioned RL}
 
-Trong offline goal-conditioned RL, goal-transition distribution $q(s,a,g)$ được dùng để mô tả những transition dẫn tới goal.
+Trong Offline Goal-Conditioned RL, goal-transition distribution $q(s,a,g)$ được dùng để mô tả những transition dẫn tới goal.
 Với một stochastic MDP, notes định nghĩa phân phối này theo dạng:
 \begin{equation}
     q(s,a,g)
@@ -839,23 +821,22 @@ Ba nhóm hạng tử đầu tương ứng với giảm score dưới policy hi�
 
 Cần phân biệt rõ $S$-function trong formulation này với reward thật hoặc likelihood thật.
 $S$ là một score được học bằng Bellman-regularized contrastive learning.
-Vai trò của nó là cung cấp tín hiệu học cho occupancy matching trong offline goal-conditioned RL, không phải thay thế trực tiếp cho reward được gán nhãn.
+Vai trò của nó là cung cấp tín hiệu học cho occupancy matching trong Offline Goal-Conditioned RL, không phải thay thế trực tiếp cho reward được gán nhãn.
 Điểm này quan trọng vì nó ngăn cách lập luận ở đây khỏi một diễn giải quá đơn giản rằng mọi bài toán RL chỉ cần chuyển thành density estimation.
 Trong thực tế, các ràng buộc dynamics, support của offline data và độ ổn định tối ưu vẫn quyết định chất lượng policy học được.
 
-\paragraph{Technical assessment and open questions.}
+\paragraph{Đánh giá kỹ thuật và câu hỏi mở.}
 Khung nhìn thống nhất ở phần này làm rõ quan hệ giữa likelihood, occupancy và reward, nhưng không loại bỏ bài toán đặc tả tác vụ.
-Trong goal-reaching, gánh nặng thiết kế được chuyển từ scalar reward sang lựa chọn goal representation và goal distribution; dữ liệu goal sai lệch vẫn dẫn tới policy tối ưu sai đối tượng.
+Trong Goal-reaching, gánh nặng thiết kế được chuyển từ scalar reward sang lựa chọn goal representation và goal distribution; dữ liệu goal sai lệch vẫn dẫn tới policy tối ưu sai đối tượng.
 GCBC tận dụng supervision sẵn có trong trajectory nhưng bị giới hạn bởi behavior support, nên không tự bảo đảm khả năng tổng hợp những đường đi chưa từng xuất hiện trong offline data.
-Các phương pháp dual và DICE giảm nhu cầu đánh giá action ngoài phân phối, song độ chính xác của density ratio vẫn phụ thuộc vào độ phủ dữ liệu, lựa chọn $f$-divergence và sai số xấp xỉ của biến dual.
+Các phương pháp Dual RL và DICE giảm nhu cầu đánh giá action ngoài phân phối, song độ chính xác của density ratio vẫn phụ thuộc vào độ phủ dữ liệu, lựa chọn $f$-divergence và sai số xấp xỉ của biến dual.
 Đối với f-Policy Gradients, estimator được trình bày trong lecture notes là on-policy, khiến lợi ích của dense distribution-matching signal phải đánh đổi với chi phí thu thập trajectory mới.
-Ở Part I, world model và critic đều có thể bị policy khai thác khi sai số ngoại suy không được hiệu chỉnh; Diffusion-DICE giảm rủi ro này nhưng không loại bỏ sự phụ thuộc vào chất lượng critic~\cite{mao2024diffusiondice}.
+Ở Part I, World Model và critic đều có thể bị policy khai thác khi sai số ngoại suy không được hiệu chỉnh; Diffusion-DICE giảm rủi ro này nhưng không loại bỏ sự phụ thuộc vào chất lượng critic~\cite{mao2024diffusiondice}.
 Tương tự, DDPO tối ưu trực tiếp reward proxy nhưng có thể overoptimize proxy không hoàn chỉnh thay vì cải thiện chất lượng theo ý định thực~\cite{black2024ddpo}.
 
 Một hướng nghiên cứu quan trọng là kết hợp generative policy biểu diễn đa mode với ước lượng uncertainty và cơ chế support-aware selection để kiểm soát policy shift.
 Hướng thứ hai là nối offline distribution matching với thu thập dữ liệu online có chủ đích, nhằm mở rộng support tại các vùng mà density ratio hoặc critic còn không chắc chắn.
 Cuối cùng, các tác vụ không thể đặc tả bằng một goal observation đơn lẻ đòi hỏi mô hình hóa distribution trên trajectory hoặc outcome có cấu trúc, thay vì chỉ thay reward bằng một goal observation tĩnh~\cite{eysenbach2025generativerl}.
-
 \begin{figure}[H]
     \centering
     \resizebox{\textwidth}{!}{%
@@ -864,10 +845,10 @@ Cuối cùng, các tác vụ không thể đặc tả bằng một goal observat
         arr/.style={-{Latex[length=2mm]}, thick}
     ]
         \node[box] (part1) at (0,0) {Generative models\\inside RL engines};
-        \node[box] (wm) at (4.4,1.25) {World model\\$p(s'\mid s,a)$};
+        \node[box] (wm) at (4.4,1.25) {World Model\\$p(s'\mid s,a)$};
         \node[box] (policy) at (4.4,0) {Policy\\$\pi(a\mid s)$};
         \node[box] (ddpo) at (4.4,-1.25) {RL fine-tunes\\diffusion model};
-        \node[box] (part2) at (9.1,0) {Interaction as\\generative process};
+        \node[box] (part2) at (9.1,0) {Policy + environment\\sinh dữ liệu};
         \node[box] (occ) at (13.6,0.8) {Occupancy\\matching};
         \node[box] (goal) at (13.6,-0.8) {Goal / outcome\\likelihood};
         \draw[arr] (part1) -- (wm);
